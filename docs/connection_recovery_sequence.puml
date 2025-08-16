@@ -1,0 +1,30 @@
+@startuml
+title MQTT 連線中斷恢復流程
+
+participant "Device" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+D -> B: LWT: online
+B -> C: forward LWT
+note right: 1. 設定 LWT
+
+note over D: [網路連線中斷]
+
+B -> C: LWT: offline (自動)
+note right: 2. 自動離線通知
+
+note over D: [網路恢復]
+
+D -> B: LWT: online
+B -> C: forward LWT
+note right: 3. 重新上線
+
+D -> B: state (retained)
+B -> C: forward state
+note right: 4. 狀態同步
+
+C -> B: cmd/req (健康檢查)
+B -> D: forward cmd/req
+note left: 5. 健康檢查
+@enduml

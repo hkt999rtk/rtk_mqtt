@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    RTK MQTT Collector Service Configuration
+    
+    This configuration file contains settings for the RTK MQTT Collector service.
+    Modify these settings as needed for your deployment environment.
+-->
+<ServiceConfiguration>
+    <!-- Service Identity -->
+    <Service>
+        <Name>RTKMqttCollector</Name>
+        <DisplayName>RTK MQTT Data Collector</DisplayName>
+        <Description>Collects and forwards MQTT device data using RTK Framework</Description>
+        <Version>@PROJECT_VERSION@</Version>
+        <StartType>Automatic</StartType>
+        <Account>LocalSystem</Account>
+    </Service>
+    
+    <!-- MQTT Broker Configuration -->
+    <MQTT>
+        <Broker>
+            <Host>mqtt.example.com</Host>
+            <Port>1883</Port>
+            <ClientId>windows_collector_001</ClientId>
+            <Username>collector</Username>
+            <Password>password</Password>
+            <KeepAlive>60</KeepAlive>
+            <CleanSession>true</CleanSession>
+            <SSL>false</SSL>
+        </Broker>
+        
+        <!-- SSL/TLS Configuration (if SSL is enabled) -->
+        <SSL>
+            <CertificateFile></CertificateFile>
+            <PrivateKeyFile></PrivateKeyFile>
+            <CACertificateFile></CACertificateFile>
+            <VerifyPeer>true</VerifyPeer>
+        </SSL>
+        
+        <!-- Subscription Topics -->
+        <Subscriptions>
+            <Topic pattern="devices/+/data" qos="1"/>
+            <Topic pattern="sensors/+/readings" qos="1"/>
+            <Topic pattern="gateways/+/status" qos="0"/>
+        </Subscriptions>
+        
+        <!-- Publishing Topics -->
+        <Publishing>
+            <TopicPrefix>processed/</TopicPrefix>
+            <RetainMessages>false</RetainMessages>
+            <DefaultQoS>0</DefaultQoS>
+        </Publishing>
+    </MQTT>
+    
+    <!-- Performance Configuration -->
+    <Performance>
+        <WorkerThreads>4</WorkerThreads>
+        <MaxPendingMessages>1000</MaxPendingMessages>
+        <MessageQueueSize>10000</MessageQueueSize>
+        <ProcessingTimeoutMs>5000</ProcessingTimeoutMs>
+    </Performance>
+    
+    <!-- JSON Processing Configuration -->
+    <JSON>
+        <PoolSize>16</PoolSize>
+        <BufferSize>8192</BufferSize>
+        <MaxDepth>32</MaxDepth>
+        <EnableValidation>true</EnableValidation>
+        <EnableMinification>true</EnableMinification>
+    </JSON>
+    
+    <!-- Logging Configuration -->
+    <Logging>
+        <Level>Information</Level> <!-- Error, Warning, Information, Debug -->
+        <EnableEventLog>true</EnableEventLog>
+        <EnableFileLog>false</EnableFileLog>
+        <LogFilePath>C:\Logs\RTKMqttCollector.log</LogFilePath>
+        <MaxLogFileSize>10485760</MaxLogFileSize> <!-- 10MB -->
+        <MaxLogFiles>5</MaxLogFiles>
+    </Logging>
+    
+    <!-- Statistics and Monitoring -->
+    <Monitoring>
+        <EnableStatistics>true</EnableStatistics>
+        <StatsReportIntervalMs>60000</StatsReportIntervalMs> <!-- 1 minute -->
+        <EnablePerformanceCounters>false</EnablePerformanceCounters>
+        <EnableHealthCheck>true</EnableHealthCheck>
+        <HealthCheckPort>8080</HealthCheckPort>
+    </Monitoring>
+    
+    <!-- Error Handling -->
+    <ErrorHandling>
+        <RetryAttempts>3</RetryAttempts>
+        <RetryDelayMs>1000</RetryDelayMs>
+        <MaxErrorsBeforeRestart>100</MaxErrorsBeforeRestart>
+        <AutoReconnect>true</AutoReconnect>
+        <ReconnectDelayMs>5000</ReconnectDelayMs>
+    </ErrorHandling>
+    
+    <!-- Data Processing Rules -->
+    <Processing>
+        <Rules>
+            <!-- Example: Filter temperature readings -->
+            <Rule name="TemperatureFilter">
+                <Condition>topic contains "temperature" and value &gt; -40 and value &lt; 100</Condition>
+                <Action>forward</Action>
+                <Target>processed/temperature/{device_id}</Target>
+            </Rule>
+            
+            <!-- Example: Aggregate humidity data -->
+            <Rule name="HumidityAggregation">
+                <Condition>topic contains "humidity"</Condition>
+                <Action>aggregate</Action>
+                <WindowSizeMs>300000</WindowSizeMs> <!-- 5 minutes -->
+                <Target>aggregated/humidity/{device_id}</Target>
+            </Rule>
+            
+            <!-- Example: Alert on high temperature -->
+            <Rule name="HighTemperatureAlert">
+                <Condition>topic contains "temperature" and value &gt; 80</Condition>
+                <Action>alert</Action>
+                <Target>alerts/temperature/high</Target>
+                <Priority>High</Priority>
+            </Rule>
+        </Rules>
+    </Processing>
+    
+    <!-- Security Configuration -->
+    <Security>
+        <EnableAuthentication>false</EnableAuthentication>
+        <AuthenticationMethod>Basic</AuthenticationMethod> <!-- Basic, Certificate, Token -->
+        <TokenValidationUrl></TokenValidationUrl>
+        <EnableEncryption>false</EnableEncryption>
+        <EncryptionKey></EncryptionKey>
+    </Security>
+    
+    <!-- Backup and Recovery -->
+    <Backup>
+        <EnableBackup>false</EnableBackup>
+        <BackupPath>C:\Backup\RTKMqttCollector</BackupPath>
+        <BackupIntervalHours>24</BackupIntervalHours>
+        <MaxBackupFiles>7</MaxBackupFiles>
+        <BackupConfigFiles>true</BackupConfigFiles>
+        <BackupLogFiles>false</BackupLogFiles>
+    </Backup>
+    
+    <!-- Advanced Settings -->
+    <Advanced>
+        <EnableDebugMode>false</EnableDebugMode>
+        <MemoryUsageLimit>536870912</MemoryUsageLimit> <!-- 512MB -->
+        <CPUUsageLimit>80</CPUUsageLimit> <!-- 80% -->
+        <NetworkTimeoutMs>30000</NetworkTimeoutMs>
+        <MaxConcurrentConnections>100</MaxConcurrentConnections>
+    </Advanced>
+    
+    <!-- Environment-specific settings -->
+    <Environment>
+        <Name>Production</Name> <!-- Development, Testing, Production -->
+        <DataCenter>Primary</DataCenter>
+        <Region>US-East</Region>
+        <Zone>Zone-1</Zone>
+    </Environment>
+</ServiceConfiguration>

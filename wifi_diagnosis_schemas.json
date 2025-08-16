@@ -1,0 +1,319 @@
+{
+  "wifi_roam_candidate": {
+    "type": "object",
+    "properties": {
+      "bssid": {
+        "type": "string",
+        "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+        "description": "AP BSSID in MAC address format"
+      },
+      "rssi": {
+        "type": "integer",
+        "minimum": -100,
+        "maximum": 0,
+        "description": "Signal strength in dBm"
+      },
+      "channel": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 165,
+        "description": "WiFi channel number"
+      }
+    },
+    "required": ["bssid", "rssi", "channel"]
+  },
+
+  "wifi_channel_info": {
+    "type": "object", 
+    "properties": {
+      "channel": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 165
+      },
+      "bandwidth": {
+        "type": "string",
+        "enum": ["20MHz", "40MHz", "80MHz", "160MHz", "80+80MHz", "5MHz", "10MHz"]
+      },
+      "band": {
+        "type": "string",
+        "enum": ["2.4G", "5G", "6G"]
+      }
+    },
+    "required": ["channel", "bandwidth", "band"]
+  },
+
+  "wifi_traffic_stats": {
+    "type": "object",
+    "properties": {
+      "driver_beacon_count": {
+        "type": "array",
+        "items": {"type": "integer"},
+        "minItems": 5,
+        "maxItems": 5,
+        "description": "Beacon frames received from driver in last 5 intervals"
+      },
+      "fw_beacon_count": {
+        "type": "array", 
+        "items": {"type": "integer"},
+        "minItems": 5,
+        "maxItems": 5,
+        "description": "Beacon frames received from firmware"
+      },
+      "rx_error_count": {
+        "type": "array",
+        "items": {"type": "integer"},
+        "minItems": 5,
+        "maxItems": 5,
+        "description": "RX error packet count"
+      },
+      "rx_packet_count": {
+        "type": "array",
+        "items": {"type": "integer"}, 
+        "minItems": 5,
+        "maxItems": 5,
+        "description": "RX data packet count"
+      },
+      "rx_throughput_kbps": {
+        "type": "array",
+        "items": {"type": "integer"},
+        "minItems": 5,
+        "maxItems": 5,
+        "description": "RX throughput in kbps"
+      }
+    },
+    "required": ["driver_beacon_count", "fw_beacon_count", "rx_error_count", "rx_packet_count", "rx_throughput_kbps"]
+  },
+
+  "roaming_miss_diagnosis": {
+    "type": "object",
+    "properties": {
+      "schema": {
+        "const": "evt.wifi.roam_miss/1.0"
+      },
+      "ts": {
+        "type": "integer",
+        "description": "Unix timestamp in milliseconds"
+      },
+      "severity": {
+        "type": "string",
+        "enum": ["info", "warning", "error", "critical"]
+      },
+      "trigger_info": {
+        "type": "object",
+        "properties": {
+          "rssi_threshold": {"type": "integer"},
+          "duration_ms": {"type": "integer", "const": 10000},
+          "cooldown_ms": {"type": "integer", "const": 300000}
+        },
+        "required": ["rssi_threshold", "duration_ms", "cooldown_ms"]
+      },
+      "diagnosis": {
+        "type": "object",
+        "properties": {
+          "internal_scan_skip_count": {
+            "type": "integer",
+            "description": "Scan skips in last 10 seconds"
+          },
+          "environment_ap_count": {
+            "type": "integer",
+            "description": "Number of APs detected in environment"
+          },
+          "candidate_ap_count": {
+            "type": "integer",
+            "description": "Number of candidate APs for roaming"
+          },
+          "current_bssid": {
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$"
+          },
+          "current_rssi": {
+            "type": "integer",
+            "minimum": -100,
+            "maximum": 0
+          },
+          "candidates": {
+            "type": "object",
+            "properties": {
+              "2g": {"$ref": "#/wifi_roam_candidate"},
+              "5g": {"$ref": "#/wifi_roam_candidate"}, 
+              "6g": {"$ref": "#/wifi_roam_candidate"}
+            }
+          },
+          "scan_timing": {
+            "type": "object",
+            "properties": {
+              "last_scan_time": {
+                "type": "integer",
+                "description": "Last scan timestamp"
+              },
+              "last_full_scan_complete_time": {
+                "type": "integer", 
+                "description": "Last full scan completion timestamp"
+              }
+            },
+            "required": ["last_scan_time", "last_full_scan_complete_time"]
+          }
+        },
+        "required": ["internal_scan_skip_count", "environment_ap_count", "candidate_ap_count", "current_bssid", "current_rssi", "scan_timing"]
+      }
+    },
+    "required": ["schema", "ts", "severity", "trigger_info", "diagnosis"]
+  },
+
+  "connect_failure_diagnosis": {
+    "type": "object",
+    "properties": {
+      "schema": {
+        "const": "evt.wifi.connect_fail/1.0"
+      },
+      "ts": {
+        "type": "integer"
+      },
+      "severity": {
+        "type": "string",
+        "enum": ["info", "warning", "error", "critical"]
+      },
+      "connection_info": {
+        "type": "object",
+        "properties": {
+          "role_type": {
+            "type": "string",
+            "enum": ["STA", "AP", "P2P_GC", "P2P_GO"]
+          },
+          "target_bssid": {
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$"
+          },
+          "ssid": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "required": ["role_type"]
+      },
+      "failure_details": {
+        "type": "object", 
+        "properties": {
+          "join_status": {
+            "type": "string",
+            "enum": ["JOIN_TIMEOUT", "AUTH_TIMEOUT", "ASSOCIATE_TIMEOUT", "KEY_NOT_INSTALL", "AUTH_REFUSED", "AUTH_INVALID", "AUTH_UNSPECIFIED", "ASSOC_INVALID_PMKID", "ASSOC_UNSPECIFIED"]
+          },
+          "join_rx_count": {
+            "type": "integer",
+            "description": "BIT0-BIT3: beacon, BIT4-BIT7: probe response"
+          },
+          "tx_fail_category": {
+            "type": "string", 
+            "enum": ["NONE", "AUTH", "ASSOCIATE", "EAPOL"]
+          },
+          "auth_mode": {
+            "type": "string",
+            "enum": ["OPEN", "SHARED", "AUTOSWITCH", "WPA", "WPAPSK", "WPANON", "WPA2", "WPA2PSK", "CCKM", "WAPI", "CERTIFICATEWAPI", "WPA3", "WPA3SAE", "OWE", "WPA3_ENT"]
+          },
+          "auth_algo": {
+            "type": "string",
+            "enum": ["OPEN", "SHARED", "SAE", "FT"]
+          },
+          "four_way_status": {
+            "type": "integer"
+          },
+          "response_status_code": {
+            "type": "integer",
+            "description": "802.11 status code"
+          }
+        }
+      }
+    },
+    "required": ["schema", "ts", "severity", "connection_info", "failure_details"]
+  },
+
+  "arp_loss_diagnosis": {
+    "type": "object",
+    "properties": {
+      "schema": {
+        "const": "evt.wifi.arp_loss/1.0"
+      },
+      "ts": {
+        "type": "integer"
+      },
+      "severity": {
+        "type": "string", 
+        "enum": ["info", "warning", "error", "critical"]
+      },
+      "trigger_info": {
+        "type": "object",
+        "properties": {
+          "consecutive_loss_count": {
+            "type": "integer",
+            "const": 2,
+            "description": "Number of consecutive ARP response losses"
+          },
+          "cooldown_ms": {
+            "type": "integer",
+            "const": 300000
+          }
+        },
+        "required": ["consecutive_loss_count", "cooldown_ms"]
+      },
+      "network_info": {
+        "type": "object",
+        "properties": {
+          "current_bssid": {
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$"
+          },
+          "current_rssi": {
+            "type": "integer",
+            "minimum": -100,
+            "maximum": 0
+          },
+          "channel_hw_match": {
+            "type": "boolean",
+            "description": "Whether channel configuration matches hardware"
+          },
+          "scan_in_progress": {
+            "type": "boolean",
+            "description": "Whether scan was in progress when ARP loss occurred"
+          }
+        },
+        "required": ["current_bssid", "current_rssi", "channel_hw_match", "scan_in_progress"]
+      },
+      "arp_statistics": {
+        "type": "object",
+        "properties": {
+          "source_ip": {
+            "type": "string",
+            "format": "ipv4",
+            "description": "Source IP in ARP request"
+          },
+          "destination_ip": {
+            "type": "string", 
+            "format": "ipv4",
+            "description": "Destination IP in ARP request"
+          },
+          "req_tx_fail_count": {
+            "type": "integer",
+            "description": "TX ARP requests with no ACK received"
+          },
+          "req_count": {
+            "type": "integer",
+            "description": "Total TX ARP requests"
+          },
+          "rsp_count": {
+            "type": "integer",
+            "description": "Total RX ARP responses"
+          }
+        },
+        "required": ["source_ip", "destination_ip", "req_tx_fail_count", "req_count", "rsp_count"]
+      },
+      "ap_config": {
+        "$ref": "#/wifi_channel_info"
+      },
+      "rx_traffic": {
+        "$ref": "#/wifi_traffic_stats"
+      }
+    },
+    "required": ["schema", "ts", "severity", "trigger_info", "network_info", "arp_statistics", "ap_config", "rx_traffic"]
+  }
+}

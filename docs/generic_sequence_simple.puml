@@ -1,0 +1,47 @@
+@startuml
+title MQTT Diagnostic Communication Sequence
+
+participant "Device" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+note over D: 觸發條件發生
+
+D -> B: evt/wifi.xxx
+activate D
+B -> C: forward event
+note right: 1. 事件觸發
+
+C -> B: cmd/req diagnosis.get
+B -> D: forward request
+note left: 2. 診斷請求
+
+D -> B: cmd/ack
+B -> C: forward ack
+note right: 3. 命令確認
+
+note over D: [診斷資料收集中]\n3-15 秒
+D -> D: 資料收集處理
+
+D -> B: cmd/res\n(JSON 5-10KB)
+B -> C: forward result
+note right: 4. 診斷結果
+
+D -> B: state (updated)
+B -> C: forward state
+note right: 5. 狀態更新
+
+alt 需要修復動作
+    C -> B: cmd/req (action)
+    B -> D: forward action
+    note left: 6. 修復動作 (選用)
+    
+    D -> B: cmd/ack
+    B -> C: forward ack
+    
+    D -> B: cmd/res
+    B -> C: forward result
+end
+
+deactivate D
+@enduml

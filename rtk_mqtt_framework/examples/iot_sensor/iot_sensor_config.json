@@ -1,0 +1,75 @@
+{
+  "mqtt_broker": "mqtt.example.com",
+  "mqtt_port": 1883,
+  "device_id": "iot-sensor-001",
+  "tenant": "smart_building",
+  "site": "office_floor_3",
+  "mqtt_username": "sensor_device",
+  "telemetry_interval": 60,
+  "event_cooldown": 120,
+  "plugin_config": {
+    "sensors": {
+      "temperature": {
+        "enabled": true,
+        "sample_rate": 30,
+        "calibration_offset": 0.0,
+        "alert_thresholds": {
+          "min": 15.0,
+          "max": 35.0
+        }
+      },
+      "humidity": {
+        "enabled": true,
+        "sample_rate": 30,
+        "calibration_offset": 0.0,
+        "alert_thresholds": {
+          "min": 30.0,
+          "max": 80.0
+        }
+      },
+      "air_quality": {
+        "pm25_enabled": true,
+        "co2_enabled": true,
+        "sample_rate": 60,
+        "alert_thresholds": {
+          "pm25_max": 75,
+          "co2_max": 1500
+        }
+      },
+      "light": {
+        "enabled": true,
+        "sample_rate": 120,
+        "auto_brightness_control": false
+      },
+      "motion": {
+        "enabled": true,
+        "sensitivity": "medium",
+        "cooldown_seconds": 10
+      }
+    },
+    "data_fusion": {
+      "comfort_index_enabled": true,
+      "air_quality_index_enabled": true,
+      "anomaly_detection": true
+    },
+    "calibration": {
+      "auto_calibration": false,
+      "calibration_schedule": "weekly",
+      "reference_sensors": []
+    },
+    "alerts": {
+      "motion_detection": {
+        "enabled": true,
+        "severity": "info"
+      },
+      "air_quality_poor": {
+        "enabled": true,
+        "severity": "warning"
+      },
+      "sensor_malfunction": {
+        "enabled": true,
+        "severity": "error"
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+@startuml
+title WiFi Connection Failure Diagnosis Sequence
+
+participant "Device\n(laptop-005)" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+note over D: Connection attempt starts
+note over D: WPA3 SAE authentication failed
+
+D -> B: evt/wifi.connect_fail\nseverity: error
+activate D
+B -> C: forward event
+note right: Event: 連線失敗
+
+C -> B: cmd/req diagnosis.get\ninclude_auth_details
+B -> D: forward request
+note left: Request: 連線診斷
+
+D -> B: cmd/ack
+B -> C: forward ack
+note right: Ack: 開始分析
+
+note over D: [分析連線過程]\n• SAE 交換記錄\n• RF 環境分析\n• AP 能力檢測
+D -> D: connection failure analysis
+
+D -> B: cmd/res\n(detailed auth log)
+B -> C: forward result
+note right: Result: 失敗分析\n• SAE 超時\n• 備用 AP 建議
+
+C -> B: cmd/req wifi.connect\ntarget: backup AP
+B -> D: forward retry request
+note left: Action: 連線重試
+
+D -> B: cmd/ack
+B -> C: forward ack
+note right: Ack: 重試中
+
+note over D: [Connection successful]
+
+D -> B: cmd/res
+B -> C: forward success
+note right: Result: 連線成功
+
+D -> B: state (updated)\nhealth: error→ok
+B -> C: forward state
+note right: State: connected
+
+deactivate D
+@enduml

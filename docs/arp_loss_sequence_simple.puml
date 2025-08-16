@@ -1,0 +1,52 @@
+@startuml
+title ARP Loss Diagnosis Sequence
+
+participant "Device\n(smart-camera-003)" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+note over D: ARP request sent
+note over D: 2 consecutive no response
+
+D -> B: evt/wifi.arp_loss\nconsecutive: 2
+activate D
+B -> C: forward event
+note right: Event: ARP 遺失
+
+C -> B: cmd/req diagnosis.get\ninclude_rf_stats
+B -> D: forward request
+note left: Request: 網路診斷
+
+D -> B: cmd/ack\nestimated: 20s
+B -> C: forward ack
+note right: Ack: 分析中
+
+note over D: [網路環境分析]\n• RF 干擾掃描\n• 流量分析\n• 基帶統計
+D -> D: network diagnosis
+
+D -> B: cmd/res\nroot_cause: interference
+B -> C: forward result
+note right: Result: 網路分析\n• 頻道干擾\n• AP 負載波動
+
+C -> B: cmd/req network.arp.config\nincrease timeout
+B -> D: forward config request
+note left: Action: 參數調整
+
+D -> B: cmd/ack
+B -> C: forward ack
+note right: Ack: 配置更新
+
+D -> B: cmd/res
+B -> C: forward config result
+note right: Result: 配置完成
+
+D -> B: telemetry/connectivity\n(every 10s)
+B -> C: forward telemetry
+note right: Telemetry: 持續監控
+
+D -> B: state (updated)\nhealth: warn→ok
+B -> C: forward state
+note right: State: 網路穩定
+
+deactivate D
+@enduml

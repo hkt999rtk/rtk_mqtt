@@ -1,0 +1,253 @@
+Event,diag_event_type,Definition,Event Trigger Condition,Event Purpose,Debug Content,Debug Content Design purpose,User Issue (User會看到的現象)
+fw_ser_event,DIAG_EVT_SER_L2,FW SER發生，需要讓上層知道時,˙FW SER發生,SER發生時，收集FW收集好的Debug Content以便事後分析,,,TBD
+roaming_miss_event,DIAG_EVT_ROAM_MISSING,應該Trigger Roam卻沒trigger時會issue這個event,"˙10秒內RSSI低於threshold卻沒trigger roaming
+(當issue event之後，5分鐘內有相同條件發生的話不會再issue event，避免過多重複的event)","從debug content可以得知以下沒有roaming的原因
+˙scan was skipped unexpectedly
+˙Hx issue
+˙環境當下真的沒有更好的AP
+˙driver flow有誤","struct diag_miss_roam_v1 {
+u8 internal_scan_skip_cnt_10sec;
+u8 environment_scan_ap_number;
+u8 candidate_ap;
+u8 current_bssid[6];
+s8 current_rssi;
+struct diag_roam_candidate_v1
+candidate_2g;
+struct diag_roam_candidate_v1
+candidate_5g;
+struct diag_roam_candidate_v1
+candidate_6g;
+u32 last_scan_time; /* before event */
+u32 last_full_scan_complete_time; /* before event */
+};","
+˙internal_scan_skip_cnt_10sec可以知道最近10秒內有幾次internal scan with reason ""CORE_INT_SCAN_ROAM""被skip掉，搭配last_scan_time和last_full_scan_complete_time觀察最近一次scan的起始和結束時間，這樣有可能是因為沒有scan，所以scan list裡面找不到合適的AP
+        檢查scan相關的code flow
+˙environment_scan_ap_number 或是 candidate_ap如果為0
+        檢查是否有HW 相關的error造成scan不到AP (ex: RFK timeout/ SER)
+˙struct roam_candidate_info[3]列出每個band(2.4/ 5/ 6 G) RSSI最強的BSSID，搭配current_bssid/current_rssi可以判斷當下的環境是否有更好的AP?
+˙如果上述的檢查都沒有問題，struct roam_candidate_info[3]也有看到RSSI更好的BSSID，那表示driver在SelectNetworkBySSID()的流程可能有問題","˙traffic異常，不能上網,....
+˙斷線
+"
+continuous_arp_loss_event,DIAG_EVT_ARP_LOSS,loss arp response,"˙連續2筆arp response沒有收到
+(當issue event之後，5分鐘內有相同條件發生的話不會再issue event，避免過多重複的event)","從debug content可以得知以下資訊
+˙driver flow造成的掉封包問題
+        scan in progress
+        mismatch OP chnl
+˙HW issue
+        Tx收不到ack或是Rx收不到arp response","struct diag_arp_loss_v6 {
+ u8 cur_bssid[6];
+ s8 cur_rssi;
+ u8 b_chdef_hw_match;
+ u8 b_scan_progress; /* scan in progess or not when issue event */
+ u8 src_ip[4]; /* src ip in arp req */
+ u8 dst_ip[4]; /* dst ip in arp req */
+ u32 req_tx_fail_cnt; /* total number of tx arp req and no ack received */
+ u32 req_cnt; /* total tx arp req number */
+ u32 rsp_cnt; /* total rx arp rsp number */
+ struct diag_chdef_v1 ap_config;
+ struct diag_rx_traffic_v2 rx_traffic;
+ struct diag_rfcr_rpt_v1 rfcr_rpt; /* recent rf cr self-check results */
+ struct diag_bb_evt_rpt_v1 bb_evt_rpt; /* recent bb notify event statistics */
+ struct diag_bb_stat_rpt_v1 bb_stat_rpt; /* recent bb basic statistics */
+};","
+˙b_scan_progress是否正在scan, 檢查是否因為scan造成掉包
+˙b_chdef_hw_match檢查ch配置是否正確
+˙req_tx_fail_cnt判斷是否Tx可能有問題
+˙rfcr_rpt 與 bb_stat_rpt查詢RF/BB狀態","˙traffic異常，不能上網,....
+˙斷線
+"
+abnormal_disconnect_event,DIAG_EVT_ABNORMAL_DISCONNECT,非預期的斷線發生,"˙3.6秒沒有收到任何mgnt & data packets
+˙deauth with reason code 6 & 7
+","從debug content可以得知以下資訊
+˙非預期斷線的原因
+˙mismatch OP chnl
+","struct diag_abnormal_disconnect_v7 {
+ u8 rsn; /* For parser: enum diag_abnormal_disconnect_rsn */
+ u8 bssid[6]; /* abnormal disconnected with the bssid */
+ u8 b_chdef_hw_match;
+ u8 dual_bss_exist; /* dual bss exist */
+ struct diag_mbssid_info_v1 mbssid_i;
+ struct diag_chdef_v1 ap_config;
+ struct diag_rx_traffic_v2 rx_traffic;
+ struct diag_rfcr_rpt_v1 rfcr_rpt; /* recent rf cr self-check results */
+ struct diag_bb_evt_rpt_v1 bb_evt_rpt; /* recent bb notify event statistics */
+ struct diag_bb_stat_rpt_v1 bb_stat_rpt; /* recent bb basic statistics */
+ struct diag_bb_hdr_v2 bb_info; /* append dbg info from halbb */
+};","
+˙rsn可以知道這個event是因為3.6秒收不到bcn而斷線，或是有其他原因?
+˙b_chdef_hw_match檢查ch配置是否正確
+˙rfcr_rpt 與 bb_stat_rpt查詢RF/BB狀態","˙短暫幾秒的時間traffic異常
+˙斷線
+"
+connect_failure_event,DIAG_EVT_CONNECT_FAILURE,無法連線,˙當driver嘗試connect flow但最終失敗的時候 (ex: task_connect/ task_roam failure),"從debug content可以得知以下資訊
+˙connect fail的原因","struct diag_connect_fail_v10 {
+ u8 role_type; /* For parser: enum diag_conn_role_type */
+ /* join stage */
+ u8 join_sts; /* For parser: enum diag_join_fail_status */
+ u8 join_rx_cnt; /* BIT0-BIT3: beacon, BIT4-BIT7: probe response */
+ /* auth/assoc stage */
+ u8 tx_fail; /* For parser: enum diag_tx_fail_category */
+ u8 auth_mode; /* For parser: enum diag_auth_mode */
+ u8 auth_algo; /* For parser: enum diag_auth_algo */
+ u8 b_chdef_hw_match;
+ u8 four_way_sts;
+ u16 rsp_sts_code; /* raw data of 802.11 status code */
+ struct diag_mbssid_info_v1 mbssid_i;
+ struct diag_peer_info_v3 peer;
+ struct diag_rx_deauth_info_v2 deauth_info;
+ struct diag_rsnie_info_v1 rsnie;
+ struct diag_rfcr_rpt_v1 rfcr_rpt; /* recent rf cr self-check results */
+ struct diag_bb_evt_rpt_v1 bb_evt_rpt; /* recent bb notify event statistics */
+ struct diag_bb_stat_rpt_v1 bb_stat_rpt; /* recent bb basic statistics */
+ struct diag_bb_hdr_v2 bb_info; /* append dbg info from halbb */
+};","
+˙ join_sts可以知道fail在哪個步驟，接著搭配tx_fail檢查是Tx 哪一筆mgnt封包失敗，或是Rx不到mgnt封包的問題
+˙b_chdef_hw_match檢查ch配置是否正確
+˙rfcr_rpt 與 bb_stat_rpt查詢RF/BB狀態",˙斷線
+abnormal_scan_event,DIAG_EVT_ABNORMAL_SCAN,scan異常,"˙DIAG_SCAN_LONG_SW_CHNL (BIT0)
+        某次scan當中回op channel的平均switch channel時間超過200 ms
+        某次scan當中回non op channel的平均switch channel時間超過200 ms
+˙DIAG_SCAN_LIST_EMPTY(BIT1)
+        scan list從non empty到 empty中間有發生Leave ps fail/ SER event",從debug content可以得知scan異常的原因以及相關的統計數據,"struct diag_abnormal_scan_v6 {
+ u16 rsn; /* enum diag_abnormal_scan_rsn */
+ u8 scan_type; /* the scan type, enum diag_scan_type*/
+ u32 spend_t; /* the scan spend time, unit: ms */
+ u32 scanned_ch_cnt; /* the scan scanned channel count*/
+ u16 bss_num; /* number of scanned APs */
+ u32 tx_kbps; /* current tx throughput in terms of kbps */
+ u32 rx_kbps; /* current rx throughput in terms of kbps */
+ struct diag_abnormal_scan_ch_sw_v1 ch_sw[DIAG_SCAN_MAX];
+ struct diag_scan_list_empty_v2 scan_list_empty;
+ struct diag_scan_null_v3 null;
+ struct diag_scan_bkop_v2 bkop; /* OP information */
+};","
+˙rsn: a bitmap of reasons why the scan is regarded as abnormal
+˙ch_sw: an array of diag_abnormal_scan_ch_sw_v1 when DIAG_SCAN_LONG_SW_CHNL is set
+in rsn
+˙diag_scan_list_empty_v2: record the empty scan information and related event timestamp","˙scan時間過長，可能間接導致hotspot的client斷線
+˙scan list empty
+"
+roaming_fail_event,DIAG_EVT_ROAM_FAILURE,,,,"struct diag_roam_issue_v3 {
+ u8 mech; /* enum enum diag_roam_mechanism */
+ union {
+  struct diag_roam_issue_v1 ccx; /* valid for mech: DIAG_MECH_CCX_ROAM */
+  struct diag_roam_ex_v2 roam_ex; /* valid for mech: DIAG_MECH_MOBILITY_ROAM */
+ } content;
+};",,
+abnormal_miracast_event,DIAG_EVT_ABNORMAL_MIRACAST,miracast tx 異常,"˙Miracast abnormal pkt連續5筆 (abnormal的定義: Tx time > 500ms 或 Tx fail)
+        第一次發生直接報event, 並且monitor一分鐘, 一分鐘時間到發現仍有連續5筆Miracast abnormal pkt發生, 就再報一次, 並繼續monitor
+        之後monitor五分鐘, 五分鐘時間到仍有連續5筆Miracast abnormal pkt發生, 就再報一次, 並繼續monitor
+        若一直持續發生的話, 以1分鐘和5分鐘交替作為monitor時間長度
+        若monitor時間到, 發現沒有連續5筆Miracast abnormal pkt發生, 則停止monitor",從debug content可以得知有發生miracast tx異常以及相關的統計數據,"struct diag_abnormal_mira_v3 {
+ u16 p2p_state; /* enum diag_abnormal_p2p_state */
+ struct diag_chdef_v1 p2p_port_config;
+ struct diag_chdef_v1 sta_port_config;
+ u32 tx_time_th; /* tx time threshold for abnormal detect (unit: us) */
+ u32 tx_time_exceed_th_cnt; /* counter for tx time exceeds threshold */
+ u32 tx_time_higher_th; /* tx time higher th for debug ref (unit: us) */
+ u32 tx_time_exceed_higher_th_cnt; /* counter for tx time exceeds higher th */
+ u32 tx_ok_cnt; /* miracast tx success count */
+ u32 tx_fail_cnt; /* miracast tx fail count */
+ struct diag_rfcr_rpt_v1 rfcr_rpt; /* recent rf cr self-check results */
+ struct diag_bb_evt_rpt_v1 bb_evt_rpt; /* recent bb notify event statistics */
+ struct diag_bb_stat_rpt_v1 bb_stat_rpt; /* recent bb basic statistics */
+};","˙p2p_state: 是否為P2PGO, 是否為Infracast, P2P/STA port是否連線
+˙p2p_port_config: P2P port當前的chnl/bw/band
+˙sta_port_config: STA port當前的chnl/bw/band
+˙tx_time_th: Tx Time超過多少會被判定為Abnormal
+˙tx_time_exceed_th_cnt: 此次monitor區間超過Tx time threshold的miracast封包數量
+˙tx_time_higher_th: Tx Time超過更高的threshold, 供debug參考
+˙tx_time_exceed_higher_th_cnt: 此次monitor區間超過Tx time higher threshold的miracast封包數量
+˙tx_ok_cnt: 此次monitor區間Tx成功的miracast封包數量,
+˙tx_fail_cnt: 此次monitor區間Tx失敗的miracast封包數量
+˙bb_stat_rpt: bb的statistics(於watchdog收集), 供debug參考",˙User會看到Miracast投影lag/卡頓/花屏
+phl_ser_event,DIAG_EVT_PHL_SER,發生SER,發生SER,在submodule正式可以提供SER debug content之前先將此event發出,"struct diag_ser_v1 {
+ u8 ser_type; /* enum diag_ser_type */
+ u64 time; /* the ser occur sys time */
+};",,
+phl_leave_ps_fail_event,DIAG_EVT_PHL_PS_FAIL,脫離ps失敗,脫離ps失敗,在submodule正式可以提供SER debug content之前先將此event發出,"struct diag_ps_fail_v2 {
+ u8 ps_mode; /* enum diag_ps_mode */
+ u64 time; /* leave ps fail occur sys time */
+ u8 ps_op; /* enum diag_ps_op */
+ u8 pwr_lvl; /* enum diag_pwr_lvl */
+ u32 u_proto_cfg; /* macid bitmap of protocol cfg */
+ u8 u_pwr_cfg; /* band bitmap of pwr cfg */
+};",,
+link_degraded_event ,DIAG_EVT_LINK_DEGRADED,與AP的link degrade,1.5秒沒有收到BCN,記錄下link degraded當下，信道的資訊與degrade的原因,"struct diag_link_degraded_v6 {
+ u8 rsn; /* For parser: enum diag_link_drgraded_rsn */
+ struct diag_rx_traffic_v2 rx_traffic; /* rx traffic info */
+ u8 cur_rssi; /* current rssi */
+ u8 roam_tbl_ap_num; /* roam table entries */
+ struct diag_roam_bss_v1 tbl_candidate[DIAG_LINK_DEGRADE_ROAM_CANDIDATE_NUM]; /* roam tbl candidates */
+ u32 fw_ntfy_cnt; /* fw ntfy counter */
+ u8 enter_lps_cnt[5]; /* The cnt of lps enter in the past 10 secs */
+ u8 leave_lps_cnt[5]; /* The cnt of lps leave in the past 10 secs */
+ u8 bssid[6]; /* link degraded with the bssid */
+ u8 b_chdef_hw_match;
+ u16 fun_en_op; /* function enabled or operating */
+ u16 no_bcn_t_ms; /* the period no beacon received for DIAG_LINK_DEGRADED_NO_BCN_RECEV */
+ u32 num_ap; /* num of ap in the environment */
+ struct diag_chdef_v1 ap_config;
+ struct diag_rfcr_rpt_v1 rfcr_rpt; /* recent rf cr self-check results */
+ struct diag_bb_evt_rpt_v1 bb_evt_rpt; /* recent bb notify event statistics */
+ struct diag_bb_stat_rpt_v1 bb_stat_rpt; /* recent bb statistics */
+};",,
+link_recovery_fail_event ,DIAG_EVT_LINK_RECOVERY_FAIL,link recovery失敗,link recovery action執行後，link仍然沒有恢復正常 (e.g BCN on bss收得正常),記錄link recovery fail的動作是哪一動,"struct diag_link_recovery_fail_v1 {
+u8 action; /* For parser: enum diag_link_recovery_action */
+};",,斷線
+,DIAG_EVT_RFK_FAIL,rf calibration fail,,,"struct diag_halrf_cal_info_v1 {
+ u8 err_type; /* enum: diag_rfk_err_type */
+ u32 err_code; /* this rfk fail's error code */
+ struct diag_halrf_cal_err_v1 fail_cnt; /* statistics: num of specific rfk fail */
+ u32 evt_cnt; /* statistics: total num of rfk fail event issued */
+ u64 evt_t; /* sys time of this rfk fail detected */
+ u32 remainder_len; /* remainder length */
+ u8 remainder_buf[1]; /* remainder content */
+};",,
+,DIAG_EVT_INTERNAL_ERR,internal error on specific module/func/feature,,,"struct diag_internal_err_info_v1 {
+ u8 func_type; /* enum: diag_int_func_list */
+ u8 err_sts; /* enum: diag_int_err_sts */
+ u32 err_cnt; /* statistics: total num of err event issued by this func */
+ u64 err_t; /* sys time of this err detected */
+ u32 len; /* length of buf (for other debug information, if needed) */
+ u8 buf[1];
+};",,
+,DIAG_EVT_BTC,,,,"struct diag_btc_hdr_v1 {
+ /* general info */
+ u8 ver; /* ver of the struct diag_btc_hdr_vxx */
+ u8 evt; /* enum diag_btc_event */
+ /* content */
+ u8 content_ver; /* update content_ver if content changes */
+ u32 len; /* content length */
+};",,
+,DIAG_EVT_PHL_WOW,,,,"struct diag_phl_wow_v1 {
+ u8 evt; /* enum diag_wow_evt */
+ u8 wake_rsn; /* raw data, represented in hex */
+ u8 op_mode; /* enum diag_wow_op_mode */
+ u8 mac_pwr; /* enum diag_mac_pwr_state */
+ u32 init_err;/* enum diag_wow_cfg_step */
+ u32 deinit_err; /* enum diag_wow_cfg_step */
+};",,
+,DIAG_EVT_WOW,,,,"struct diag_wow_v1 {
+ u8 evt; /* enum diag_wow_evt */
+ u8 wake_rsn; /* raw data, represented in hex */
+ u64 resume_time; /* duration, unit: us */
+ u8 hw_reinit; /* true or false */
+};",,
+,DIAG_EVT_PHL_MCC,,Detect MCC event from phl layer,,"struct diag_abnormal_mcc_v1 {
+ u8 err_type; /* enum diag_mcc_err_type */
+ u8 tdmra_mode; /* enum diag_mcc_tdmra_mode */
+};",,
+,DIAG_EVT_PHL_TID_RX,,,,"struct diag_tid_rx_v1 {
+ u8 evt; /* enum diag_tid_rx_evt */
+ u8 mac_addr[6]; /* rx mac address (self sta) */
+ u16 tid;
+ /* drop info */
+ u16 cnt; /* continuous drop packet count */
+ u32 duration; /* us */
+ u16 drop_start_seq; /* sequence number of the first dropped packet */
+ u16 drop_recover_seq; /* sequence number of the packet not being dropped after continuous packet drop */
+ u16 current_head_seq; /* current head sequence of the tid */
+};",,
+,DIAG_EVT_SER_L1,,MAC_AX_DIAG_EVT_SER_L1,,,,
+,DIAG_EVT_LEAVE_PS_FAILURE,,MAC_AX_DIAG_EVT_LEAVE_PS_FAIL,,,,

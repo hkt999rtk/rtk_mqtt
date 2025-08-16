@@ -1,0 +1,50 @@
+@startuml
+title WiFi Roaming Diagnosis Sequence
+
+participant "Device\n(office-ap-001)" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+note over D: RSSI < -70dB for 10s
+
+D -> B: evt/wifi.roam_miss
+activate D
+B -> C: forward event
+note right: Event: 漫遊未觸發
+
+C -> B: cmd/req diagnosis.get
+B -> D: forward request
+note left: Request: 詳細診斷
+
+D -> B: cmd/ack (< 1s)
+B -> C: forward ack
+note right: Ack: 接收命令
+
+note over D: [收集診斷資料: 3-15s]\n• 掃描歷史\n• RF 統計\n• 候選 AP 分析
+D -> D: 診斷資料收集
+
+D -> B: cmd/res (JSON 5-10KB)
+B -> C: forward result
+note right: Result: 診斷資料\n• 根因分析\n• 建議動作
+
+C -> B: cmd/req wifi.scan
+B -> D: forward scan request
+note left: Action: 環境掃描
+
+D -> B: cmd/ack
+B -> C: forward ack
+note right: Ack: 執行掃描
+
+note over D: [執行掃描: 2-5s]
+D -> D: 環境掃描
+
+D -> B: cmd/res
+B -> C: forward scan result
+note right: Result: 掃描完成
+
+D -> B: state (updated)
+B -> C: forward state
+note right: State: 健康狀態更新
+
+deactivate D
+@enduml

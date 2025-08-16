@@ -1,0 +1,108 @@
+@echo off
+REM === RTK MQTT Collector Service Installation Script ===
+REM 
+REM This script installs the RTK MQTT Collector as a Windows Service
+REM Requires Administrator privileges to run
+REM
+
+echo RTK MQTT Collector Service Installation
+echo ========================================
+
+REM Check for administrator privileges
+net session >nul 2>&1
+if %errorlevel% neq 0 (
+    echo ERROR: This script requires Administrator privileges.
+    echo Please run as Administrator.
+    pause
+    exit /b 1
+)
+
+set SERVICE_NAME=RTKMqttCollector
+set SERVICE_DISPLAY_NAME=RTK MQTT Data Collector
+set SERVICE_DESCRIPTION=Collects and forwards MQTT device data using RTK Framework
+set EXECUTABLE_PATH=%~dp0RTKMqttCollector.exe
+
+echo Service Name: %SERVICE_NAME%
+echo Executable: %EXECUTABLE_PATH%
+echo.
+
+REM Check if executable exists
+if not exist "%EXECUTABLE_PATH%" (
+    echo ERROR: Service executable not found at %EXECUTABLE_PATH%
+    echo Please build the project first.
+    pause
+    exit /b 1
+)
+
+REM Stop service if it's running
+echo Stopping service if running...
+net stop %SERVICE_NAME% >nul 2>&1
+
+REM Delete existing service if it exists
+echo Removing existing service if present...
+sc delete %SERVICE_NAME% >nul 2>&1
+
+REM Create the service
+echo Creating service...
+sc create %SERVICE_NAME% ^
+    binPath= "\"%EXECUTABLE_PATH%\"" ^
+    DisplayName= "%SERVICE_DISPLAY_NAME%" ^
+    start= auto ^
+    type= own
+
+if %errorlevel% neq 0 (
+    echo ERROR: Failed to create service.
+    pause
+    exit /b 1
+)
+
+REM Set service description
+echo Setting service description...
+sc description %SERVICE_NAME% "%SERVICE_DESCRIPTION%"
+
+REM Configure service to restart on failure
+echo Configuring service recovery options...
+sc failure %SERVICE_NAME% reset= 86400 actions= restart/5000/restart/10000/restart/30000
+
+REM Set service dependencies (optional)
+REM sc config %SERVICE_NAME% depend= Tcpip/Winmgmt
+
+REM Configure service to run as Local System (default)
+REM For production, consider using a dedicated service account:
+REM sc config %SERVICE_NAME% obj= "NT AUTHORITY\NetworkService"
+
+echo.
+echo Service created successfully!
+echo.
+echo Service Management Commands:
+echo   Start service:   net start %SERVICE_NAME%
+echo   Stop service:    net stop %SERVICE_NAME%
+echo   Service status:  sc query %SERVICE_NAME%
+echo   Service config:  sc qc %SERVICE_NAME%
+echo   Delete service:  sc delete %SERVICE_NAME%
+echo.
+echo Event Logs:
+echo   View in Event Viewer under Windows Logs ^> Application
+echo   Filter by Source: %SERVICE_NAME%
+echo.
+
+REM Ask if user wants to start the service now
+set /p START_NOW=Start the service now? (Y/N): 
+if /i "%START_NOW%" == "Y" (
+    echo Starting service...
+    net start %SERVICE_NAME%
+    if %errorlevel% == 0 (
+        echo Service started successfully!
+        echo Check Event Viewer for service status and logs.
+    ) else (
+        echo Failed to start service. Check Event Viewer for details.
+        echo You can try starting it manually with: net start %SERVICE_NAME%
+    )
+) else (
+    echo Service created but not started.
+    echo Start it manually when ready with: net start %SERVICE_NAME%
+)
+
+echo.
+echo Installation completed.
+pause

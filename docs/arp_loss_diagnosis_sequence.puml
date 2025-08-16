@@ -1,0 +1,61 @@
+@startuml
+title ARP 遺失診斷流程
+
+participant "Device\n(smart-camera-003)" as D
+participant "MQTT Broker" as B
+participant "Controller" as C
+
+== ARP 檢測 ==
+note over D: ARP 請求發送
+
+note over D: 連續 2 次無回應
+
+D -> B: evt/wifi.arp_loss
+activate D
+note right of D: consecutive: 2\ngateway 無回應
+B -> C: forward event
+note left of C: Event: ARP 遺失
+
+== 網路診斷 ==
+C -> B: cmd/req\ndiagnosis.get
+note left of C: Request: 網路診斷\ninclude_rf_stats\ninclude_interference\n(timeout: 25s)
+B -> D: forward request
+
+D -> B: cmd/ack
+note right of D: 估計完成: 20s
+B -> C: forward ack
+note left of C: Ack: 分析中
+
+note over D: 網路環境分析\n• RF 干擾掃描\n• 流量分析\n• 基帶統計
+
+D -> B: cmd/res
+note right of D: root_cause:\nchannel_interference
+B -> C: forward result
+note left of C: Result: 網路分析\n• 頻道干擾\n• AP 負載波動
+
+== 參數調整 ==
+C -> B: cmd/req\nnetwork.arp.config
+note left of C: Action: 參數調整\n增加超時時間
+B -> D: forward request
+
+D -> B: cmd/ack
+B -> C: forward ack
+note left of C: Ack: 配置更新
+
+D -> B: cmd/res
+B -> C: forward result
+note left of C: Result: 配置完成
+
+== 監控階段 ==
+D -> B: telemetry/connectivity
+note right of D: (每 10 秒)
+B -> C: forward telemetry
+note left of C: Telemetry: 持續監控\nARP 成功率改善
+
+D -> B: state (updated)
+note right of D: health: warn→ok
+B -> C: forward state
+note left of C: State: 網路穩定
+
+deactivate D
+@enduml

@@ -1,0 +1,39 @@
+{
+  "mqtt_broker": "mqtt.example.com",
+  "mqtt_port": 1883,
+  "device_id": "wifi-router-001",
+  "tenant": "company_a",
+  "site": "office_taipei",
+  "mqtt_username": "device_user",
+  "telemetry_interval": 30,
+  "event_cooldown": 180,
+  "plugin_config": {
+    "wifi_interface": "wlan0",
+    "scan_interval": 60,
+    "rssi_threshold": -70,
+    "roam_detection": {
+      "enabled": true,
+      "rssi_threshold": -70,
+      "duration_ms": 10000,
+      "cooldown_ms": 300000
+    },
+    "connect_fail_detection": {
+      "enabled": true,
+      "retry_count": 3,
+      "timeout_ms": 5000,
+      "cooldown_ms": 60000
+    },
+    "arp_loss_detection": {
+      "enabled": true,
+      "check_interval": 30,
+      "loss_threshold": 50,
+      "cooldown_ms": 180000
+    },
+    "system_metrics": {
+      "cpu_monitoring": true,
+      "memory_monitoring": true,
+      "temperature_monitoring": true,
+      "collection_interval": 30
+    }
+  }
+}

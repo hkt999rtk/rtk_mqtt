@@ -1,0 +1,137 @@
+struct_name,definition
+diag_roam_candidate_v1,"u8 bssid[6];
+s8 rssi;
+u8 chnl;"
+diag_chdef_v1," u8 chnl;
+ u8 bw; /* For parser: enum diag_channel_width */
+ u8 band; /* For parser: enum diag_band_type */"
+diag_chdef_v2," u8 chnl;
+ u8 bw; /* For parser: enum diag_channel_width */
+ u8 band; /* For parser: enum diag_band_type */
+ u8 offset; /* For parser enum diag_channel_offset */"
+diag_rx_traffic_v2," u8 d_bcn_cnt[5]; /* The number of rx beacon frames received from Driver */
+ u8 f_bcn_cnt[5]; /* The number of rx beacon frames received from FW */
+ u32 rx_err_cnt[5]; /* The number of rx error packets */
+ u32 rx_pkt_cnt[5]; /* The number of rx data packets */
+ u32 rx_traffic[5]; /* Rx tp in kbps */"
+diag_rfcr_rpt_v1," struct diag_rfcr_stat_v1 rfcr[DIAG_RFCR_STAT_MAX_CNT_V1]; /* recent rfcr status */
+ u8 is_recent_err_occur; /* true if any err exist in rfcr array, otherwise false */
+ u32 err_cnt; /* cumulative err counter */"
+diag_rfcr_stat_v1," u32 elapsed_t_ms; /* passing time of this entry */
+ /* the following refer to phl struct */
+ u8 is_valid;
+ u8 rfcr_err; /* For parser: enum diag_rfcr_err_type */
+ /* rf reg dump, idx 0/1 refer to HW_BAND_0/1 */
+ u32 rf_0x0[2];
+ u32 rf_0x3[2];
+ u32 rf_0x5[2];
+ u32 rf_0x18[2];
+ u32 rf_radio_ver[2]; /* rf param ver is also written into CR */"
+diag_bb_evt_rpt_v1," struct diag_bb_evt_stat_v1 fa_rxhang; /* potential Rx hang */
+ struct diag_bb_evt_stat_v1 fa_highratio; /* reach abnormal high FA ratio */
+ struct diag_bb_evt_stat_v1 dig_maxpd; /* stay at max PD level too long */
+ struct diag_bb_evt_stat_v1 edcca_txhang; /* potential Tx hang */"
+diag_bb_evt_stat_v1," u32 elapsed_t_ms; /* passing time of this entry */
+ u8 valid; /* indicate this entry is valid or not */
+ u8 ver; /* bb maintained version */
+ u8 type; /* For parser: enum diag_bb_evt_type */
+ u32 content; /* corresponding debug content */
+ u32 cnt; /* number of times this type of event occurs */"
+diag_bb_stat_rpt_v1," struct diag_bb_stat_v1 bb_stat[DIAG_BB_STAT_MAX_CNT]; /* recent bb stat */
+ u8 cur_skip_cnt; /* the num of stat skip after lastest stat record */
+ u32 last_wakeup_passing_t_ms; /* 0: no prior wakeup, otherwise: the passing time after last wakeup */"
+diag_mbssid_info_v1," u8 mbssid_idx; /* mbssid start from 1, 0 represents not mbssid */
+ u32 bcn_miss_mbssid_ie_cnt;"
+diag_bb_hdr_v2," u8 ver; /* version of diag_bb_hdr_vx */
+ u8 bb_info_ver; /* version of struct diag_bb_info_vx */
+ u8 buf_cnt; /* number of struct diag_bb_info_vx carried in the following content */
+ u32 len; /* total length of the following content */
+ u8 content[1]; /* buf of mutiple struct diag_bb_info_vx */"
+diag_peer_info_v3," u8 addr[6];
+ struct diag_chdef_v1 opch;
+ u8 akm[4]; /* enum diag_akm_suite */
+ u32 property; /* enum diag_peer_property */
+ u8 pairwise_cipher[4]; /* enum diag_cipher_suite */
+ u8 group_cipher; /* enum diag_cipher_suite */
+ u8 mgnt_group_cipher; /* enum diag_cipher_suite */"
+diag_rx_deauth_info_v2," u16 rsn_code; /* 802.11 spec deauth rsn code */
+ u64 last_rx_t; /* last rx deauth sys time */"
+diag_rsnie_info_v1," u8 akm; /* For parser: enum diag_akm_suite */
+ u8 pmkid_used; /* boolean */"
+diag_abnormal_scan_ch_sw_v1," u16 ch_sw_num;
+ u16 ch_sw_time_average;
+ u16 ch_sw_time_threshold;"
+diag_scan_list_empty_v2," u8 trigger_type; /* enum diag_empty_scan_trigger_type */
+ u64 list_empty_t; /* scan empty sys time */
+ struct diag_not_empty_scan_v1 last_not_empty_scan;
+ struct diag_ser_v1 last_ser;
+ struct diag_leave_ps_fail_v1 last_leave_ps_fail;"
+diag_not_empty_scan_v1,u64 time; /* scan not empty sys time */
+diag_ser_v1," u8 ser_type; /* enum diag_ser_type */
+ u64 time; /* the ser occur sys time */"
+diag_leave_ps_fail_v1," u8 ps_mode; /* enum diag_ps_mode */
+ u64 time; /* leave ps fail occur sys time */"
+diag_scan_null_v3," struct diag_scan_null_content_v2 content[DIAG_SCAN_MAX_RECORDED_ROLE_V1]; /* max bkop role is 2 */
+ u8 cnt; /* the number of the content */"
+diag_scan_null_content_v2," u8 mac_addr[6];
+ u8 drv; /* drv or fw scan */
+ u8 null_0_fail_cnt;
+ u8 null_1_fail_cnt;
+ u8 null_0_ok_cnt;
+ u8 null_1_ok_cnt;
+ u8 rssi; /* op channel rssi */
+ u8 tx_stats[DIAG_SCAN_NULL_TX_RSN_V1]; /* tx status record in terms of enum diag_tx_stats  */"
+diag_scan_bkop_v2," u8 scan_rsn; /* For parser: enum diag_scan_rsn */
+ u8 scan_mode; /* For parser: enum diag_scan_md */
+ u8 scan_band_mode; /* For parser: enum diag_scan_band_md */
+ struct diag_op_info_v1 op_info[DIAG_SCAN_MAX_RECORDED_ROLE_V1]; /* max wifi role */
+ struct diag_bkop_parametes_v1 param[DIAG_SCAN_MAX_RECORDED_ROLE_V1]; /* max wifi role */
+ u8 op_cnt;"
+diag_op_info_v1," struct diag_chdef_v2 chdef;
+ u8 role_type; /* For parser: enum diag_conn_role_type */
+ u8 mac_addr[6];
+ u8 include; /* whether this op has been included */"
+diag_roam_bss_v1," u8 band; /* enum diag_band_type */
+ u8 ch;
+ u8 bssid[6];
+ u8 rssi; /* 0 ~ 100 */"
+diag_halrf_cal_err_v1," u8 iqk; /* IQK err */
+ u8 dpk; /* DPK err */
+ u8 dack; /* DACK err */
+ u8 rxdck; /* RxDCK err */
+ u8 txgapk; /* TxGAPK err */
+ u8 tssi; /* TSSI err */"
+diag_roam_issue_v1," u8 roam_category; /* enum diag_roam_category */
+ struct diag_miss_roam_v1 roam_info;"
+diag_miss_roam_v1," u8 internal_scan_skip_cnt_10sec;
+ u8 environment_scan_ap_number;
+ u8 candidate_ap;
+ u8 current_bssid[6];
+ s8 current_rssi;
+ struct diag_roam_candidate_v1 candidate_2g;
+ struct diag_roam_candidate_v1 candidate_5g;
+ struct diag_roam_candidate_v1 candidate_6g;
+ u32 last_scan_time; /* before event */
+ u32 last_full_scan_complete_time; /* before event */"
+diag_roam_ex_v2," u16 trig_cnt; /* total roam trigger cnt */
+ u8 trig_rsn; /* the reason to trigger roaming, enum diag_roam_trigger */
+ u8 fail_rsn; /* roaming failure reason, enum diag_roam_fail_rsn */
+
+ u8 ssid[DIAG_SSID_LEN]; /* ssid */
+ struct diag_roam_bss_v1 cur_bss; /* current bss */
+ struct diag_roam_bss_v1 tgt_bss; /* target peer to roam */
+ struct diag_roam_scan_v1 scan; /* diag scan info */
+
+ u8 roam_tbl_ap_num; /* roam table entries */
+ struct diag_roam_bss_v1 tbl_candidate[DIAG_ROAM_CANDIDATE_NUM_V1]; /* roam tbl candidates */
+ struct diag_roam_selected_bss_v1 sel_positive[DIAG_ROAM_SELECTED_BSS_NUM_V1]; /* selected positive candidates */
+ struct diag_roam_selected_bss_v1 sel_negative[DIAG_ROAM_SELECTED_BSS_NUM_V1]; /* selected negative candidates */"
+diag_roam_scan_v1," u16 total_rscan_cnt; /* total roam scan counts, keep 0xffff when overflow */
+ u16 bss_rscan_cnt; /* roam scan counts of current bss, keep 0xffff when overflow */
+ u32 last_rscan_diff_t; /* the last roaming scan diff time (ms) before event */
+ u32 last_full_scan_diff_t; /* the last full scan diff time (ms) before event */
+ u8 better_ap_found; /* better ap is found when roaming scan */"
+diag_roam_selected_bss_v1," struct diag_roam_bss_v1 bss;
+ u8 sel_positive; /* positive weightings, enum diag_roam_select_positive */
+ u8 sel_negative; /* negative weightings, enum diag_roam_select_negative */
+ u32 weighting; /* total weighting */"

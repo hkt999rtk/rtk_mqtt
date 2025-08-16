@@ -1,0 +1,25 @@
+@startuml
+title MQTT 命令超時處理流程
+
+participant "Controller" as C
+participant "Device" as D
+
+C -> D: cmd/req (診斷命令)
+note right: timeout: 15s
+activate D
+
+D -> C: cmd/ack (確認接收)
+note left: 2. 確認接收
+
+note over D: [診斷執行中]
+note over C: [等待 15 秒]
+
+note over C: [超時觸發]
+C -> D: cmd/req (重試)
+note right: 3. 相同 ID 重試
+
+D -> C: cmd/res (結果)
+note left: 4. 回傳快取結果\n(如果已完成)
+
+deactivate D
+@enduml

@@ -1,0 +1,52 @@
+@startuml
+title WiFi 漫遊診斷完整流程
+
+participant "Device\n(office-ap-001)" as D
+participant "MQTT Broker" as B  
+participant "Controller" as C
+
+== 觸發階段 ==
+note over D: RSSI 持續低於 -70dBm\n超過 10 秒
+
+D -> B: evt/wifi.roam_miss
+activate D
+note right of D: 事件觸發\n• RSSI: -75dBm\n• 持續時間: 10s\n• 候選AP: 2個
+B -> C: forward event
+note left of C: 漫遊未觸發警告
+
+== 診斷階段 ==
+C -> B: cmd/req\ndiagnosis.get
+note left of C: 請求詳細診斷\n• type: wifi.roaming\n• detail_level: full\n• include_rf_stats: true
+B -> D: forward request
+
+D -> B: cmd/ack
+B -> C: forward ack
+note left of C: 確認開始診斷
+
+note over D: 收集診斷資料\n[3-15 秒]\n• 掃描歷史記錄\n• RF 信號統計\n• 候選 AP 分析\n• 漫遊決策參數
+
+D -> B: cmd/res\n(詳細診斷結果)
+B -> C: forward result
+note left of C: 診斷資料\n• 根因: 掃描跳過\n• 候選AP: 5G/6G\n• 建議動作
+
+== 修復階段 ==
+C -> B: cmd/req\nwifi.scan
+note left of C: 主動觸發掃描
+B -> D: forward request
+
+D -> B: cmd/ack
+B -> C: forward ack
+
+note over D: 執行環境掃描\n[2-5 秒]\n• 全頻段掃描\n• AP 負載評估\n• 信號品質測量
+
+D -> B: cmd/res\n(掃描結果)
+B -> C: forward result
+note left of C: 掃描完成\n• 新候選AP發現\n• 漫遊條件滿足
+
+== 狀態更新 ==
+D -> B: state (updated)
+B -> C: forward state
+note left of C: 設備狀態更新\n• health: ok\n• roaming: available
+
+deactivate D
+@enduml
