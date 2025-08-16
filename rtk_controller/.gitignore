@@ -1,0 +1,34 @@
+# Binaries
+rtk-controller
+cmd/controller/controller
+cmd/controller/rtk-controller
+
+# Database files
+*.db
+data/
+cmd/controller/data/
+
+# Test artifacts
+coverage.out
+coverage.html
+*.test
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+*.swp
+*.swo
+
+# IDE files
+.vscode/
+.idea/
+*.sublime-*
+
+# Go build cache
+.cache/

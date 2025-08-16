@@ -1,0 +1,100 @@
+mqtt:
+  broker: "localhost"
+  port: 1883
+  client_id: "rtk-controller"
+  username: ""
+  password: ""
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+    ca_file: ""
+    skip_verify: false
+  topics:
+    subscribe:
+      - "rtk/v1/+/+/+/state"
+      - "rtk/v1/+/+/+/evt/#"
+      - "rtk/v1/+/+/+/lwt"
+      - "rtk/v1/+/+/+/cmd/ack"
+      - "rtk/v1/+/+/+/cmd/res"
+      - "rtk/v1/+/+/+/attr"
+  logging:
+    enabled: true
+    retention_seconds: 3600  # 1 hour
+    purge_interval: "1m"
+    batch_size: 1000
+    max_message_size: 1048576  # 1MB
+    exclude_topics:
+      - "rtk/v1/+/+/+/telemetry/heartbeat"
+      - "rtk/v1/+/+/+/internal/#"
+
+# API and Web Console removed - using CLI only
+
+storage:
+  path: "data"
+  backup_dir: "data/backups"
+  backup_count: 7
+
+schema:
+  enabled: true
+  schema_files:
+    - "wifi_diagnosis_schemas.json"
+  strict_validation: false
+  log_validation_errors: true
+  cache_results: true
+  cache_size: 1000
+  store_results: false
+
+diagnosis:
+  enabled: true
+  default_analyzers:
+    - "builtin_wifi_analyzer"
+  analyzers:
+    - name: "builtin_wifi_analyzer"
+      type: "builtin"
+      enabled: true
+      config:
+        confidence_threshold: 0.7
+        
+    - name: "realtek_wifi_expert"
+      type: "plugin"
+      path: "./plugins/builtin/realtek_wifi_expert.so"
+      enabled: false
+      config:
+        advanced_rf_analysis: true
+        
+    - name: "external_ml_analyzer"
+      type: "external"
+      command: "python3"
+      args: ["/opt/analyzers/ml_analyzer.py"]
+      timeout: "30s"
+      enabled: false
+      
+    - name: "cloud_ai_analyzer"
+      type: "http"
+      path: "https://ai-service.company.com/api/v1"
+      timeout: "10s"
+      enabled: false
+
+  routing:
+    rules:
+      roam_miss:
+        - "builtin_wifi_analyzer"
+        - "realtek_wifi_expert"
+      connect_fail:
+        - "builtin_wifi_analyzer" 
+        - "external_ml_analyzer"
+      arp_loss:
+        - "builtin_wifi_analyzer"
+        - "cloud_ai_analyzer"
+
+logging:
+  level: "info"
+  format: "json"
+  file: "logs/controller.log"
+  max_size: 100      # MB
+  max_backups: 7     # number of backups
+  max_age: 30        # days
+  compress: true     # compress rotated files
+  audit: true        # enable audit logging
+  performance: false # enable performance logging
