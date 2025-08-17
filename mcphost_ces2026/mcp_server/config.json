@@ -1,0 +1,22 @@
+{
+  "server": {
+    "name": "CES2026 MCP Server",
+    "version": "1.0.0",
+    "description": "MCP Server providing tools, resources, and prompts"
+  },
+  "weatherapi": {
+    "api_key": "47e95e09c9a3420d846103147233103",
+    "base_url": "https://api.weatherapi.com/v1"
+  },
+  "http_server": {
+    "port": 8081,
+    "host": "0.0.0.0",
+    "enabled": true
+  },
+  "tools": {
+    "weather": {"enabled": true},
+    "time": {"enabled": true},
+    "test": {"enabled": true},
+    "lmstudio": {"enabled": true}
+  }
+}

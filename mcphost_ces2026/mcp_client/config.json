@@ -1,0 +1,29 @@
+{
+  "server": {
+    "name": "CES2026 MCP Client",
+    "version": "1.0.0",
+    "description": "MCP Client with OpenAI-compatible API and LLM integration"
+  },
+  "llm_providers": [
+    {
+      "name": "lmstudio",
+      "type": "lmstudio",
+      "base_url": "http://localhost:1234",
+      "models": ["local-model"],
+      "enabled": true
+    }
+  ],
+  "mcp_servers": [
+    {
+      "name": "local_tools",
+      "type": "http",
+      "url": "http://localhost:8081",
+      "enabled": true
+    }
+  ],
+  "http_server": {
+    "port": 8080,
+    "host": "0.0.0.0",
+    "enabled": true
+  }
+}
