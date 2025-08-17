@@ -45,6 +45,8 @@ rtk/v1/{tenant}/{site}/{device_id}/...
 * `cmd/ack`：命令接收確認
 * `cmd/res`：命令結果回覆
 * `lwt`：LWT 上下線通知（retained）
+* `topology/discovery`：網路拓撲發現資訊（設備介面、能力等）
+* `topology/connections`：設備連接狀態報告（ARP 表、DHCP 租約等）
 
 ### 3.2 下行（Controller → Device）
 
@@ -327,10 +329,49 @@ rtk/v1/{tenant}/{site}/{device_id}/telemetry/{metric}
 }
 ```
 
+**Payload（範例：wifi_clients - WiFi 客戶端連接狀態）**
+
+```json
+{
+  "schema": "telemetry.wifi_clients/1.0",
+  "ts": 1723526400000,
+  "ap_info": {
+    "bssid": "aa:bb:cc:dd:ee:f0",
+    "ssid": "HomeNet-5G",
+    "channel": 36,
+    "band": "5G"
+  },
+  "connected_clients": [
+    {
+      "mac_address": "11:22:33:44:55:66",
+      "ip_address": "192.168.1.100",
+      "hostname": "iPhone-Kevin",
+      "rssi": -45,
+      "connection_start": 1723526300000,
+      "last_activity": 1723526395000,
+      "tx_rate": 150,
+      "rx_rate": 120,
+      "tx_bytes": 1048576,
+      "rx_bytes": 2097152,
+      "client_type": "mobile"
+    }
+  ],
+  "disconnected_clients": [
+    {
+      "mac_address": "77:88:99:aa:bb:cc",
+      "disconnect_time": 1723526380000,
+      "disconnect_reason": "client_initiated",
+      "connection_duration": 3600000
+    }
+  ]
+}
+```
+
 **常見 metric 類型:**
 * **硬體診斷**: `temperature`, `cpu_usage`, `memory_usage`, `disk_usage`, `fan_speed`
 * **網路診斷**: `interface.eth0.rx_bytes`, `interface.eth0.tx_bytes`, `ping_latency`, `bandwidth_usage`
-* **WiFi 診斷**: `wifi.scan_result`, `wifi.roam_candidate`, `wifi.connection_quality`, `wifi.rssi`, `wifi.channel_utilization`
+* **WiFi 診斷**: `wifi.scan_result`, `wifi_clients`, `wifi.connection_quality`, `wifi.rssi`, `wifi.channel_utilization`
+* **拓撲相關**: `connected_devices`, `arp_table`, `dhcp_leases`, `bridge_table`, `routing_table`
 * **應用診斷**: `response_time`, `error_rate`, `queue_depth`, `connection_count`
 * **IoT 特定**: `battery_voltage`, `humidity`, `power_consumption`, `signal_strength`
 
@@ -494,14 +535,21 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 
 ## 11. 典型命令清單（建議命名）
 
-| `op`              | 說明       | `args` 範例                                                       | 結果 `result` 範例                                     |
-| ----------------- | -------- | --------------------------------------------------------------- | -------------------------------------------------- |
-| `light.set`       | 設定燈狀態    | `{ "on": true, "brightness": 80, "color": "#ffaa00" }`          | `{ "on": true, "brightness": 80 }`                 |
-| `device.reboot`   | 重新啟動     | `{}`                                                            | `{ "uptime_s": 0 }`                                |
-| `report.push`     | 立即回報特定資料 | `{ "what": ["state", "telemetry.temperature"] }`                | `{ "pushed": ["state", "telemetry.temperature"] }` |
-| `diagnosis.get`   | 取得診斷資料   | `{ "type": "wifi", "detail_level": "full" }`                    | 設備相依的診斷資料結構                                        |
-| `fw.update`       | 韌體更新     | `{ "version": "1.2.4", "url": "https://...", "sha256": "..." }` | `{ "phase": "done", "version": "1.2.4" }`          |
-| `net.wifi.config` | 設定 Wi‑Fi | `{ "ssid": "x", "psk": "y" }`                                   | `{ "connected": true, "ip": "..." }`               |
+| `op`                          | 說明            | `args` 範例                                                       | 結果 `result` 範例                                     |
+| ----------------------------- | ------------- | --------------------------------------------------------------- | -------------------------------------------------- |
+| `light.set`                   | 設定燈狀態         | `{ "on": true, "brightness": 80, "color": "#ffaa00" }`          | `{ "on": true, "brightness": 80 }`                 |
+| `device.reboot`               | 重新啟動          | `{}`                                                            | `{ "uptime_s": 0 }`                                |
+| `report.push`                 | 立即回報特定資料      | `{ "what": ["state", "telemetry.temperature"] }`                | `{ "pushed": ["state", "telemetry.temperature"] }` |
+| `diagnosis.get`               | 取得診斷資料        | `{ "type": "wifi", "detail_level": "full" }`                    | 設備相依的診斷資料結構                                        |
+| `fw.update`                   | 韌體更新          | `{ "version": "1.2.4", "url": "https://...", "sha256": "..." }` | `{ "phase": "done", "version": "1.2.4" }`          |
+| `net.wifi.config`             | 設定 Wi‑Fi      | `{ "ssid": "x", "psk": "y" }`                                   | `{ "connected": true, "ip": "..." }`               |
+| `topology.discover`           | 拓撲發現          | `{ "discovery_type": "full", "include_inactive": false }`       | 網路拓撲資訊結構                                           |
+| `topology.query_interfaces`   | 查詢網路介面        | `{ "interface_filter": ["eth*", "wlan*"], "include_routing": true }` | 介面詳細資訊                                             |
+| `topology.trace_path`         | 路徑追蹤          | `{ "target_ip": "192.168.1.100", "measure_latency": true }`     | 網路路徑資訊                                             |
+| `topology.query_dhcp_leases`  | 查詢 DHCP 租約   | `{ "interface": "br0", "include_expired": false }`              | DHCP 租約清單                                          |
+| `topology.query_bridge_table` | 查詢橋接表         | `{ "bridge_name": "br0", "include_aging_info": true }`          | 橋接表資訊                                              |
+| `identity.set`                | 設置設備標識        | `{ "mac_address": "aa:bb:cc:dd:ee:ff", "friendly_name": "客廳冷氣" }` | `{ "updated": true }`                              |
+| `identity.get`                | 查詢設備標識        | `{ "mac_address": "aa:bb:cc:dd:ee:ff" }`                        | 設備標識資訊                                             |
 
 > 命令的實際清單由各產品線維護，並以 `schema` 版本化。
 
@@ -1078,9 +1126,335 @@ rtk/v1/+/+/smart-camera-+/evt/# # 智能攝影機事件
 
 ---
 
-## 23. 變更紀錄（Changelog）
+## 23. 網路拓撲檢測與設備標識管理
+
+### 23.1 概述
+
+RTK Controller 提供完整的網路拓撲檢測系統，透過 MQTT 訊息收集網路設備拓撲資訊、建立完整的網路連接關係圖、提供設備友好名稱管理功能，以及實現主動式網路診斷與 QoS 分析。
+
+#### 主要功能特色
+- **智能拓撲發現**: 自動檢測路由器、AP、交換機、橋接器等複雜網路設備
+- **設備身份管理**: MAC 地址到友好名稱轉換（如 "aa:bb:cc:dd:ee:ff" → "客廳冷氣"）
+- **Roaming 檢測**: Controller 側智能推斷 WiFi 漫遊事件
+- **時間軸分析**: 追蹤網路拓撲變化歷史和設備移動軌跡
+- **主動式診斷**: 速度測試、WAN 連線檢測、延遲測量
+- **QoS 監控**: 即時流量分析、頻寬使用監控、高流量設備識別
+
+### 23.2 網路拓撲發現機制
+
+#### 拓撲發現訊息
+
+**Topic**: `rtk/v1/{tenant}/{site}/{device_id}/topology/discovery`
+
+```json
+{
+  "schema": "topology.discovery/1.0",
+  "ts": 1723526400000,
+  "device_info": {
+    "device_id": "router-main-001",
+    "device_type": "router",
+    "primary_mac": "aa:bb:cc:dd:ee:ff",
+    "hostname": "MainRouter",
+    "manufacturer": "Ubiquiti",
+    "model": "UDM-Pro",
+    "role": "gateway",
+    "capabilities": ["routing", "dhcp", "firewall", "ap_controller", "nat", "bridge"]
+  },
+  "network_interfaces": {
+    "eth0": {
+      "name": "eth0",
+      "type": "ethernet",
+      "mac_address": "aa:bb:cc:dd:ee:ff",
+      "ip_addresses": [
+        {
+          "address": "192.168.1.1",
+          "network": "192.168.1.0/24",
+          "type": "static"
+        }
+      ],
+      "status": "up",
+      "speed": 1000,
+      "duplex": "full"
+    },
+    "wlan0": {
+      "name": "wlan0",
+      "type": "wifi",
+      "mac_address": "aa:bb:cc:dd:ee:f0",
+      "wifi_mode": "AP",
+      "ssid": "HomeNet-5G",
+      "bssid": "aa:bb:cc:dd:ee:f0",
+      "channel": 36,
+      "band": "5G"
+    }
+  },
+  "routing_info": {
+    "forwarding_enabled": true,
+    "routing_table": [
+      {
+        "destination": "0.0.0.0/0",
+        "gateway": "10.0.1.1",
+        "interface": "eth1",
+        "metric": 1,
+        "type": "static"
+      }
+    ]
+  }
+}
+```
+
+#### 設備連接報告
+
+**Topic**: `rtk/v1/{tenant}/{site}/{device_id}/topology/connections`
+
+```json
+{
+  "schema": "topology.connections/1.0",
+  "ts": 1723526400000,
+  "discovered_devices": [
+    {
+      "mac_address": "11:22:33:44:55:66",
+      "ip_address": "192.168.1.100",
+      "hostname": "iPhone-Kevin",
+      "connection_type": "wifi",
+      "interface": "wlan0",
+      "rssi": -45,
+      "connected_time": 1723520000000,
+      "client_type": "mobile"
+    }
+  ],
+  "arp_table": [
+    {
+      "ip_address": "192.168.1.100",
+      "mac_address": "11:22:33:44:55:66",
+      "interface": "wlan0",
+      "status": "reachable"
+    }
+  ],
+  "dhcp_leases": [
+    {
+      "ip_address": "192.168.1.100",
+      "mac_address": "11:22:33:44:55:66",
+      "hostname": "iPhone-Kevin",
+      "lease_time": 86400,
+      "expires": 1723612800000
+    }
+  ]
+}
+```
+
+#### WiFi 客戶端狀態報告
+
+**Topic**: `rtk/v1/{tenant}/{site}/{device_id}/telemetry/wifi_clients`
+
+```json
+{
+  "schema": "telemetry.wifi_clients/1.0",
+  "timestamp": 1723526400000,
+  "device_id": "ap-living-room-001",
+  "interface": "wlan0",
+  "ap_info": {
+    "ssid": "HomeNet-5G",
+    "bssid": "aa:bb:cc:dd:ee:f0",
+    "channel": 36,
+    "band": "5G",
+    "security": "WPA3"
+  },
+  "clients": [
+    {
+      "mac_address": "11:22:33:44:55:66",
+      "ip_address": "192.168.1.100",
+      "hostname": "Kevin-iPhone",
+      "connected_at": 1723520000000,
+      "last_seen": 1723526400000,
+      "rssi": -38,
+      "tx_rate": 866,
+      "rx_rate": 866,
+      "tx_bytes": 1024000,
+      "rx_bytes": 2048000,
+      "connection_time": 6400000
+    }
+  ]
+}
+```
+
+### 23.3 WiFi Roaming 檢測
+
+**重要架構說明**: 由於 Controller 與每個 AP 設備獨立通訊，roaming 檢測需要由 Controller 側分析跨 AP 的客戶端移動來推斷。
+
+#### Roaming 檢測演算法
+1. **收集階段**: Controller 收集各 AP 的 `telemetry/wifi_clients` 訊息
+2. **相關性分析**: 識別相同 MAC 地址在不同 BSSID 的出現時間
+3. **事件推斷**: 當客戶端在 AP-A 斷開後短時間內在 AP-B 出現，推斷為 roaming 事件
+4. **品質評估**: 根據訊號強度變化、時間間隔判斷 roaming 品質
+
+#### 典型 Roaming 場景
+- **成功 Roaming**: 客戶端平滑從弱訊號 AP 切換到強訊號 AP
+- **延遲 Roaming**: 客戶端延遲切換，造成連線中斷
+- **頻繁 Roaming**: 客戶端在多個 AP 間頻繁切換，影響連線穩定性
+
+### 23.4 設備標識管理
+
+RTK Controller 提供設備友好名稱管理功能，支援：
+
+1. **手動設置**: 透過 `identity.set` 命令設置設備名稱
+2. **自動檢測**: 基於 MAC OUI、hostname 模式、DHCP vendor 等規則自動識別設備類型
+3. **批量管理**: 支援 CSV 檔案批量導入設備標識
+
+#### 設備標識命令範例
+
+```json
+{
+  "id": "identity-set-001",
+  "op": "identity.set",
+  "schema": "cmd.identity.set/1.0",
+  "args": {
+    "mac_address": "aa:bb:cc:dd:ee:ff",
+    "friendly_name": "客廳冷氣",
+    "device_type": "air_conditioner",
+    "location": "living_room",
+    "owner": "Kevin"
+  },
+  "timeout_ms": 5000,
+  "expect": "result"
+}
+```
+
+### 23.5 多介面設備支援
+
+協議完整支援路由器、交換機、橋接器等多介面設備，包含：
+
+- **多介面管理**: 每個介面獨立的 MAC、IP、狀態資訊
+- **橋接支援**: 橋接表、VLAN、STP 等 Layer 2 功能
+- **路由支援**: 路由表、NAT 規則、轉發邏輯
+- **DHCP 服務**: DHCP 伺服器設定與租約管理
+
+### 23.6 主動式網路診斷
+
+RTK Controller 支援主動式網路測試，透過設備執行各種診斷測試，評估網路健康狀態。
+
+#### 網路診斷訊息
+
+**Topic**: `rtk/v1/{tenant}/{site}/{device_id}/diagnostics/network`
+
+```json
+{
+  "schema": "diagnostics.network/1.0",
+  "timestamp": 1723526400000,
+  "device_id": "router-main-001",
+  "speed_test": {
+    "download_mbps": 425.6,
+    "upload_mbps": 87.3,
+    "jitter": 2.1,
+    "packet_loss": 0.0,
+    "test_server": "speedtest.hinet.net",
+    "status": "completed"
+  },
+  "wan_test": {
+    "isp_gateway_reachable": true,
+    "isp_gateway_latency": 8.5,
+    "external_dns_latency": 12.3,
+    "wan_connected": true,
+    "public_ip": "203.66.xxx.xxx"
+  },
+  "connectivity_test": {
+    "internal_reachability": [
+      {
+        "device_id": "ap-living-room-001",
+        "ip_address": "192.168.1.10",
+        "reachable": true,
+        "latency": 1.2,
+        "method": "ping"
+      }
+    ]
+  }
+}
+```
+
+### 23.7 QoS 與流量分析
+
+提供即時流量監控與 QoS 配置檢測，幫助識別網路瓶頸和優化建議。
+
+#### QoS 資訊訊息
+
+**Topic**: `rtk/v1/{tenant}/{site}/{device_id}/telemetry/qos`
+
+```json
+{
+  "schema": "telemetry.qos/1.0",
+  "timestamp": 1723526400000,
+  "device_id": "router-main-001",
+  "enabled": true,
+  "traffic_stats": {
+    "total_bandwidth": 500.0,
+    "used_bandwidth": 156.8,
+    "device_traffic": [
+      {
+        "device_mac": "11:22:33:44:55:66",
+        "friendly_name": "Kevin的iPhone",
+        "upload_mbps": 12.5,
+        "download_mbps": 45.2,
+        "bandwidth_percent": 11.5
+      }
+    ],
+    "top_talkers": [
+      {
+        "device_id": "kevin-laptop",
+        "friendly_name": "Kevin的MacBook",
+        "total_mbps": 78.9,
+        "traffic_type": "download",
+        "rank": 1
+      }
+    ]
+  }
+}
+```
+
+### 23.8 時間軸拓撲分析
+
+Controller 提供歷史拓撲變化追蹤，支援時間區間查詢和異常檢測。
+
+#### 支援功能
+- **拓撲變化歷史**: 追蹤設備接入/離開時間
+- **Roaming 軌跡**: 分析設備在不同 AP 間的移動路徑  
+- **連線品質趨勢**: 監控訊號強度、速度變化
+- **異常行為檢測**: 識別頻繁漫遊、連線不穩定等問題
+
+### 23.9 拓撲查詢與診斷命令
+
+Controller 提供豐富的拓撲查詢和診斷命令：
+
+#### 基礎拓撲命令
+- `topology.discover`: 完整拓撲發現
+- `topology.query_interfaces`: 網路介面詳細查詢
+- `topology.trace_path`: 網路路徑追蹤
+- `topology.query_dhcp_leases`: DHCP 租約查詢
+- `topology.query_bridge_table`: 橋接表查詢
+
+#### 設備身份管理命令
+- `identity.set`: 設置設備友好名稱
+- `identity.get`: 查詢設備身份資訊
+- `identity.auto_detect`: 執行自動檢測
+- `identity.import`: 批量導入設備身份
+
+#### 診斷測試命令
+- `diagnostics.speed_test`: 執行速度測試
+- `diagnostics.wan_test`: WAN 連線測試
+- `diagnostics.latency_test`: 延遲測試
+- `diagnostics.connectivity_test`: 連通性測試
+
+#### 歷史查詢命令
+- `topology.history`: 查詢拓撲變化歷史
+- `topology.roaming_history`: 查詢 roaming 事件歷史
+- `topology.anomalies`: 檢測網路異常行為
+
+這些功能讓 Controller 能夠提供完整的網路拓撲可視化、診斷和歷史分析能力。
+
+---
+
+## 24. 變更紀錄（Changelog）
 
 * **1.0**：首版，定義統一路徑、RPC 命令模型、Retained/LWT、安全與 ACL、群組命令與 Shadow 選項、JSON Schema 範例、WiFi 診斷實際應用範例。
+* **1.1**：新增網路拓撲檢測機制、設備標識管理功能、多介面設備支援、WiFi Roaming 檢測演算法。
 
 ---
 
