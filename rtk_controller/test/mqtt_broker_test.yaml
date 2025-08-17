@@ -1,0 +1,34 @@
+# Test MQTT Broker Configuration
+mqtt:
+  host: "0.0.0.0"
+  port: 1883
+  ws_port: 8083
+  
+  # Authentication
+  auth:
+    enabled: true
+    users:
+      - username: "test"
+        password: "test123"
+      - username: "rtk-controller"
+        password: "controller123"
+      - username: "device"
+        password: "device123"
+  
+  # Client settings
+  max_clients: 100
+  max_message_size: 65536
+  
+  # Logging
+  log_level: "info"
+  log_to_file: false
+  
+# Topics configuration
+topics:
+  # Allow all RTK topics
+  - pattern: "rtk/v1/+/+/+/#"
+    allow: ["test", "rtk-controller", "device"]
+  
+  # System topics
+  - pattern: "$SYS/#"
+    allow: ["rtk-controller"]

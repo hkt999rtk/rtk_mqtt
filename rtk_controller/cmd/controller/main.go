@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"rtk_controller/internal/config"
 	"rtk_controller/internal/mqtt"
@@ -17,6 +18,8 @@ import (
 	"rtk_controller/internal/cli"
 	"rtk_controller/internal/schema"
 	"rtk_controller/internal/logging"
+	"rtk_controller/internal/topology"
+	"rtk_controller/internal/identity"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -63,25 +66,63 @@ func main() {
 	// If CLI mode is specified, run interactive CLI
 	if *cliMode {
 		// Initialize storage for CLI
-		storage, err := storage.NewBuntDB(cfg.Storage.Path)
+		buntStorage, err := storage.NewBuntDB(cfg.Storage.Path)
 		if err != nil {
 			log.Fatalf("Failed to initialize storage: %v", err)
 		}
-		defer storage.Close()
+		defer buntStorage.Close()
+
+		// Initialize topology and identity storage
+		topologyStorage := storage.NewTopologyStorage(buntStorage)
+		identityStorage := storage.NewIdentityStorage(buntStorage)
 
 		// Initialize MQTT client for CLI
-		mqttClient, err := mqtt.NewClient(cfg.MQTT, storage)
+		mqttClient, err := mqtt.NewClient(cfg.MQTT, buntStorage)
 		if err != nil {
 			log.Fatalf("Failed to create MQTT client: %v", err)
 		}
 
-		// Initialize core services for CLI
-		deviceManager := device.NewManager(storage)
-		commandManager := command.NewManager(mqttClient, storage)
-		diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, storage)
+		// Initialize identity manager
+		identityConfig := identity.ManagerConfig{
+			EnableAutoDiscovery:   true,
+			EnableFingerprinting:  true,
+			FingerprintTimeout:    5 * time.Minute,
+			DeviceRetention:       30 * 24 * time.Hour,
+			CleanupInterval:       1 * time.Hour,
+		}
+		identityManager := identity.NewManager(identityStorage, identityConfig)
 
-		// Create and start interactive CLI
-		interactiveCLI := cli.NewInteractiveCLI(cfg, mqttClient, storage, deviceManager, commandManager, diagnosisManager)
+		// Initialize topology manager
+		topologyConfig := topology.ManagerConfig{
+			Tenant:                     "default", // TODO: Get from config
+			Site:                      "default", // TODO: Get from config
+			TopologyUpdateInterval:     30 * time.Second,
+			MetricsUpdateInterval:      1 * time.Minute,
+			CleanupInterval:           5 * time.Minute,
+			ConnectionHistoryRetention: 24 * time.Hour,
+			MetricsRetention:          7 * 24 * time.Hour,
+			DeviceOfflineRetention:    1 * time.Hour,
+			EnableRealTimeUpdates:     true,
+			EnableConnectionInference: true,
+			EnableMetricsCollection:   true,
+			EnableDeviceClassification: true,
+			// TODO: Add discovery config when fields are available
+			DiscoveryConfig: topology.DiscoveryConfig{},
+		}
+		topologyManager, err := topology.NewManager(topologyStorage, identityStorage, identityManager, topologyConfig)
+		if err != nil {
+			log.Fatalf("Failed to create topology manager: %v", err)
+		}
+
+		// Initialize core services for CLI
+		deviceManager := device.NewManager(buntStorage)
+		commandManager := command.NewManager(mqttClient, buntStorage)
+		diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
+
+		// Create and start interactive CLI with topology support
+		interactiveCLI := cli.NewInteractiveCLI(cfg, mqttClient, buntStorage, deviceManager, commandManager, diagnosisManager)
+		interactiveCLI.SetTopologyManager(topologyManager)
+		interactiveCLI.SetIdentityManager(identityManager)
 		interactiveCLI.Start()
 		return
 	}

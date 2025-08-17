@@ -94,6 +94,14 @@ func (v *Validator) LoadBuiltinSchemas() error {
 		"telemetry": telemetrySchema,
 		"lwt": lwtSchema,
 		"attr": attributeSchema,
+		
+		// Topology-related schemas
+		"topology.discovery": topologyDiscoverySchema,
+		"topology.connections": topologyConnectionsSchema,
+		"telemetry.wifi_clients": wifiClientsSchema,
+		"device.identity": deviceIdentitySchema,
+		"diagnostics.network": networkDiagnosticsSchema,
+		"telemetry.qos": qosInfoSchema,
 	}
 	
 	for name, schemaJSON := range schemas {

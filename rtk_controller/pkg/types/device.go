@@ -19,7 +19,24 @@ type DeviceState struct {
 	Telemetry    map[string]interface{} `json:"telemetry"`
 	Online       bool                   `json:"online"`
 	LastWill     *LastWillMessage       `json:"last_will,omitempty"`
+	
+	// Network topology related fields
+	NetworkInfo  *NetworkDeviceInfo     `json:"network_info,omitempty"`    // 網路拓撲資訊
+	
 	UpdatedAt    time.Time              `json:"updated_at"`
+}
+
+// NetworkDeviceInfo represents network topology information for a device
+type NetworkDeviceInfo struct {
+	PrimaryMAC    string            `json:"primary_mac,omitempty"`
+	Hostname      string            `json:"hostname,omitempty"`
+	Manufacturer  string            `json:"manufacturer,omitempty"`
+	Model         string            `json:"model,omitempty"`
+	Location      string            `json:"location,omitempty"`
+	Role          string            `json:"role,omitempty"`          // gateway, access_point, switch, client, bridge, router
+	Interfaces    []InterfaceInfo   `json:"interfaces,omitempty"`
+	Capabilities  []string          `json:"capabilities,omitempty"` // routing, bridge, ap, client, nat, dhcp
+	Connections   []ConnectionInfo  `json:"connections,omitempty"`  // 連接到其他設備的資訊
 }
 
 // DeviceEvent represents an event from a device
@@ -100,4 +117,37 @@ type EventStats struct {
 	ProcessedCount int            `json:"processed_count"`
 	PendingCount   int            `json:"pending_count"`
 	LastUpdated    time.Time      `json:"last_updated"`
+}
+
+// InterfaceInfo represents basic interface information for device state
+type InterfaceInfo struct {
+	Name         string   `json:"name"`                     // eth0, wlan0, br0
+	Type         string   `json:"type"`                     // ethernet, wifi, bridge
+	MacAddress   string   `json:"mac_address,omitempty"`
+	IPAddresses  []string `json:"ip_addresses,omitempty"`
+	Status       string   `json:"status"`                   // up, down, dormant
+	
+	// WiFi specific fields
+	SSID         string   `json:"ssid,omitempty"`
+	BSSID        string   `json:"bssid,omitempty"`
+	Channel      int      `json:"channel,omitempty"`
+	Band         string   `json:"band,omitempty"`           // 2.4G, 5G, 6G
+	RSSI         int      `json:"rssi,omitempty"`
+	
+	// Statistics
+	TxBytes      int64    `json:"tx_bytes,omitempty"`
+	RxBytes      int64    `json:"rx_bytes,omitempty"`
+	LastUpdate   int64    `json:"last_update,omitempty"`
+}
+
+// ConnectionInfo represents connection information for device state
+type ConnectionInfo struct {
+	ConnectedDeviceID string  `json:"connected_device_id,omitempty"`
+	ConnectionType    string  `json:"connection_type"`               // ethernet, wifi, bridge, route
+	LocalInterface    string  `json:"local_interface,omitempty"`
+	RemoteInterface   string  `json:"remote_interface,omitempty"`
+	RSSI              int     `json:"rssi,omitempty"`
+	LinkSpeed         int     `json:"link_speed,omitempty"`         // Mbps
+	Latency           float64 `json:"latency,omitempty"`            // ms
+	LastSeen          int64   `json:"last_seen"`
 }

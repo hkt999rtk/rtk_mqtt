@@ -15,6 +15,8 @@ import (
 	"rtk_controller/internal/diagnosis"
 	"rtk_controller/internal/mqtt"
 	"rtk_controller/internal/storage"
+	"rtk_controller/internal/topology"
+	"rtk_controller/internal/identity"
 )
 
 // InteractiveCLI provides an interactive command line interface
@@ -25,6 +27,9 @@ type InteractiveCLI struct {
 	deviceManager    *device.Manager
 	commandManager   *command.Manager
 	diagnosisManager *diagnosis.Manager
+	topologyManager  *topology.Manager
+	identityManager  *identity.Manager
+	topologyCommands *TopologyCommands
 	
 	// Command history and state
 	history []string
@@ -99,6 +104,31 @@ func (cli *InteractiveCLI) Stop() {
 	cli.running = false
 }
 
+// SetTopologyManager sets the topology manager
+func (cli *InteractiveCLI) SetTopologyManager(manager *topology.Manager) {
+	cli.topologyManager = manager
+	if manager != nil {
+		// Initialize topology commands with minimal components for now
+		// TODO: Initialize all topology components properly
+		cli.topologyCommands = &TopologyCommands{
+			topologyManager: manager,
+		}
+	}
+}
+
+// SetIdentityManager sets the identity manager
+func (cli *InteractiveCLI) SetIdentityManager(manager *identity.Manager) {
+	cli.identityManager = manager
+	if cli.topologyManager != nil && manager != nil {
+		// Re-initialize topology commands with both managers
+		// TODO: Initialize all topology components properly
+		if cli.topologyCommands == nil {
+			cli.topologyCommands = &TopologyCommands{}
+		}
+		cli.topologyCommands.topologyManager = cli.topologyManager
+	}
+}
+
 // executor handles command execution
 func (cli *InteractiveCLI) executor(input string) {
 	input = strings.TrimSpace(input)
@@ -146,6 +176,10 @@ func (cli *InteractiveCLI) executor(input string) {
 		cli.handleTestCommand(args)
 	case "system", "sys":
 		cli.handleSystemCommand(args)
+	case "topology", "topo":
+		cli.handleTopologyCommand(args)
+	case "identity", "id":
+		cli.handleIdentityCommand(args)
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		fmt.Println("Type 'help' for available commands")
@@ -208,6 +242,25 @@ func (cli *InteractiveCLI) createCompleter() readline.AutoCompleter {
 			readline.PcItem("health"),
 			readline.PcItem("stats"),
 		),
+		readline.PcItem("topology",
+			readline.PcItem("show"),
+			readline.PcItem("discover"),
+			readline.PcItem("status"),
+			readline.PcItem("stats"),
+			readline.PcItem("devices"),
+			readline.PcItem("connections"),
+			readline.PcItem("quality"),
+			readline.PcItem("roaming"),
+			readline.PcItem("monitoring"),
+			readline.PcItem("alerts"),
+		),
+		readline.PcItem("identity",
+			readline.PcItem("list"),
+			readline.PcItem("show"),
+			readline.PcItem("classify"),
+			readline.PcItem("update"),
+			readline.PcItem("stats"),
+		),
 	)
 }
 
@@ -225,6 +278,8 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("  command <subcommand> - Command management")
 		fmt.Println("  event <subcommand> - Event monitoring")
 		fmt.Println("  diagnosis <subcommand> - Diagnosis management")
+		fmt.Println("  topology <subcommand> - Network topology management")
+		fmt.Println("  identity <subcommand> - Device identity management")
 		fmt.Println("  config <subcommand> - Configuration management")
 		fmt.Println("  log <subcommand>   - Log management")
 		fmt.Println("  test <subcommand>  - Test commands")
@@ -255,6 +310,25 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("  event show <event_id> - Show event details")
 		fmt.Println("  event stats - Show event statistics")
 		fmt.Println("  event watch - Watch real-time events")
+	case "topology":
+		fmt.Println("Topology management commands:")
+		fmt.Println("  topology show [--format=tree|json] - Show network topology")
+		fmt.Println("  topology discover - Discover network devices")
+		fmt.Println("  topology status - Show topology status")
+		fmt.Println("  topology stats - Show topology statistics")
+		fmt.Println("  topology devices - List topology devices")
+		fmt.Println("  topology connections - Show device connections")
+		fmt.Println("  topology quality [device_id] - Show connection quality")
+		fmt.Println("  topology roaming [device_id] - Show roaming information")
+		fmt.Println("  topology monitoring - Show monitoring status")
+		fmt.Println("  topology alerts - Show topology alerts")
+	case "identity":
+		fmt.Println("Identity management commands:")
+		fmt.Println("  identity list - List device identities")
+		fmt.Println("  identity show <device_id> - Show device identity")
+		fmt.Println("  identity classify <device_id> - Classify device type")
+		fmt.Println("  identity update <device_id> [--name=<name>] [--type=<type>] - Update device identity")
+		fmt.Println("  identity stats - Show identity statistics")
 	default:
 		fmt.Printf("No help available for command: %s\n", args[0])
 	}

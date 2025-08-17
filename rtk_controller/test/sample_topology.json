@@ -1,0 +1,213 @@
+{
+  "id": "topology-default",
+  "tenant": "default",
+  "site": "default",
+  "devices": {
+    "ap-01": {
+      "device_id": "ap-01",
+      "device_type": "ap",
+      "primary_mac": "00:11:22:33:44:66",
+      "hostname": "rtk-ap-01",
+      "manufacturer": "RTK",
+      "model": "RTK-AP500",
+      "location": "Office Area A",
+      "role": "access_point",
+      "interfaces": {
+        "eth0": {
+          "name": "eth0",
+          "type": "ethernet",
+          "mac_address": "00:11:22:33:44:66",
+          "ip_addresses": [
+            {
+              "address": "192.168.1.10",
+              "network": "192.168.1.0/24",
+              "type": "dhcp"
+            }
+          ],
+          "status": "up",
+          "mtu": 0,
+          "speed": 1000,
+          "duplex": "",
+          "tx_bytes": 0,
+          "rx_bytes": 0,
+          "tx_packets": 0,
+          "rx_packets": 0,
+          "tx_errors": 0,
+          "rx_errors": 0,
+          "last_update": 0
+        },
+        "wlan0": {
+          "name": "wlan0",
+          "type": "wifi",
+          "mac_address": "00:11:22:33:44:67",
+          "ip_addresses": null,
+          "status": "up",
+          "mtu": 0,
+          "speed": 866,
+          "duplex": "",
+          "wifi_mode": "AP",
+          "ssid": "RTK-Office",
+          "bssid": "00:11:22:33:44:67",
+          "channel": 6,
+          "band": "2.4G",
+          "security": "WPA2",
+          "tx_bytes": 0,
+          "rx_bytes": 0,
+          "tx_packets": 0,
+          "rx_packets": 0,
+          "tx_errors": 0,
+          "rx_errors": 0,
+          "last_update": 0
+        }
+      },
+      "capabilities": [
+        "ap",
+        "bridge"
+      ],
+      "last_seen": 1755426026,
+      "online": true
+    },
+    "client-01": {
+      "device_id": "client-01",
+      "device_type": "client",
+      "primary_mac": "AA:BB:CC:DD:EE:01",
+      "hostname": "laptop-01",
+      "manufacturer": "Dell",
+      "model": "Latitude",
+      "location": "Office",
+      "role": "client",
+      "interfaces": {
+        "wlan0": {
+          "name": "wlan0",
+          "type": "wifi",
+          "mac_address": "AA:BB:CC:DD:EE:01",
+          "ip_addresses": [
+            {
+              "address": "192.168.1.101",
+              "network": "192.168.1.0/24",
+              "type": "dhcp"
+            }
+          ],
+          "status": "up",
+          "mtu": 0,
+          "speed": 433,
+          "duplex": "",
+          "wifi_mode": "STA",
+          "ssid": "RTK-Office",
+          "bssid": "00:11:22:33:44:67",
+          "channel": 6,
+          "band": "2.4G",
+          "rssi": -45,
+          "tx_bytes": 0,
+          "rx_bytes": 0,
+          "tx_packets": 0,
+          "rx_packets": 0,
+          "tx_errors": 0,
+          "rx_errors": 0,
+          "last_update": 0
+        }
+      },
+      "capabilities": [
+        "client"
+      ],
+      "last_seen": 1755426026,
+      "online": true
+    },
+    "gateway-01": {
+      "device_id": "gateway-01",
+      "device_type": "router",
+      "primary_mac": "00:11:22:33:44:55",
+      "hostname": "rtk-gateway-01",
+      "manufacturer": "RTK",
+      "model": "RTK-GW1000",
+      "location": "Server Room",
+      "role": "gateway",
+      "interfaces": {
+        "eth0": {
+          "name": "eth0",
+          "type": "ethernet",
+          "mac_address": "00:11:22:33:44:55",
+          "ip_addresses": [
+            {
+              "address": "192.168.1.1",
+              "network": "192.168.1.0/24",
+              "type": "static"
+            }
+          ],
+          "status": "up",
+          "mtu": 0,
+          "speed": 1000,
+          "duplex": "",
+          "tx_bytes": 0,
+          "rx_bytes": 0,
+          "tx_packets": 0,
+          "rx_packets": 0,
+          "tx_errors": 0,
+          "rx_errors": 0,
+          "last_update": 0
+        }
+      },
+      "capabilities": [
+        "routing",
+        "nat",
+        "dhcp"
+      ],
+      "last_seen": 1755426026,
+      "online": true
+    }
+  },
+  "connections": [
+    {
+      "id": "conn-1",
+      "from_device_id": "gateway-01",
+      "to_device_id": "ap-01",
+      "from_interface": "eth0",
+      "to_interface": "eth0",
+      "connection_type": "ethernet",
+      "is_direct_link": true,
+      "metrics": {
+        "link_speed": 1000,
+        "bandwidth": 1000,
+        "latency": 0.5,
+        "tx_bytes": 0,
+        "rx_bytes": 0,
+        "last_update": 0
+      },
+      "last_seen": 1755426026,
+      "discovered": 1755339626
+    },
+    {
+      "id": "conn-2",
+      "from_device_id": "client-01",
+      "to_device_id": "ap-01",
+      "from_interface": "wlan0",
+      "to_interface": "wlan0",
+      "connection_type": "wireless",
+      "is_direct_link": true,
+      "metrics": {
+        "rssi": -45,
+        "link_speed": 433,
+        "bandwidth": 200,
+        "latency": 2.5,
+        "tx_bytes": 0,
+        "rx_bytes": 0,
+        "last_update": 0
+      },
+      "last_seen": 1755426026,
+      "discovered": 1755418826
+    }
+  ],
+  "gateway": {
+    "device_id": "gateway-01",
+    "ip_address": "192.168.1.1",
+    "external_ip": "203.0.113.1",
+    "isp_info": "Demo ISP",
+    "dns_servers": [
+      "8.8.8.8",
+      "8.8.4.4"
+    ],
+    "connection_type": "",
+    "last_check": 0
+  },
+  "updated_at": "2025-08-17T18:20:26.845572+08:00"
+}
