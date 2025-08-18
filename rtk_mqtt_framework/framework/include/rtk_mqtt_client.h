@@ -12,10 +12,9 @@ extern "C" {
  * @file rtk_mqtt_client.h
  * @brief 統一 MQTT 客戶端介面 - 支援多種後端實作
  * 
- * 此介面提供了一個統一的 MQTT 客戶端抽象層，支援：
- * - Eclipse Paho MQTT C (Linux/POSIX)
- * - PubSubClient (FreeRTOS/嵌入式)
- * - 平台特定的 MQTT 實作
+ * 此介面提供了一個統一的 MQTT 客戶端抽象層，使用：
+ * - PubSubClient (跨平台統一後端)
+ * - 平台特定的優化實作
  */
 
 // === 前向宣告 ===
@@ -50,8 +49,7 @@ typedef void (*rtk_mqtt_connection_callback_t)(int connected, int reason_code, v
  * @brief MQTT 後端類型
  */
 typedef enum {
-    RTK_MQTT_BACKEND_PAHO = 0,      /**< Eclipse Paho MQTT C */
-    RTK_MQTT_BACKEND_PUBSUB = 1,    /**< PubSubClient */
+    RTK_MQTT_BACKEND_PUBSUB = 0,    /**< PubSubClient (default) */
     RTK_MQTT_BACKEND_CUSTOM = 99    /**< 自定義後端 */
 } rtk_mqtt_backend_type_t;
 

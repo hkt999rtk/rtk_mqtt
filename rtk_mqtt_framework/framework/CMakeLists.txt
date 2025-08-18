@@ -18,8 +18,8 @@ option(RTK_USE_LIGHTWEIGHT_JSON "Use lightweight JSON processing" OFF)
 option(RTK_USE_FREERTOS_TCP "Use FreeRTOS+TCP network stack" OFF)
 option(RTK_USE_LWIP "Use lwIP network stack" ON)
 
-# MQTT 客戶端後端選項
-option(RTK_ENABLE_PAHO_ADAPTER "Enable Paho MQTT C adapter (optional)" OFF)
+# MQTT 客戶端後端選項 - 統一使用 PubSubClient
+# Paho MQTT C adapter removed - using PubSubClient exclusively
 
 # 平台檢測
 if(WIN32 OR RTK_TARGET_WINDOWS)
@@ -107,12 +107,7 @@ else()
     message(FATAL_ERROR "Bundled PubSubClient not found - this should not happen")
 endif()
 
-# Use bundled Paho MQTT C (optional)
-if(PAHO_MQTT_C_FOUND AND RTK_ENABLE_PAHO_ADAPTER)
-    list(APPEND RTK_LINK_LIBRARIES ${PAHO_MQTT_C_LIBRARIES})
-    list(APPEND RTK_INCLUDE_DIRS ${PAHO_MQTT_C_INCLUDE_DIRS})
-    message(STATUS "Using bundled Paho MQTT C: ${PAHO_MQTT_C_INCLUDE_DIRS}")
-endif()
+# Paho MQTT C removed - using PubSubClient exclusively
 
 # 平台特定依賴
 if(RTK_PLATFORM_WINDOWS)
@@ -158,6 +153,7 @@ set(RTK_FRAMEWORK_SOURCES
     src/message_codec.c
     src/schema_validator.c
     src/plugin_manager.c
+    src/rtk_pubsub_adapter.c
 )
 
 # 核心標頭檔案
@@ -171,32 +167,32 @@ set(RTK_FRAMEWORK_HEADERS
     include/rtk_device_plugin.h
 )
 
-# PubSubClient 源碼檔案 (統一使用)
-# Note: Temporarily disabled for minimal build
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/pubsub_adapter.cpp")
-    list(APPEND RTK_FRAMEWORK_SOURCES 
-        src/pubsub_adapter.cpp
-    )
-    list(APPEND RTK_FRAMEWORK_HEADERS 
-        include/rtk_pubsub_adapter.h
-    )
+# PubSubClient C++ wrapper sources (真實 MQTT 實現)
+if(RTK_USE_PUBSUBCLIENT)
+    # POSIX 平台的真實 PubSubClient 實現
+    if(RTK_PLATFORM_POSIX OR NOT RTK_PLATFORM_FREERTOS AND NOT RTK_PLATFORM_WINDOWS)
+        list(APPEND RTK_FRAMEWORK_SOURCES 
+            src/rtk_pubsub_cpp_wrapper.cpp
+        )
+        list(APPEND RTK_FRAMEWORK_HEADERS 
+            src/rtk_pubsub_cpp_wrapper.h
+        )
+        message(STATUS "Including real PubSubClient implementation for POSIX platform")
+    endif()
+    
+    # Legacy adapter files (disabled for now)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/pubsub_adapter.cpp")
+        # Disabled - using new C++ wrapper instead
+        # list(APPEND RTK_FRAMEWORK_SOURCES src/pubsub_adapter.cpp)
+    endif()
+    
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/arduino_compat.cpp")
+        # Disabled - using posix_network_client.cpp instead
+        # list(APPEND RTK_FRAMEWORK_SOURCES src/arduino_compat.cpp)
+    endif()
 endif()
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/arduino_compat.cpp")
-    list(APPEND RTK_FRAMEWORK_SOURCES 
-        src/arduino_compat.cpp
-    )
-    list(APPEND RTK_FRAMEWORK_HEADERS 
-        include/arduino_compat.h
-    )
-endif()
-
-# Optional Paho MQTT C adapter (if enabled)
-if(PAHO_MQTT_C_FOUND AND RTK_ENABLE_PAHO_ADAPTER)
-    list(APPEND RTK_FRAMEWORK_SOURCES src/paho_adapter.c)
-    list(APPEND RTK_FRAMEWORK_HEADERS include/rtk_paho_adapter.h)
-    message(STATUS "Paho MQTT C adapter enabled with bundled library")
-endif()
+# Paho MQTT C adapter removed - using PubSubClient exclusively
 
 # 平台特定源碼檔案
 if(RTK_PLATFORM_FREERTOS)
@@ -204,16 +200,24 @@ if(RTK_PLATFORM_FREERTOS)
         src/freertos_compat.c
         src/network_freertos.c
     )
+    # FreeRTOS 專用 PubSub 適配器 (Not tested)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/rtk_pubsub_adapter_freertos.c")
+        message(STATUS "Including FreeRTOS PubSub adapter (Not tested)")
+    endif()
 elseif(RTK_PLATFORM_WINDOWS)
     list(APPEND RTK_FRAMEWORK_SOURCES 
         src/windows_compat.c
         src/network_windows.c
     )
+    # Windows 專用 PubSub 適配器 (Not tested)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/rtk_pubsub_adapter_windows.c")
+        message(STATUS "Including Windows PubSub adapter (Not tested)")
+    endif()
     if(RTK_ENABLE_WINDOWS_SERVICE)
         list(APPEND RTK_FRAMEWORK_SOURCES src/windows_service.c)
     endif()
 else()
-    # POSIX
+    # POSIX (Darwin/Linux) - 已測試的實現
     list(APPEND RTK_FRAMEWORK_SOURCES 
         src/posix_compat.c
     )
@@ -221,6 +225,7 @@ else()
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/src/network_posix.c")
         list(APPEND RTK_FRAMEWORK_SOURCES src/network_posix.c)
     endif()
+    message(STATUS "Using POSIX PubSub adapter (tested on Darwin/Linux)")
 endif()
 # 注意: 暫時禁用有問題的網路層實現
 
@@ -423,11 +428,7 @@ message(STATUS "Dependencies Summary:")
 message(STATUS "  All dependencies bundled locally - NO EXTERNAL DEPENDENCIES REQUIRED")
 message(STATUS "  cJSON: Bundled (${CJSON_FOUND})")
 message(STATUS "  PubSubClient: Bundled (${PUBSUBCLIENT_FOUND})")
-if(RTK_ENABLE_PAHO_ADAPTER)
-    message(STATUS "  Paho MQTT C: Bundled (${PAHO_MQTT_C_FOUND})")
-else()
-    message(STATUS "  Paho MQTT C: Disabled")
-endif()
+message(STATUS "  Paho MQTT C: Removed - using PubSubClient exclusively")
 message(STATUS "")
 message(STATUS "Link Libraries: ${RTK_LINK_LIBRARIES}")
 message(STATUS "Include Directories: ${RTK_INCLUDE_DIRS}")

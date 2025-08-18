@@ -83,6 +83,7 @@ int rtk_mqtt_init(rtk_mqtt_backend_type_t backend_type) {
     
     // 初始化管理器狀態
     memset(&mqtt_manager, 0, sizeof(mqtt_manager));
+    mqtt_manager.is_initialized = 1;  // 先設定初始化狀態
     
     // Register PubSubClient backend automatically
     extern int rtk_pubsub_register_mqtt_backend(void);
@@ -96,8 +97,6 @@ int rtk_mqtt_init(rtk_mqtt_backend_type_t backend_type) {
         set_last_error(RTK_MQTT_ERROR_BACKEND_NOT_FOUND, "PubSubClient backend not available");
         return RTK_MQTT_ERROR_BACKEND_NOT_FOUND;
     }
-    
-    mqtt_manager.is_initialized = 1;
     set_last_error(RTK_MQTT_SUCCESS, "MQTT client manager initialized with PubSubClient");
     
     printf("[RTK-MQTT] Client manager initialized with PubSubClient backend\n");
