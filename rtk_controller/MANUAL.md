@@ -1,830 +1,518 @@
 # RTK Controller 使用手冊
 
+> **工程師快速部署指南** - 本手冊專為拿到 release binary package 的工程師而設計
+
 ## 目錄
 
-1. [系統簡介](#系統簡介)
-2. [安裝與設定](#安裝與設定)
-3. [啟動模式](#啟動模式)
-4. [交互式 CLI 使用](#交互式-cli-使用)
-5. [網絡拓撲管理](#網絡拓撲管理)
-6. [網絡診斷功能](#網絡診斷功能)
-7. [QoS 流量分析](#qos-流量分析)
-8. [設備管理](#設備管理)
-9. [命令管理](#命令管理)
-10. [系統管理](#系統管理)
-11. [Web Console](#web-console)
-12. [配置說明](#配置說明)
-13. [故障排除](#故障排除)
-14. [進階功能](#進階功能)
+1. [快速開始](#快速開始)
+2. [系統需求](#系統需求)
+3. [安裝部署](#安裝部署)
+4. [基本使用](#基本使用)
+5. [配置說明](#配置說明)
+6. [功能驗證](#功能驗證)
+7. [故障排除](#故障排除)
+8. [維護運行](#維護運行)
 
-## 系統簡介
+## 快速開始
 
-RTK Controller 是一個功能完整的網絡管理系統，提供：
-- 網絡拓撲自動發現與可視化
-- 設備身份管理與分類
-- 網絡性能診斷與監控
-- QoS 策略分析與推薦
-- MQTT 通訊與設備控制
-- 交互式命令行介面
-- Web 管理控制台
-
-## 安裝與設定
-
-### 系統需求
-
-- **作業系統**: Linux、macOS、Windows
-- **Go 版本**: 1.19 或更高
-- **記憶體**: 至少 512MB
-- **磁碟空間**: 至少 100MB
-
-### 編譯安裝
+### 1. 解壓縮發行包
 
 ```bash
-# 下載源碼
-git clone <repository_url>
-cd rtk_controller
+# 解壓縮發行包
+tar -xzf rtk_controller-[版本]_[平台].tar.gz
+cd rtk_controller-[平台]/
 
-# 安裝依賴
-go mod download
-
-# 編譯執行檔
-make build
-
-# 或編譯所有平台版本
-make build-all
+# 檢查包內容
+ls -la
 ```
 
-### 目錄結構
-
-安裝後會建立以下目錄：
+發行包包含：
 ```
-rtk_controller/
-├── rtk-controller      # 執行檔
-├── configs/           # 配置文件
-│   └── controller.yaml
-├── data/              # 數據存儲
-├── logs/              # 日誌文件
-└── test/              # 測試腳本
+rtk_controller-[平台]/
+├── bin/                    # 可執行檔案
+│   └── rtk_controller-*    # 對應平台的執行檔
+├── configs/                # 配置檔案
+│   └── controller.yaml     # 主配置檔案
+├── docs/                   # 技術文檔
+├── test-tools/             # 測試工具 (可選)
+├── test/scripts/           # 測試腳本
+├── demo_cli.sh             # 功能演示腳本
+├── MANUAL.md               # 本手冊
+├── LICENSE                 # 許可證
+└── VERSION                 # 版本資訊
 ```
 
-## 啟動模式
+### 2. 選擇對應平台執行檔
 
-### 1. 交互式 CLI 模式
+根據您的系統選擇正確的執行檔：
 
-最常用的模式，提供友善的命令行介面：
+**Linux ARM64 (樹莓派、ARM 伺服器)**
+```bash
+cp bin/rtk_controller-linux-arm64 ./rtk_controller
+chmod +x rtk_controller
+```
+
+**Linux x86_64 (標準 Linux 伺服器)**
+```bash
+cp bin/rtk_controller-linux-amd64 ./rtk_controller
+chmod +x rtk_controller
+```
+
+**macOS ARM64 (Apple Silicon Mac)**
+```bash
+cp bin/rtk_controller-darwin-arm64 ./rtk_controller
+chmod +x rtk_controller
+```
+
+**Windows x86_64**
+```cmd
+copy bin\rtk_controller-windows-amd64.exe rtk_controller.exe
+```
+
+### 3. 立即測試
 
 ```bash
-./rtk-controller --cli
+# 檢查版本
+./rtk_controller --version
+
+# 啟動交互式 CLI
+./rtk_controller --cli
 ```
 
-啟動後會看到：
+成功啟動會顯示：
 ```
 RTK Controller Interactive CLI
 ==============================
-Version: 1.0.0
+Version: [版本號]
 Type 'help' for available commands, 'exit' to quit
 
 rtk> 
 ```
 
-### 2. 服務模式
+## 系統需求
 
-作為後台服務運行，提供 API 和 Web Console：
+### 硬體需求
+- **CPU**: 雙核心 1GHz 以上
+- **記憶體**: 最少 512MB，建議 1GB 以上
+- **磁碟空間**: 最少 100MB 可用空間
+- **網路**: 支援 TCP/IP 網路連接
 
-```bash
-./rtk-controller --config configs/controller.yaml
-```
+### 作業系統支援
+- **Linux**: Ubuntu 18.04+, CentOS 7+, Debian 9+
+- **macOS**: macOS 10.15+ (Catalina)
+- **Windows**: Windows 10, Windows Server 2016+
 
-### 3. 調試模式
+### 網路需求
+- **MQTT Broker**: 需要可連接的 MQTT broker (如 Mosquitto)
+- **連接埠**: 
+  - MQTT: 預設 1883 (可設定)
+  - MQTT over TLS: 預設 8883 (可設定)
 
-啟用詳細日誌輸出：
+## 安裝部署
 
-```bash
-./rtk-controller --cli --debug
-```
+### 生產環境部署
 
-## 交互式 CLI 使用
-
-### 基本操作
-
-#### 命令格式
-```
-rtk> <主命令> [子命令] [參數...]
-```
-
-#### 獲取幫助
-```bash
-rtk> help                    # 顯示所有可用命令
-rtk> help topology          # 顯示 topology 命令的幫助
-rtk> topology help          # 同上
-```
-
-#### 自動補全
-- 按 **Tab** 鍵自動補全命令
-- 支援多層級命令補全
-- 補全包括命令、子命令和部分參數
-
-#### 命令歷史
-- **↑/↓** 箭頭鍵瀏覽歷史命令
-- 歷史記錄保存在 `/tmp/.rtk_cli_history`
-- 支援跨會話的歷史記錄
-
-#### 快捷鍵
-- **Ctrl+C**: 中斷當前輸入
-- **Ctrl+D**: 退出 CLI（EOF）
-- **Ctrl+L**: 清除螢幕
-
-### 通用命令
+#### 1. 建立專用用戶 (Linux/macOS)
 
 ```bash
-rtk> version               # 顯示版本信息
-rtk> status               # 顯示系統狀態
-rtk> clear                # 清除螢幕
-rtk> exit                 # 退出 CLI
-rtk> quit                 # 退出 CLI（同 exit）
+# 建立 rtk 用戶
+sudo useradd -m -s /bin/bash rtk
+sudo passwd rtk
+
+# 切換到 rtk 用戶
+sudo su - rtk
+
+# 建立工作目錄
+mkdir -p ~/rtk_controller
+cd ~/rtk_controller
 ```
 
-## 網絡拓撲管理
-
-### 查看網絡拓撲
+#### 2. 部署執行檔
 
 ```bash
-# 顯示完整拓撲圖
+# 將發行包複製到部署目錄
+tar -xzf rtk_controller-*.tar.gz --strip-components=1
+
+# 設定執行權限
+chmod +x bin/rtk_controller-*
+
+# 建立符號連結
+ln -sf bin/rtk_controller-[您的平台] rtk_controller
+```
+
+#### 3. 建立系統服務 (Linux)
+
+建立 systemd 服務檔案：
+
+```bash
+sudo tee /etc/systemd/system/rtk-controller.service > /dev/null <<EOF
+[Unit]
+Description=RTK Controller Network Management System
+After=network.target
+
+[Service]
+Type=simple
+User=rtk
+WorkingDirectory=/home/rtk/rtk_controller
+ExecStart=/home/rtk/rtk_controller/rtk_controller --config configs/controller.yaml
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 啟用並啟動服務
+sudo systemctl daemon-reload
+sudo systemctl enable rtk-controller
+sudo systemctl start rtk-controller
+
+# 檢查服務狀態
+sudo systemctl status rtk-controller
+```
+
+## 基本使用
+
+### 交互式 CLI 模式
+
+最適合初次使用和測試：
+
+```bash
+./rtk_controller --cli
+```
+
+#### 常用命令
+
+```bash
+# 顯示所有可用命令
+rtk> help
+
+# 檢查系統狀態
+rtk> system status
+
+# 查看網絡拓撲
 rtk> topology show
 
-# 以 ASCII 圖形顯示
-rtk> topology show ascii
-
-# 顯示詳細信息
-rtk> topology show detailed
-```
-
-### 設備列表與連接
-
-```bash
-# 列出所有設備
-rtk> topology devices
-
-# 顯示連接關係
-rtk> topology connections
-
-# 查看特定設備
-rtk> topology device <device_id>
-```
-
-### WiFi 漫遊分析
-
-```bash
-# 查看漫遊歷史
-rtk> topology roaming
-
-# 分析漫遊模式
-rtk> topology roaming analyze
-
-# 查看特定設備的漫遊
-rtk> topology roaming <device_id>
-```
-
-### 拓撲導出
-
-```bash
-# 導出為 DOT 格式（Graphviz）
-rtk> topology export dot > network.dot
-
-# 導出為 PlantUML
-rtk> topology export plantuml > network.puml
-
-# 導出為 JSON
-rtk> topology export json > network.json
-```
-
-### 拓撲更新
-
-```bash
-# 手動刷新拓撲
-rtk> topology refresh
-
-# 從 MQTT 更新
-rtk> topology update
-
-# 清除拓撲數據
-rtk> topology clear
-```
-
-## 網絡診斷功能
-
-### 完整診斷測試
-
-運行所有診斷測試：
-```bash
-rtk> diagnose full
-
-# 或指定設備
-rtk> diagnose full <device_id>
-```
-
-輸出示例：
-```
-Network Diagnostics Report
-==========================
-Device: router-main
-Time:   2025-01-17 10:30:00
-
-Speed Test:
------------
-  Download: 95.50 Mbps
-  Upload:   45.20 Mbps
-  Jitter:   2.50 ms
-  Loss:     0.00%
-
-WAN Status:
------------
-  Gateway:     ✓ OK (1.20 ms)
-  External DNS: 8.50 ms
-  Internet:    ✓ OK
-  Public IP:   203.0.113.1
-
-Latency Tests:
---------------
-  8.8.8.8:        10.50 ms
-  1.1.1.1:        12.30 ms
-  google.com:     15.80 ms
-```
-
-### 速度測試
-
-```bash
-# 運行速度測試
-rtk> test speedtest
-
-# 使用特定服務器
-rtk> test speedtest iperf3
-
-# 指定測試時長
-rtk> test speedtest --duration 30
-```
-
-### WAN 連接測試
-
-```bash
-# 測試 WAN 連接
-rtk> test wan
-
-# 測試特定 DNS
-rtk> test wan --dns 8.8.8.8,1.1.1.1
-```
-
-### 延遲測試
-
-```bash
-# 測試預設目標
-rtk> test latency
-
-# 測試特定目標
-rtk> test latency google.com cloudflare.com
-
-# 詳細模式
-rtk> test latency --verbose
-```
-
-### 定期診斷
-
-```bash
-# 設定每 30 分鐘運行一次
-rtk> diagnose schedule 30m
-
-# 查看排程狀態
-rtk> diagnose schedules
-
-# 停止排程
-rtk> diagnose unschedule diagnostics
-
-# 查看最後結果
-rtk> diagnose last
-```
-
-## QoS 流量分析
-
-### 流量統計
-
-```bash
-# 顯示當前流量統計
-rtk> traffic show
-
-# 查看設備流量歷史
-rtk> traffic history <device_id>
-
-# 顯示流量排行
-rtk> traffic top
-
-# 實時監控
-rtk> traffic monitor
-```
-
-### 異常檢測
-
-```bash
-# 列出檢測到的異常
-rtk> anomaly list
-
-# 查看異常詳情
-rtk> anomaly show <anomaly_id>
-
-# 設定異常閾值
-rtk> anomaly threshold 0.8
-
-# 清除異常記錄
-rtk> anomaly clear
-```
-
-### QoS 策略分析
-
-```bash
-# 分析並推薦 QoS 策略
-rtk> qos analyze
-
-# 查看推薦詳情
-rtk> qos recommendations
-
-# 應用推薦策略
-rtk> qos apply <recommendation_id>
-
-# 查看當前策略
-rtk> qos policies
-```
-
-### 流量熱點
-
-```bash
-# 識別流量熱點設備
-rtk> traffic hotspots
-
-# 設定熱點閾值
-rtk> traffic hotspot-threshold 80
-
-# 導出熱點報告
-rtk> traffic hotspot-report
-```
-
-## 設備管理
-
-### 設備列表與查詢
-
-```bash
-# 列出所有設備
+# 列出設備
 rtk> device list
 
-# 查看設備詳情
-rtk> device show <device_id>
+# 執行網絡診斷
+rtk> diagnostics run speed-test
 
-# 搜尋設備
-rtk> device search <keyword>
+# 查看 QoS 統計
+rtk> qos show stats
 
-# 按類型篩選
-rtk> device list --type router
-```
-
-### 設備身份管理
-
-```bash
-# 重命名設備
-rtk> device rename <device_id> <new_name>
-
-# 設定設備組
-rtk> device group <device_id> <group_name>
-
-# 添加標籤
-rtk> device tag <device_id> <tag1> <tag2>
-
-# 設定位置
-rtk> device location <device_id> "Living Room"
-```
-
-### 設備狀態
-
-```bash
-# 查看設備狀態
-rtk> device status <device_id>
-
-# 查看歷史記錄
-rtk> device history <device_id>
-
-# 查看設備統計
-rtk> device stats
-```
-
-## 命令管理
-
-### 發送命令
-
-```bash
-# 發送重啟命令
-rtk> command send <device_id> reboot
-
-# 發送配置更新
-rtk> command send <device_id> update_config
-
-# 設定超時時間（秒）
-rtk> command send <device_id> reboot 30
-```
-
-### 命令追蹤
-
-```bash
-# 列出所有命令
-rtk> command list
-
-# 查看命令詳情
-rtk> command show <command_id>
-
-# 查看待執行命令
-rtk> command pending
-
-# 取消命令
-rtk> command cancel <command_id>
-```
-
-### 命令統計
-
-```bash
-# 顯示命令統計
-rtk> command stats
-
-# 查看成功率
-rtk> command success-rate
-
-# 查看失敗原因分析
-rtk> command failures
-```
-
-## 系統管理
-
-### 系統狀態
-
-```bash
-# 系統概況
-rtk> system info
-
-# 健康檢查
-rtk> system health
-
-# 性能統計
-rtk> system stats
-
-# 資源使用
-rtk> system resources
-```
-
-### 配置管理
-
-```bash
-# 顯示當前配置
-rtk> config show
-
-# 重載配置
+# 重新載入配置
 rtk> config reload
 
-# 設定配置值
-rtk> config set mqtt.broker "192.168.1.100"
-
-# 驗證配置
-rtk> config validate
+# 退出
+rtk> exit
 ```
 
-### 日誌管理
+### 服務模式
+
+適合生產環境長期運行：
 
 ```bash
-# 查看最近日誌
-rtk> log show
+# 前台運行 (測試用)
+./rtk_controller --config configs/controller.yaml
 
-# 實時查看日誌
-rtk> log tail
-
-# 搜索日誌
-rtk> log search "error"
-
-# 下載日誌
-rtk> log download 3600  # 下載最近 1 小時
+# 後台運行
+nohup ./rtk_controller --config configs/controller.yaml > logs/controller.log 2>&1 &
 ```
 
-### 測試工具
+### 常用操作
 
+#### 快速健康檢查
 ```bash
-# 測試 MQTT 連接
-rtk> test mqtt
+# 檢查連線狀態
+./rtk_controller --cli --execute "system status"
 
-# 測試存儲
-rtk> test storage
-
-# Ping 設備
-rtk> test ping <device_id>
-
-# 運行自檢
-rtk> test self
+# 檢查 MQTT 連線
+./rtk_controller --cli --execute "mqtt status"
 ```
 
-## Web Console
-
-### 啟動 Web Console
-
-在服務模式下自動啟動：
+#### 匯出拓撲資料
 ```bash
-./rtk-controller --config configs/controller.yaml
+# 匯出為 JSON
+./rtk_controller --cli --execute "topology export --format json --output topology.json"
 ```
-
-### 訪問介面
-
-打開瀏覽器訪問：
-```
-http://localhost:8081
-```
-
-預設帳號密碼：
-- 用戶名：`rtkadmin`
-- 密碼：`admin123`
-
-### REST API
-
-API 端點基礎 URL：`http://localhost:8081/api/v1`
-
-主要端點：
-- `GET /api/v1/devices` - 獲取設備列表
-- `GET /api/v1/topology` - 獲取拓撲信息
-- `POST /api/v1/commands` - 發送命令
-- `GET /api/v1/diagnostics` - 獲取診斷結果
-- `WS /api/v1/ws` - WebSocket 連接
 
 ## 配置說明
 
-### 主配置文件
+主配置檔案：`configs/controller.yaml`
 
-配置文件位置：`configs/controller.yaml`
-
-### MQTT 配置
+### 基本配置
 
 ```yaml
+# MQTT 連線設定
 mqtt:
   broker: "localhost"        # MQTT broker 地址
-  port: 1883                # MQTT 端口
-  client_id: "rtk-controller" # 客戶端 ID
-  username: ""              # 用戶名（可選）
-  password: ""              # 密碼（可選）
-  qos: 1                    # QoS 級別
-  retain: false             # 保留消息
-  clean_session: true       # 清潔會話
-  keep_alive: 60            # 保活時間（秒）
-```
+  port: 1883                # MQTT 連接埠
+  client_id: "rtk-controller"
+  username: ""              # MQTT 用戶名 (可選)
+  password: ""              # MQTT 密碼 (可選)
 
-### 診斷配置
-
-```yaml
-diagnostics:
-  enable_speed_test: true    # 啟用速度測試
-  enable_wan_test: true      # 啟用 WAN 測試
-  enable_latency_test: true  # 啟用延遲測試
-  test_interval: "30m"       # 測試間隔
-  dns_servers:              # DNS 服務器列表
-    - "8.8.8.8"
-    - "1.1.1.1"
-  speed_test_servers:       # 速度測試服務器
-    - "speedtest.net"
-    - "fast.com"
-```
-
-### QoS 配置
-
-```yaml
-qos:
-  enable_anomaly_detection: true  # 啟用異常檢測
-  anomaly_threshold: 0.8          # 異常閾值
-  traffic_history_size: 100       # 歷史記錄大小
-  hotspot_threshold: 0.7          # 熱點閾值
-  analysis_interval: "5m"         # 分析間隔
-```
-
-### 存儲配置
-
-```yaml
+# 資料存儲
 storage:
-  path: "data"              # 存儲路徑
-  backup_enabled: true      # 啟用備份
-  backup_interval: "24h"    # 備份間隔
-  max_backup_count: 7       # 最大備份數
-```
+  path: "data"              # 資料目錄
 
-### Web Console 配置
-
-```yaml
-console:
-  host: "0.0.0.0"          # 監聽地址
-  port: 8081               # 監聽端口
-  auth:
-    enabled: true          # 啟用認證
-    default_username: "rtkadmin"
-    default_password: "admin123"
-    session_timeout: "30m" # 會話超時
-```
-
-### 日誌配置
-
-```yaml
+# 日誌設定
 logging:
-  level: "info"            # 日誌級別
+  level: "info"             # debug, info, warn, error
   file: "logs/controller.log"
-  max_size: 100            # MB
-  max_backups: 10
-  max_age: 30              # 天
-  compress: true
 ```
+
+### 進階配置
+
+```yaml
+# TLS 加密 (生產環境建議)
+mqtt:
+  tls:
+    enabled: true
+    cert_file: "certs/client.crt"
+    key_file: "certs/client.key"
+    ca_file: "certs/ca.crt"
+
+# 診斷設定
+diagnosis:
+  enabled: true
+  default_analyzers:
+    - "builtin_wifi_analyzer"
+```
+
+### 環境變數覆蓋
+
+```bash
+# 覆蓋 MQTT broker 地址
+export RTK_MQTT_BROKER=192.168.1.100
+export RTK_MQTT_PORT=1883
+
+# 啟動
+./rtk_controller --config configs/controller.yaml
+```
+
+## 功能驗證
+
+### 1. 基本功能測試
+
+執行演示腳本：
+```bash
+./demo_cli.sh
+```
+
+### 2. 連線測試
+
+```bash
+./rtk_controller --cli --execute "mqtt connect"
+```
+
+### 3. 使用測試工具
+
+如果發行包包含測試工具：
+
+```bash
+# 基本 MQTT 功能測試
+./test-tools/mqtt_client
+
+# 拓撲測試
+./test-tools/test_topology_simple
+
+# 診斷測試
+./test-tools/test_diagnostics
+```
+
+### 4. 手動驗證步驟
+
+1. **檢查服務啟動**
+   ```bash
+   ps aux | grep rtk_controller
+   ```
+
+2. **檢查日誌**
+   ```bash
+   tail -f logs/controller.log
+   ```
+
+3. **檢查資料目錄**
+   ```bash
+   ls -la data/
+   ```
+
+4. **檢查網路連線**
+   ```bash
+   netstat -tulpn | grep rtk_controller
+   ```
 
 ## 故障排除
 
 ### 常見問題
 
-#### 1. MQTT 連接失敗
+#### 1. 執行檔無法啟動
 
-**症狀**：
-```
-❌ MQTT connection is down
-```
+**問題**: `Permission denied` 或 `Command not found`
 
-**解決方法**：
-1. 確認 MQTT broker 正在運行
-2. 檢查防火牆設置
-3. 驗證配置文件中的連接參數
-4. 查看日誌獲取詳細錯誤
+**解決方案**:
+```bash
+# 檢查檔案權限
+ls -la rtk_controller
 
-#### 2. 存儲錯誤
+# 設定執行權限
+chmod +x rtk_controller
 
-**症狀**：
-```
-Failed to initialize storage
+# 檢查是否為正確平台
+file rtk_controller
 ```
 
-**解決方法**：
-1. 確認 `data/` 目錄存在
-2. 檢查目錄權限
-3. 確保有足夠的磁碟空間
-4. 刪除損壞的數據文件並重啟
+#### 2. MQTT 連線失敗
 
-#### 3. CLI 無法啟動
+**問題**: `Failed to connect to MQTT broker`
 
-**症狀**：
-```
-Failed to start CLI
-```
+**解決方案**:
+```bash
+# 檢查 broker 是否運行
+telnet [broker_ip] 1883
 
-**解決方法**：
-1. 檢查配置文件是否存在
-2. 驗證配置文件語法
-3. 確認端口未被占用
-4. 查看日誌文件
+# 檢查配置檔案
+cat configs/controller.yaml | grep -A 10 mqtt
 
-#### 4. 診斷測試失敗
-
-**症狀**：
-```
-Diagnostic test failed
+# 測試基本連線
+mosquitto_pub -h [broker_ip] -p 1883 -t test -m "hello"
 ```
 
-**解決方法**：
-1. 檢查網絡連接
-2. 確認測試工具已安裝（iperf3、curl）
-3. 驗證 DNS 設置
-4. 檢查防火牆規則
+#### 3. 權限錯誤
 
-### 日誌位置
+**問題**: `Permission denied` 存取 data/ 或 logs/ 目錄
 
-- **應用日誌**: `logs/controller.log`
-- **審計日誌**: `logs/audit.log`
-- **性能日誌**: `logs/performance.log`
-- **CLI 歷史**: `/tmp/.rtk_cli_history`
+**解決方案**:
+```bash
+# 建立目錄並設定權限
+mkdir -p data logs
+chmod 755 data logs
 
-### 調試技巧
+# 或以 root 身份執行 (不建議生產環境)
+sudo ./rtk_controller --config configs/controller.yaml
+```
 
-1. **啟用調試模式**：
-   ```bash
-   ./rtk-controller --cli --debug
-   ```
+#### 4. 配置檔案錯誤
 
-2. **查看詳細日誌**：
-   ```bash
-   rtk> log tail
-   ```
+**問題**: `Failed to parse config file`
 
-3. **運行自檢**：
-   ```bash
-   rtk> test self
-   ```
+**解決方案**:
+```bash
+# 驗證 YAML 語法
+python3 -c "import yaml; yaml.safe_load(open('configs/controller.yaml'))"
 
-4. **檢查系統健康**：
-   ```bash
-   rtk> system health
-   ```
+# 重置為預設配置
+cp configs/controller.yaml.example configs/controller.yaml
+```
 
-## 進階功能
-
-### 批量操作
-
-使用管道和腳本執行批量操作：
+### 診斷命令
 
 ```bash
-# 批量重命名設備
-echo -e "device rename dev1 Router1\ndevice rename dev2 Router2" | ./rtk-controller --cli
+# 檢查系統資源
+./rtk_controller --cli --execute "system info"
 
-# 從文件執行命令
-./rtk-controller --cli < commands.txt
+# 檢查配置
+./rtk_controller --cli --execute "config show"
+
+# 檢查 MQTT 狀態
+./rtk_controller --cli --execute "mqtt status"
+
+# 檢查儲存狀態
+./rtk_controller --cli --execute "storage status"
 ```
 
-### 數據導出
+### 日誌分析
 
 ```bash
-# 導出完整配置
-rtk> export config > backup.yaml
+# 檢查錯誤日誌
+grep -i error logs/controller.log
 
-# 導出拓撲數據
-rtk> topology export json > topology.json
+# 檢查警告
+grep -i warning logs/controller.log
 
-# 導出診斷報告
-rtk> diagnose report > report.txt
+# 即時監控
+tail -f logs/controller.log | grep -E "(ERROR|WARN|FATAL)"
 ```
 
-### 自動化腳本
+## 維護運行
 
-創建自動化腳本 `auto_diagnose.sh`：
+### 日常維護
+
+#### 1. 日誌輪轉
+
 ```bash
-#!/bin/bash
-./rtk-controller --cli << EOF
-diagnose full
-traffic show
-anomaly list
-exit
-EOF
+# 手動輪轉日誌
+mv logs/controller.log logs/controller.log.$(date +%Y%m%d)
+kill -USR1 $(pgrep rtk_controller)  # 重新開啟日誌檔案
 ```
 
-### 與其他系統集成
+#### 2. 資料備份
 
-使用 REST API 進行集成：
 ```bash
-# 獲取設備列表
-curl http://localhost:8081/api/v1/devices
+# 備份資料目錄
+tar -czf backup/rtk_data_$(date +%Y%m%d).tar.gz data/
 
-# 發送命令
-curl -X POST http://localhost:8081/api/v1/commands \
-  -H "Content-Type: application/json" \
-  -d '{"device_id":"router1","operation":"reboot"}'
+# 定期清理舊備份 (保留 7 天)
+find backup/ -name "rtk_data_*.tar.gz" -mtime +7 -delete
 ```
 
-### 性能優化
+#### 3. 效能監控
 
-1. **調整測試間隔**：
-   ```yaml
-   diagnostics:
-     test_interval: "60m"  # 減少測試頻率
-   ```
+```bash
+# 檢查記憶體使用
+ps aux | grep rtk_controller | awk '{print $4"%", $6/1024"MB"}'
 
-2. **限制歷史記錄**：
-   ```yaml
-   qos:
-     traffic_history_size: 50  # 減少記憶體使用
-   ```
+# 檢查 CPU 使用
+top -p $(pgrep rtk_controller)
+```
 
-3. **優化日誌**：
-   ```yaml
-   logging:
-     level: "warn"  # 減少日誌輸出
-   ```
+### 版本升級
 
-## 附錄
+```bash
+# 停止服務
+sudo systemctl stop rtk-controller
 
-### 命令快速參考
+# 備份當前版本
+cp rtk_controller rtk_controller.backup
 
-| 類別 | 命令 | 說明 |
-|------|------|------|
-| 拓撲 | `topology show` | 顯示網絡拓撲 |
-| 拓撲 | `topology devices` | 列出所有設備 |
-| 拓撲 | `topology roaming` | 查看漫遊記錄 |
-| 診斷 | `diagnose full` | 完整診斷測試 |
-| 診斷 | `test speedtest` | 速度測試 |
-| 診斷 | `test wan` | WAN 測試 |
-| 流量 | `traffic show` | 顯示流量統計 |
-| 流量 | `anomaly list` | 列出異常 |
-| QoS | `qos analyze` | 分析 QoS |
-| 設備 | `device list` | 列出設備 |
-| 設備 | `device show <id>` | 顯示設備詳情 |
-| 命令 | `command send` | 發送命令 |
-| 系統 | `system health` | 健康檢查 |
-| 配置 | `config reload` | 重載配置 |
+# 替換執行檔
+cp bin/rtk_controller-[新平台] rtk_controller
 
-### 版本歷史
+# 重新啟動
+sudo systemctl start rtk-controller
 
-- **v1.0.0** (2025-01-17)
-  - 初始版本發布
-  - 完整 8 階段功能實現
-  - 支援拓撲檢測、診斷、QoS
+# 檢查版本
+./rtk_controller --version
+```
+
+### 安全建議
+
+1. **不使用 root 權限運行**
+2. **啟用 TLS 加密**
+3. **定期更新密碼**
+4. **監控異常連線**
+5. **定期備份資料**
 
 ---
 
-**文檔版本**: 1.0.0  
-**最後更新**: 2025-01-17  
-**作者**: RTK Controller Team
+## 技術支援
+
+**版本資訊**: 請執行 `./rtk_controller --version` 取得詳細版本資訊
+
+**配置檔案**: 詳細配置說明請參考 `configs/controller.yaml` 中的註釋
+
+**技術文檔**: 更多技術細節請參考 `docs/` 目錄
+
+**問題回報**: 請提供以下資訊：
+- 執行環境 (OS, 版本)
+- 錯誤訊息
+- 相關日誌
+- 配置檔案 (去除敏感資訊)
+
+---
+
+**發行包版本**: 請查看 `VERSION` 檔案  
+**授權許可**: 請查看 `LICENSE` 檔案  
+**最後更新**: 2025-08-18
