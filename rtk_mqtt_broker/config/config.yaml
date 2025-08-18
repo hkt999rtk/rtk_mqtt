@@ -1,0 +1,14 @@
+server:
+  port: 1883
+  host: "0.0.0.0"
+  max_clients: 1000
+  enable_stats: true
+
+security:
+  enable_auth: false
+  users: []
+    # - username: "admin"
+    #   password: "password"
+
+logging:
+  level: "info"

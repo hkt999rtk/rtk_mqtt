@@ -32,7 +32,8 @@ wheels/
 *.test
 
 # Output of the go build process
-rtk_mqtt_broker
+rtk_mqtt_broker/rtk_mqtt_broker
+*/rtk_mqtt_broker
 
 # Go workspace file
 go.work
