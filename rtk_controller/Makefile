@@ -219,7 +219,7 @@ release: clean build-all build-test-tools
 			fi; \
 		fi; \
 		echo "複製文檔..."; \
-		cp MANUAL.md $$PACKAGE_DIR/ 2>/dev/null || echo "警告: MANUAL.md 不存在"; \
+		cp docs/MANUAL.md $$PACKAGE_DIR/ 2>/dev/null || echo "警告: MANUAL.md 不存在"; \
 		cp -r docs/* $$PACKAGE_DIR/docs/ 2>/dev/null || true; \
 		cp test/scripts/*.sh $$PACKAGE_DIR/test/scripts/ 2>/dev/null || true; \
 		cp demo_cli.sh $$PACKAGE_DIR/ 2>/dev/null || true; \

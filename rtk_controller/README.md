@@ -401,9 +401,8 @@ go tool pprof mem.prof
 
 ## 📚 相關文檔
 
-- **[MANUAL.md](MANUAL.md)** - 客戶使用手冊
+- **[MANUAL.md](docs/MANUAL.md)** - 客戶使用手冊
 - **[CLAUDE.md](../CLAUDE.md)** - Claude Code 指南
-- **[RELEASE_PLAN.md](RELEASE_PLAN.md)** - Release 重構計劃
 - **技術文檔**: `docs/` 目錄中的詳細文檔
 
 ## 🔗 外部資源
