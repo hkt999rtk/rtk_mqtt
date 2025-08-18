@@ -238,9 +238,9 @@ release: clean build-all build-test-tools
 		echo "Git Commit: $(COMMIT)" >> $$PACKAGE_DIR/VERSION; \
 		echo "Platform: $$target" >> $$PACKAGE_DIR/VERSION; \
 		echo "打包 $$target..."; \
-		(cd $(DIST_DIR) && tar -czf release_$(VERSION)_$$target.tar.gz release-$(APP_NAME)-$$target --transform="s/release-$(APP_NAME)-$$target/$(APP_NAME)-$$target/"); \
-		mv $(DIST_DIR)/release_$(VERSION)_$$target.tar.gz release/; \
-		echo "✓ $$target 打包完成: release/release_$(VERSION)_$$target.tar.gz"; \
+		(cd $(DIST_DIR) && tar -czf rtk_controller_$(VERSION)_$$target.tar.gz release-$(APP_NAME)-$$target --transform="s/release-$(APP_NAME)-$$target/$(APP_NAME)-$$target/"); \
+		mv $(DIST_DIR)/rtk_controller_$(VERSION)_$$target.tar.gz release/; \
+		echo "✓ $$target 打包完成: release/rtk_controller_$(VERSION)_$$target.tar.gz"; \
 	done
 	@echo "✓ 所有發行版本建立完成"
 	@echo ""
@@ -249,10 +249,10 @@ release: clean build-all build-test-tools
 	@echo "==================================="
 	@echo "版本號: $(VERSION)"
 	@echo "發行檔案列表:"
-	@ls -la release/release_$(VERSION)_*.tar.gz 2>/dev/null || echo "  無發行檔案"
+	@ls -la release/rtk_controller_$(VERSION)_*.tar.gz 2>/dev/null || echo "  無發行檔案"
 	@echo ""
 	@echo "使用說明："
-	@echo "1. 將 release_$(VERSION)_[platform].tar.gz 傳送給客戶"
+	@echo "1. 將 rtk_controller_$(VERSION)_[platform].tar.gz 傳送給客戶"
 	@echo "2. 客戶解壓縮後請參考 MANUAL.md 進行部署"
 	@echo "==================================="
 
