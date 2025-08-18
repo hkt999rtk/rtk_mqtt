@@ -1,0 +1,72 @@
+{
+  "description": "基本感測器範例配置檔案",
+  "device": {
+    "id": "basic_sensor_001",
+    "type": "multi_sensor",
+    "name": "RTK 基本感測器範例",
+    "location": "範例環境",
+    "manufacturer": "RTK 範例",
+    "model": "BasicSensor-v1",
+    "firmware_version": "1.0.0"
+  },
+  "mqtt": {
+    "broker_host": "test.mosquitto.org",
+    "broker_port": 1883,
+    "client_id": "basic_sensor_001",
+    "username": "",
+    "password": "",
+    "keepalive": 60,
+    "qos": 1,
+    "clean_session": true,
+    "reconnect_interval": 5,
+    "max_reconnect_attempts": 10
+  },
+  "rtk": {
+    "tenant": "demo_tenant",
+    "site": "demo_site",
+    "version": "v1",
+    "topic_prefix": "rtk"
+  },
+  "sensor_settings": {
+    "publish_interval": 10,
+    "temperature": {
+      "enabled": true,
+      "base_value": 25.0,
+      "variation_range": 4.0,
+      "unit": "°C",
+      "precision": 1
+    },
+    "humidity": {
+      "enabled": true,
+      "base_value": 60.0,
+      "variation_range": 20.0,
+      "unit": "%",
+      "precision": 1,
+      "min_value": 0,
+      "max_value": 100
+    },
+    "battery": {
+      "enabled": true,
+      "initial_level": 100,
+      "discharge_rate": 0.1,
+      "unit": "%",
+      "low_threshold": 20,
+      "critical_threshold": 5
+    }
+  },
+  "logging": {
+    "level": "info",
+    "console_output": true,
+    "file_output": false,
+    "log_file": "sensor.log"
+  },
+  "alerts": {
+    "battery_low_enabled": true,
+    "temperature_threshold_enabled": false,
+    "temperature_min": 0,
+    "temperature_max": 50,
+    "humidity_threshold_enabled": false,
+    "humidity_min": 10,
+    "humidity_max": 90
+  }
+}

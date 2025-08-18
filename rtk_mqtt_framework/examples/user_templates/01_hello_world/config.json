@@ -1,0 +1,27 @@
+{
+  "description": "Hello World 範例配置檔案",
+  "device": {
+    "id": "hello_world_device",
+    "type": "example_device",
+    "name": "RTK MQTT Hello World 範例",
+    "location": "範例環境"
+  },
+  "mqtt": {
+    "broker_host": "test.mosquitto.org",
+    "broker_port": 1883,
+    "client_id": "hello_world_device",
+    "keepalive": 60,
+    "qos": 1,
+    "clean_session": true
+  },
+  "rtk": {
+    "tenant": "demo_tenant",
+    "site": "demo_site",
+    "version": "v1"
+  },
+  "example_settings": {
+    "message": "Hello from RTK MQTT Framework!",
+    "publish_count": 1,
+    "auto_disconnect": true
+  }
+}
