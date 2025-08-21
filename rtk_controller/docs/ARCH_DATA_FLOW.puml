@@ -1,0 +1,136 @@
+@startuml RTK_Controller_Data_Flow
+title RTK Controller - 實際數據流 (基於 Go 原始碼)
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+actor User as U
+participant "cli.InteractiveCLI" as CLI
+participant "llm.ToolEngine" as Engine
+participant "具體工具實例\n(tools_*.go)" as Tool
+participant "storage.Storage" as Storage
+participant "mqtt.Client" as MQTT
+participant "Network Devices" as Devices
+participant "llm.MetricsCollector" as Metrics
+database "BuntDB" as DB
+
+== 工具執行流程 (基於 tool_engine.go) ==
+
+U -> CLI : 輸入診斷命令
+CLI -> Engine : ExecuteTool(ctx, sessionID, toolName, params)
+
+Engine -> Engine : GetSession(sessionID)\n內建會話管理
+Engine -> Engine : GetTool(toolName)\n從工具註冊表獲取
+
+Engine -> Tool : Execute(ctx, params)
+activate Tool
+
+alt 工具需要 MQTT 通訊
+  Tool -> MQTT : PublishCommand() / Subscribe()
+  MQTT -> Devices : MQTT 消息
+  Devices -> MQTT : 設備回應
+  MQTT -> Tool : 接收數據
+else 本地工具執行
+  Tool -> Tool : 本地操作\n(ping, speedtest 等)
+end
+
+Tool -> Tool : 處理數據與分析
+Tool -> Engine : 返回 ToolResult
+deactivate Tool
+
+Engine -> Storage : 直接存儲結果
+Storage -> DB : 持久化
+
+Engine -> CLI : 返回格式化結果
+CLI -> U : 顯示結果
+
+== 指標收集流程 (基於 metrics_collector.go) ==
+
+Engine -> Metrics : RecordToolExecution()\n記錄執行指標
+Metrics -> Metrics : 更新內部統計
+note right of Metrics : 內存中收集\n無獨立存儲
+
+== 會話管理流程 (ToolEngine 內建) ==
+
+U -> CLI : 創建新會話
+CLI -> Engine : CreateSession(ctx, options)
+Engine -> Engine : 內建會話創建\n無獨立 SessionManager
+
+Engine -> Storage : 可選的會話持久化
+Storage -> DB : 存儲會話數據
+
+== LLM 工具類別執行示例 ==
+
+group 網路工具 (tools_network.go)
+  U -> CLI : net.ping 或 net.speedtest
+  CLI -> Engine : ExecuteTool()
+  Engine -> "NetworkTool" as NetTool : Execute()
+  NetTool -> NetTool : 本地網路測試
+  NetTool -> Engine : 測試結果
+end
+
+group 拓撲工具 (tools_topology.go)  
+  U -> CLI : topology.get_full
+  CLI -> Engine : ExecuteTool()
+  Engine -> "TopologyTool" as TopoTool : Execute()
+  TopoTool -> Storage : 查詢拓撲數據
+  TopoTool -> Engine : 拓撲分析結果
+end
+
+group WiFi 工具 (tools_wifi_advanced.go)
+  U -> CLI : wifi.spectrum_analysis
+  CLI -> Engine : ExecuteTool()
+  Engine -> "WiFiTool" as WiFiTool : Execute()
+  WiFiTool -> MQTT : 可能的設備查詢
+  WiFiTool -> Engine : WiFi 分析結果
+end
+
+group 配置工具 (tools_config_management.go)
+  U -> CLI : config.wifi_settings
+  CLI -> Engine : ExecuteTool()
+  Engine -> "ConfigTool" as ConfigTool : Execute()
+  ConfigTool -> ConfigTool : 模擬配置變更\n(無實際備份機制)
+  ConfigTool -> Engine : 配置模擬結果
+end
+
+== 錯誤處理 (實際實現) ==
+
+Tool -> Engine : 執行錯誤
+Engine -> Engine : 內建錯誤處理
+Engine -> CLI : 返回錯誤信息
+CLI -> U : 顯示錯誤
+
+note right of Engine
+  **ToolEngine 實際功能:**
+  • 工具註冊與管理
+  • 內建會話管理
+  • 指標收集整合
+  • 基本錯誤處理
+  • 無自動回滾功能
+end note
+
+note right of Storage
+  **Storage 實際功能:**
+  • BuntDB 封裝
+  • 基本 CRUD 操作
+  • 事務支援 (BuntDB 內建)
+  • 無備份/恢復機制
+end note
+
+note right of MQTT
+  **MQTT 實際功能:**
+  • Eclipse Paho 封裝
+  • 基本發布/訂閱
+  • 連接管理
+  • 無複雜路由邏輯
+end note
+
+note right of Tool
+  **工具實際實現:**
+  • 5個工具檔案
+  • 大多為模擬實現
+  • 部分整合 MQTT
+  • 無複雜驗證機制
+end note
+
+@enduml

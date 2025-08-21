@@ -20,6 +20,9 @@ import (
 	"rtk_controller/internal/logging"
 	"rtk_controller/internal/topology"
 	"rtk_controller/internal/identity"
+	"rtk_controller/internal/qos"
+	"rtk_controller/internal/llm"
+	"rtk_controller/internal/changeset"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -118,11 +121,34 @@ func main() {
 		deviceManager := device.NewManager(buntStorage)
 		commandManager := command.NewManager(mqttClient, buntStorage)
 		diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
+		
+		// Initialize QoS manager for LLM tools
+		qosManager := qos.NewQoSManager(nil) // Use default config
+		
+		// Initialize changeset manager
+		changesetManager := changeset.NewSimpleManager(buntStorage, commandManager)
+		
+		// Initialize LLM tool engine
+		llmToolEngine := llm.NewToolEngine(buntStorage, commandManager, topologyManager, qosManager)
+		if err := llmToolEngine.Start(context.Background()); err != nil {
+			log.Fatalf("Failed to start LLM tool engine: %v", err)
+		}
+		
+		// Enable LLM support in diagnosis manager
+		if err := diagnosisManager.EnableLLMSupport(llmToolEngine); err != nil {
+			log.Fatalf("Failed to enable LLM support: %v", err)
+		}
+		
+		// Start changeset manager
+		if err := changesetManager.Start(context.Background()); err != nil {
+			log.Fatalf("Failed to start changeset manager: %v", err)
+		}
 
 		// Create and start interactive CLI with topology support
 		interactiveCLI := cli.NewInteractiveCLI(cfg, mqttClient, buntStorage, deviceManager, commandManager, diagnosisManager)
 		interactiveCLI.SetTopologyManager(topologyManager)
 		interactiveCLI.SetIdentityManager(identityManager)
+		interactiveCLI.SetChangesetManager(changesetManager)
 		interactiveCLI.Start()
 		return
 	}
@@ -135,11 +161,11 @@ func main() {
 	defer cancel()
 
 	// Initialize storage
-	storage, err := storage.NewBuntDB(cfg.Storage.Path)
+	buntStorage, err := storage.NewBuntDB(cfg.Storage.Path)
 	if err != nil {
 		log.Fatalf("Failed to initialize storage: %v", err)
 	}
-	defer storage.Close()
+	defer buntStorage.Close()
 
 	// Initialize schema manager
 	schemaConfig := schema.Config{
@@ -151,7 +177,7 @@ func main() {
 		CacheSize:           cfg.Schema.CacheSize,
 		StoreResults:        cfg.Schema.StoreResults,
 	}
-	schemaManager, err := schema.NewManager(schemaConfig, storage)
+	schemaManager, err := schema.NewManager(schemaConfig, buntStorage)
 	if err != nil {
 		log.Fatalf("Failed to create schema manager: %v", err)
 	}
@@ -161,16 +187,60 @@ func main() {
 	}
 
 	// Initialize MQTT client
-	mqttClient, err := mqtt.NewClient(cfg.MQTT, storage)
+	mqttClient, err := mqtt.NewClient(cfg.MQTT, buntStorage)
 	if err != nil {
 		log.Fatalf("Failed to create MQTT client: %v", err)
 	}
 
 	// Initialize core services
-	deviceManager := device.NewManager(storage)
-	eventProcessor := device.NewEventProcessor(storage)
-	commandManager := command.NewManager(mqttClient, storage)
-	diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, storage)
+	deviceManager := device.NewManager(buntStorage)
+	eventProcessor := device.NewEventProcessor(buntStorage)
+	commandManager := command.NewManager(mqttClient, buntStorage)
+	diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
+	
+	// Initialize QoS manager for LLM tools  
+	qosManager := qos.NewQoSManager(nil) // Use default config
+	
+	// Initialize changeset manager
+	changesetManager := changeset.NewSimpleManager(buntStorage, commandManager)
+	
+	// Initialize topology manager for service mode
+	topologyConfig := topology.ManagerConfig{
+		Tenant:                "default", // TODO: Get from config
+		Site:                  "default", // TODO: Get from config  
+		TopologyUpdateInterval: 30 * time.Second,
+		MetricsUpdateInterval: 1 * time.Minute,
+	}
+	topologyStorage := storage.NewTopologyStorage(buntStorage)
+	identityStorage := storage.NewIdentityStorage(buntStorage) 
+	identityConfig := identity.ManagerConfig{
+		EnableAutoDiscovery:   true,
+		EnableFingerprinting:  true,
+		FingerprintTimeout:    5 * time.Minute,
+		DeviceRetention:       30 * 24 * time.Hour,
+		CleanupInterval:       1 * time.Hour,
+	}
+	identityManager := identity.NewManager(identityStorage, identityConfig)
+	topologyManager, err := topology.NewManager(topologyStorage, identityStorage, identityManager, topologyConfig)
+	if err != nil {
+		log.Fatalf("Failed to create topology manager: %v", err) 
+	}
+	
+	// Initialize LLM tool engine
+	llmToolEngine := llm.NewToolEngine(buntStorage, commandManager, topologyManager, qosManager)
+	if err := llmToolEngine.Start(ctx); err != nil {
+		log.Fatalf("Failed to start LLM tool engine: %v", err)
+	}
+	
+	// Enable LLM support in diagnosis manager
+	if err := diagnosisManager.EnableLLMSupport(llmToolEngine); err != nil {
+		log.Fatalf("Failed to enable LLM support: %v", err)
+	}
+	
+	// Start changeset manager
+	if err := changesetManager.Start(ctx); err != nil {
+		log.Fatalf("Failed to start changeset manager: %v", err)
+	}
 	
 	// Connect MQTT client to device management and schema validation
 	mqttClient.SetDeviceManager(deviceManager)
@@ -222,6 +292,7 @@ func main() {
 	// Stop services gracefully
 	diagnosisManager.Stop()
 	commandManager.Stop()
+	changesetManager.Stop()
 	eventProcessor.Stop()
 	deviceManager.Stop()
 	mqttClient.Disconnect()
@@ -294,7 +365,7 @@ func printBanner() {
 ║                        RTK Controller                          ║
 ║                                                                ║
 ║    MQTT Diagnostic Communication Controller for IoT Devices   ║
-║    Copyright (c) 2024 Realtek Semiconductor Corp.             ║
+║    Copyright (c) 2025 Realtek Semiconductor Corp.             ║
 ╚════════════════════════════════════════════════════════════════╝`
 
 	fmt.Println(banner)

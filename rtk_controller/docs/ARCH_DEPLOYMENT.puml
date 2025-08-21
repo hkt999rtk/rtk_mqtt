@@ -1,0 +1,153 @@
+@startuml RTK_Controller_Deployment
+title RTK Controller - 部署架構與生態系統
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+package "RTK MQTT 生態系統" {
+  
+  package "Development Environment" {
+    node "開發機器" {
+      [RTK Controller\n(開發版)] as DevController
+      [本地測試] as DevTest
+      [程式碼編輯] as DevCode
+    }
+  }
+  
+  package "RTK Controller 主系統" {
+    node "控制器服務器" {
+      [RTK Controller\n(生產版)] as Controller
+      database "BuntDB\n數據庫" as ControllerDB
+      [配置文件] as ControllerConfig
+      [日誌系統] as ControllerLogs
+    }
+  }
+  
+  package "MQTT 通訊層" {
+    node "MQTT Broker" {
+      [RTK MQTT Broker\n(Go實現)] as Broker
+      [認證模組] as BrokerAuth
+      [日誌記錄] as BrokerLogs
+      database "Broker 配置" as BrokerDB
+    }
+  }
+  
+  
+  package "網路設備" {
+    node "WiFi 接入點" {
+      [AP-001] as AP1
+      [AP-002] as AP2
+      [AP-003] as AP3
+    }
+    
+    node "Mesh 節點" {
+      [Mesh-Node-001] as Mesh1
+      [Mesh-Node-002] as Mesh2
+      [Mesh-Gateway] as MeshGW
+    }
+    
+    node "IoT 設備" {
+      [智能開關] as IoTSwitch
+      [感測器] as IoTSensor
+      [路由器] as IoTRouter
+    }
+  }
+  
+  package "監控與管理" {
+    node "內建監控" {
+      [指標收集\n(內建)] as InternalMetrics
+      [健康檢查] as HealthCheck
+      [日誌監控] as LogMonitor
+    }
+  }
+}
+
+package "外部系統" {
+  [MQTT 設備\n(通過 MQTT 協議)] as MQTTDevices
+}
+
+' 連接關係
+DevController -.-> Controller : "部署"
+DevTest -.-> DevController : "測試"
+DevCode -.-> DevController : "開發"
+
+Controller <--> Broker : "MQTT 通訊\nPort: 1883/8883"
+Controller --> ControllerDB : "數據持久化"
+Controller --> ControllerConfig : "讀取配置"
+Controller --> ControllerLogs : "記錄日誌"
+
+Broker --> BrokerAuth : "用戶認證"
+Broker --> BrokerLogs : "記錄日誌"
+Broker --> BrokerDB : "配置存儲"
+
+Broker <--> MQTTDevices : "MQTT 通訊"
+
+MQTTDevices <--> AP1 : "MQTT 控制"
+MQTTDevices <--> AP2 : "MQTT 控制"
+MQTTDevices <--> AP3 : "MQTT 控制"
+
+MQTTDevices <--> Mesh1 : "MQTT 控制"
+MQTTDevices <--> Mesh2 : "MQTT 控制"
+MQTTDevices <--> MeshGW : "MQTT 控制"
+
+MQTTDevices <--> IoTSwitch : "MQTT 控制"
+MQTTDevices <--> IoTSensor : "MQTT 控制"
+MQTTDevices <--> IoTRouter : "MQTT 控制"
+
+Controller --> InternalMetrics : "內建指標收集"
+Controller --> HealthCheck : "健康狀態檢查"
+Controller --> LogMonitor : "日誌監控"
+
+
+note top of Controller
+  **RTK Controller 核心功能:**
+  • 22個診斷工具
+  • LLM 驅動分析
+  • 智能配置管理
+  • 自動化優化
+  • 安全回滾機制
+end note
+
+note top of Broker
+  **MQTT Broker 功能:**
+  • 高性能消息路由
+  • 安全認證
+  • QoS 支持
+  • 主題過濾
+  • 連接管理
+end note
+
+note top of MQTTDevices
+  **MQTT 通訊:**
+  • 標準 MQTT 協議
+  • 設備直接連接
+  • 無需額外框架
+  • 簡化架構設計
+end note
+
+
+note as DeploymentNotes
+  **部署特點:**
+  
+  **可擴展性:**
+  • 支持數百個設備
+  • 水平擴展架構
+  • 負載均衡支持
+  
+  **可靠性:**
+  • 故障自動檢測
+  • 配置自動回滾
+  • 健康狀態監控
+  
+  **安全性:**
+  • TLS/SSL 加密
+  • 角色基礎存取控制
+  • 審計日誌記錄
+  
+  **維護性:**
+  • 內建監控系統
+  • 遠程診斷
+  • 零停機時間更新
+end note
+
+@enduml

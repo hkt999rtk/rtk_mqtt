@@ -111,7 +111,7 @@ func (b *Broker) printBanner() {
 ║                  Realtek Embedded MQTT Broker                ║
 ║                                                               ║
 ║  High-performance MQTT 3.1.1 broker for RTK IoT devices     ║
-║  Copyright (c) 2024 Realtek Semiconductor Corp.              ║
+║  Copyright (c) 2025 Realtek Semiconductor Corp.              ║
 ╚═══════════════════════════════════════════════════════════════╝`
 
 	fmt.Println(banner)

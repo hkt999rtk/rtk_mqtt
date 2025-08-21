@@ -27,6 +27,11 @@ type Manager struct {
 	sessions map[string]*types.DiagnosisSession
 	mu       sync.RWMutex
 	
+	// LLM sessions support (added for LLM tool integration)
+	llmSessions map[string]*types.LLMSession
+	llmMutex    sync.RWMutex
+	toolEngine  ToolEngine // Interface to avoid circular dependency
+	
 	// Analyzers
 	analyzers map[string]Analyzer
 	
@@ -37,6 +42,15 @@ type Manager struct {
 	
 	// Statistics
 	stats *types.DiagnosisStats
+}
+
+// ToolEngine interface to avoid circular dependency with llm package
+type ToolEngine interface {
+	CreateSession(ctx context.Context, options interface{}) (*types.LLMSession, error)
+	ExecuteTool(ctx context.Context, sessionID, toolName string, params map[string]interface{}) (*types.ToolResult, error)
+	GetSession(sessionID string) (*types.LLMSession, error)
+	CloseSession(sessionID string, status types.LLMSessionStatus) error
+	ListTools() []string
 }
 
 // Analyzer interface for diagnosis analysis
@@ -53,15 +67,16 @@ func NewManager(config config.DiagnosisConfig, storage storage.Storage) *Manager
 	ctx, cancel := context.WithCancel(context.Background())
 	
 	manager := &Manager{
-		config:    config,
-		storage:   storage,
-		dataQueue: make(chan *types.DiagnosisData, 1000),
-		sessions:  make(map[string]*types.DiagnosisSession),
-		analyzers: make(map[string]Analyzer),
-		ctx:       ctx,
-		cancel:    cancel,
-		done:      make(chan struct{}),
-		stats:     &types.DiagnosisStats{},
+		config:      config,
+		storage:     storage,
+		dataQueue:   make(chan *types.DiagnosisData, 1000),
+		sessions:    make(map[string]*types.DiagnosisSession),
+		llmSessions: make(map[string]*types.LLMSession),
+		analyzers:   make(map[string]Analyzer),
+		ctx:         ctx,
+		cancel:      cancel,
+		done:        make(chan struct{}),
+		stats:       &types.DiagnosisStats{},
 	}
 	
 	// Register built-in analyzers
@@ -679,4 +694,193 @@ func (m *Manager) updateStats() {
 	}
 	
 	m.stats = stats
+}
+
+// LLM Support Methods
+
+// SetToolEngine sets the LLM tool engine for this diagnosis manager
+func (m *Manager) SetToolEngine(engine ToolEngine) {
+	m.llmMutex.Lock()
+	defer m.llmMutex.Unlock()
+	m.toolEngine = engine
+}
+
+// CreateLLMSession creates a new LLM diagnosis session
+func (m *Manager) CreateLLMSession(ctx context.Context, deviceID, userID string, metadata map[string]interface{}) (*types.LLMSession, error) {
+	if m.toolEngine == nil {
+		return nil, fmt.Errorf("LLM tool engine not configured")
+	}
+	
+	options := map[string]interface{}{
+		"DeviceID": deviceID,
+		"UserID":   userID,
+		"Metadata": metadata,
+	}
+	
+	session, err := m.toolEngine.CreateSession(ctx, options)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create LLM session: %w", err)
+	}
+	
+	// Store in local cache
+	m.llmMutex.Lock()
+	m.llmSessions[session.SessionID] = session
+	m.llmMutex.Unlock()
+	
+	log.WithFields(log.Fields{
+		"session_id": session.SessionID,
+		"device_id":  deviceID,
+		"user_id":    userID,
+	}).Info("Created LLM diagnosis session")
+	
+	return session, nil
+}
+
+// ExecuteLLMTool executes an LLM tool within a session
+func (m *Manager) ExecuteLLMTool(ctx context.Context, sessionID, toolName string, params map[string]interface{}) (*types.ToolResult, error) {
+	if m.toolEngine == nil {
+		return nil, fmt.Errorf("LLM tool engine not configured")
+	}
+	
+	// Check if session exists locally
+	m.llmMutex.RLock()
+	session, exists := m.llmSessions[sessionID]
+	m.llmMutex.RUnlock()
+	
+	if !exists {
+		// Try to get from tool engine
+		var err error
+		session, err = m.toolEngine.GetSession(sessionID)
+		if err != nil {
+			return nil, fmt.Errorf("session %s not found: %w", sessionID, err)
+		}
+		
+		// Add to local cache
+		m.llmMutex.Lock()
+		m.llmSessions[sessionID] = session
+		m.llmMutex.Unlock()
+	}
+	
+	log.WithFields(log.Fields{
+		"session_id": sessionID,
+		"tool_name":  toolName,
+		"device_id":  session.DeviceID,
+	}).Info("Executing LLM tool")
+	
+	result, err := m.toolEngine.ExecuteTool(ctx, sessionID, toolName, params)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"session_id": sessionID,
+			"tool_name":  toolName,
+			"error":      err.Error(),
+		}).Error("LLM tool execution failed")
+		return nil, err
+	}
+	
+	log.WithFields(log.Fields{
+		"session_id":     sessionID,
+		"tool_name":      toolName,
+		"success":        result.Success,
+		"execution_time": result.ExecutionTime,
+	}).Info("LLM tool execution completed")
+	
+	return result, nil
+}
+
+// GetLLMSession retrieves an LLM session by ID
+func (m *Manager) GetLLMSession(sessionID string) (*types.LLMSession, error) {
+	// Try local cache first
+	m.llmMutex.RLock()
+	if session, exists := m.llmSessions[sessionID]; exists {
+		m.llmMutex.RUnlock()
+		return session, nil
+	}
+	m.llmMutex.RUnlock()
+	
+	// Try tool engine
+	if m.toolEngine != nil {
+		session, err := m.toolEngine.GetSession(sessionID)
+		if err == nil {
+			// Add to local cache
+			m.llmMutex.Lock()
+			m.llmSessions[sessionID] = session
+			m.llmMutex.Unlock()
+			return session, nil
+		}
+	}
+	
+	return nil, fmt.Errorf("LLM session %s not found", sessionID)
+}
+
+// CloseLLMSession closes an LLM diagnosis session
+func (m *Manager) CloseLLMSession(sessionID string, status types.LLMSessionStatus) error {
+	if m.toolEngine == nil {
+		return fmt.Errorf("LLM tool engine not configured")
+	}
+	
+	err := m.toolEngine.CloseSession(sessionID, status)
+	if err != nil {
+		return fmt.Errorf("failed to close LLM session: %w", err)
+	}
+	
+	// Remove from local cache
+	m.llmMutex.Lock()
+	delete(m.llmSessions, sessionID)
+	m.llmMutex.Unlock()
+	
+	log.WithFields(log.Fields{
+		"session_id": sessionID,
+		"status":     string(status),
+	}).Info("Closed LLM diagnosis session")
+	
+	return nil
+}
+
+// ListLLMTools returns all available LLM diagnostic tools
+func (m *Manager) ListLLMTools() []string {
+	if m.toolEngine == nil {
+		return []string{}
+	}
+	return m.toolEngine.ListTools()
+}
+
+// GetLLMSessionHistory returns recent LLM sessions for a device
+func (m *Manager) GetLLMSessionHistory(deviceID string, limit int) ([]*types.LLMSession, error) {
+	var sessions []*types.LLMSession
+	
+	// Get from local cache
+	m.llmMutex.RLock()
+	for _, session := range m.llmSessions {
+		if deviceID == "" || session.DeviceID == deviceID {
+			sessions = append(sessions, session)
+		}
+	}
+	m.llmMutex.RUnlock()
+	
+	// TODO: Also load from storage for complete history
+	
+	// Sort by creation time (most recent first)
+	// Simple bubble sort for small datasets
+	for i := 0; i < len(sessions)-1; i++ {
+		for j := 0; j < len(sessions)-i-1; j++ {
+			if sessions[j].CreatedAt.Before(sessions[j+1].CreatedAt) {
+				sessions[j], sessions[j+1] = sessions[j+1], sessions[j]
+			}
+		}
+	}
+	
+	// Apply limit
+	if limit > 0 && len(sessions) > limit {
+		sessions = sessions[:limit]
+	}
+	
+	return sessions, nil
+}
+
+// EnableLLMSupport enables LLM support for this diagnosis manager
+func (m *Manager) EnableLLMSupport(engine ToolEngine) error {
+	m.SetToolEngine(engine)
+	
+	log.Info("LLM support enabled for diagnosis manager")
+	return nil
 }

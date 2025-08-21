@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-MQTT Diag Communication Protocol Specification Document Generator
+MQTT Diagnostic Communication Protocol Specification Document Generator
 Converts SPEC.md into a formatted Word document with automatic TOC
 """
 
@@ -103,7 +103,7 @@ def add_header_and_footer(doc):
     right_cell = header_table.cell(0, 1)
     right_para = right_cell.paragraphs[0]
     right_para.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    title_run = right_para.add_run("MQTT Diag 通訊規格")
+    title_run = right_para.add_run("MQTT Diagnostic 通訊規格")
     title_run.font.name = 'Times New Roman'
     title_run.font.size = Pt(10)
     title_run.font.bold = True
@@ -452,7 +452,7 @@ def add_content_to_doc(doc, sections, base_path=None):
 
 def create_mqtt_spec_document():
     """Main function to create the MQTT specification document"""
-    print("🚀 開始產生 MQTT Diag 通訊規格文件...")
+    print("🚀 開始產生 MQTT Diagnostic 通訊規格文件...")
     
     # Create new document
     doc = Document()
@@ -483,7 +483,7 @@ def create_mqtt_spec_document():
     # Add title
     title_para = doc.add_paragraph()
     title_para.style = 'Custom Title'
-    title_run = title_para.add_run("MQTT Diag 通訊規格")
+    title_run = title_para.add_run("MQTT Diagnostic 通訊規格")
     
     subtitle_para = doc.add_paragraph()
     subtitle_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -611,7 +611,7 @@ def create_mqtt_spec_document():
             continue
     
     # Save document
-    output_path = Path(__file__).parent / "MQTT_Diag_通訊規格.docx"
+    output_path = Path(__file__).parent / "MQTT_Diagnosis_通訊規格.docx"
     doc.save(output_path)
     
     print(f"✅ 文件已儲存至: {output_path}")

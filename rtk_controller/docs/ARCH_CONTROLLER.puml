@@ -1,0 +1,210 @@
+@startuml RTK_Controller_Architecture
+title RTK Controller 實際架構 - 基於 Go 原始碼分析
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+!define MANAGER_COLOR #2E86AB
+!define CLI_COLOR #F18F01
+!define STORAGE_COLOR #6C5CE7
+!define MQTT_COLOR #A23B72
+!define LLM_COLOR #C73E1D
+
+' 應用程式進入點
+package "應用程式層" <<MANAGER_COLOR>> {
+  component [main.go\n應用進入點] as Main
+  
+  note right of Main
+    **兩種執行模式:**
+    • --cli: 互動式 CLI 模式
+    • 預設: 背景服務模式
+    
+    **初始化順序:**
+    1. 配置管理器載入
+    2. 儲存系統初始化  
+    3. 各管理器啟動
+    4. MQTT 客戶端連線
+  end note
+}
+
+' CLI 介面層
+package "CLI 介面層" <<CLI_COLOR>> {
+  component [cli.CLI\n(Cobra 命令框架)] as CLI
+  component [cli.InteractiveCLI\n(互動式介面)] as InteractiveCLI
+  
+  component [device_commands.go] as DeviceCmd
+  component [command_commands.go] as CommandCmd
+  component [diagnostics_commands.go] as DiagnosticsCmd
+  component [llm_commands.go] as LLMCmd
+  component [changeset_commands.go] as ChangesetCmd
+  component [system_commands.go] as SystemCmd
+  
+  note top of CLI
+    **實際命令分組:**
+    • device - 設備管理
+    • command - 命令執行
+    • diagnostics - 診斷分析
+    • llm - LLM 工具執行
+    • changeset - 變更集管理
+    • system - 系統操作
+  end note
+}
+
+' 核心管理器層 (實際的 9 個 Manager)
+package "核心管理器層" <<MANAGER_COLOR>> {
+  component [config.Manager\n配置管理\n• 配置檔案熱重載\n• 監聽檔案變更\n• 配置驗證與發佈] as ConfigMgr
+  component [device.Manager\n設備管理\n• 設備生命週期管理\n• 設備狀態快取\n• 設備統計資訊] as DeviceMgr
+  component [command.Manager\n命令管理\n• MQTT 命令發送追蹤\n• 命令回應處理\n• 命令執行超時管理] as CommandMgr
+  component [diagnosis.Manager\n診斷管理\n• 診斷資料收集分析\n• 診斷會話管理\n• LLM 工具整合支援] as DiagnosisMgr
+  component [identity.Manager\n身份管理\n• 設備身份識別與分類\n• 製造商指紋檢測\n• 設備規則引擎] as IdentityMgr
+  component [topology.Manager\n拓撲管理\n• 8階段拓撲檢測\n• 網路關係推斷\n• 即時拓撲更新] as TopologyMgr
+  component [qos.QoSManager\nQoS 管理\n• 頻寬規則與政策\n• 流量分析與建議\n• QoS 政策引擎] as QoSMgr
+  component [schema.Manager\n架構驗證\n• JSON Schema 驗證\n• 訊息格式檢查\n• 驗證結果快取] as SchemaMgr
+  component [changeset.SimpleManager\n變更集管理\n• 配置變更追蹤\n• 變更回滾機制\n• 變更審批流程] as ChangesetMgr
+  
+  note bottom of TopologyMgr
+    **拓撲管理特色:**
+    • 8階段拓撲檢測
+    • 動態網路發現
+    • 設備關係分析
+    • 實時狀態更新
+  end note
+}
+
+' LLM 工具引擎
+package "LLM 工具引擎" <<LLM_COLOR>> {
+  component [llm.ToolEngine\n工具引擎核心] as ToolEngine
+  component [llm.MetricsCollector\n指標收集器] as MetricsCollector
+  
+  component [tools_network.go\n網路工具] as NetworkTools
+  component [tools_topology.go\n拓撲工具] as TopologyTools
+  component [tools_wifi_advanced.go\nWiFi 進階工具] as WiFiTools
+  component [tools_mesh_network.go\nMesh 網路工具] as MeshTools
+  component [tools_config_management.go\n配置管理工具] as ConfigTools
+  
+  note top of ToolEngine
+    **實際工具架構:**
+    • 無獨立會話管理器
+    • 工具註冊內建於引擎
+    • 會話狀態由引擎內部管理
+    • 直接整合各管理器服務
+  end note
+}
+
+' 儲存層 (簡化為實際架構)
+package "儲存層" <<STORAGE_COLOR>> {
+  component [storage.BuntDB\n主儲存引擎] as BuntDB
+  component [storage.Storage\n儲存介面] as StorageInterface
+  component [storage.TopologyStorage\n拓撲專用儲存] as TopologyStorage
+  component [storage.IdentityStorage\n身份專用儲存] as IdentityStorage
+  
+  note bottom of BuntDB
+    **儲存特性:**
+    • 嵌入式 NoSQL 資料庫
+    • ACID 事務支援
+    • 類型轉換在各 storage 檔案實現
+    • 無獨立的序列化層
+  end note
+}
+
+' MQTT 通訊層 (簡化為實際組件)
+package "MQTT 通訊層" <<MQTT_COLOR>> {
+  component [mqtt.Client\n(Eclipse Paho 封裝)] as MQTTClient
+  component [mqtt.Publisher\n發布器] as Publisher
+  component [mqtt.Subscriber\n訂閱器] as Subscriber
+  component [mqtt.TopologyProcessor\n拓撲訊息處理] as TopologyProcessor
+  component [utils.topic\n主題工具] as TopicUtils
+  
+  note right of MQTTClient
+    **實際主題架構:**
+    rtk/v1/{tenant}/{site}/{device_id}/{message_type}
+    
+    **訊息類型:**
+    • state - 設備狀態
+    • telemetry - 遙測數據
+    • cmd - 命令控制
+    • evt - 事件通知
+  end note
+}
+
+' 外部系統
+package "外部系統" {
+  [MQTT Broker] as ExtMQTT
+  [網路設備] as Devices
+}
+
+' === 連接關係 ===
+
+' 應用程式進入點
+Main --> ConfigMgr : "載入配置"
+Main --> CLI : "CLI 模式"
+Main --> InteractiveCLI : "互動模式"
+
+' CLI 層內部連接
+CLI --> DeviceCmd
+CLI --> CommandCmd  
+CLI --> DiagnosticsCmd
+CLI --> LLMCmd
+CLI --> ChangesetCmd
+CLI --> SystemCmd
+
+InteractiveCLI --> CLI : "使用 Cobra 命令"
+
+' CLI 到管理器的連接
+DeviceCmd --> DeviceMgr
+CommandCmd --> CommandMgr
+DiagnosticsCmd --> DiagnosisMgr
+LLMCmd --> ToolEngine
+ChangesetCmd --> ChangesetMgr
+SystemCmd --> ConfigMgr
+
+' 管理器之間的依賴關係
+DiagnosisMgr --> ToolEngine : "LLM 支援"
+ToolEngine --> CommandMgr : "命令執行"
+ToolEngine --> TopologyMgr : "拓撲查詢"
+ToolEngine --> QoSMgr : "QoS 分析"
+TopologyMgr --> IdentityMgr : "設備身份"
+ChangesetMgr --> CommandMgr : "變更執行"
+
+' LLM 工具引擎內部
+ToolEngine --> MetricsCollector
+ToolEngine --> NetworkTools
+ToolEngine --> TopologyTools
+ToolEngine --> WiFiTools
+ToolEngine --> MeshTools
+ToolEngine --> ConfigTools
+
+' 儲存層連接
+StorageInterface --> BuntDB
+TopologyStorage --> BuntDB
+IdentityStorage --> BuntDB
+
+' 管理器到儲存的連接
+DeviceMgr --> StorageInterface
+CommandMgr --> StorageInterface
+DiagnosisMgr --> StorageInterface
+TopologyMgr --> TopologyStorage
+IdentityMgr --> IdentityStorage
+ChangesetMgr --> StorageInterface
+SchemaMgr --> StorageInterface
+
+' MQTT 層連接
+MQTTClient --> Publisher
+MQTTClient --> Subscriber
+MQTTClient --> TopologyProcessor
+Publisher --> TopicUtils
+Subscriber --> TopicUtils
+
+' 管理器到 MQTT 的連接
+CommandMgr --> MQTTClient : "命令發送"
+TopologyMgr --> MQTTClient : "拓撲更新"
+DeviceMgr --> MQTTClient : "設備狀態"
+
+' 外部連接
+MQTTClient --> ExtMQTT : "MQTT 連線"
+ExtMQTT --> Devices : "設備通訊"
+CommandMgr --> Devices : "直接設備控制"
+
+@enduml

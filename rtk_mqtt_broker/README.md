@@ -91,7 +91,7 @@ bin\rtk_mqtt_broker-windows-amd64.exe -config C:\path\to\your\config.yaml
 ║                  Realtek Embedded MQTT Broker                ║
 ║                                                               ║
 ║  High-performance MQTT 3.1.1 broker for RTK IoT devices     ║
-║  Copyright (c) 2024 Realtek Semiconductor Corp.              ║
+║  Copyright (c) 2025 Realtek Semiconductor Corp.              ║
 ╚═══════════════════════════════════════════════════════════════╝
 
 [RTK-MQTT] [INFO] Realtek Embedded MQTT Broker started successfully
@@ -481,7 +481,7 @@ lsof -i :1883
 
 本軟體遵循 MIT 授權條款。詳細資訊請參考 LICENSE 檔案。
 
-Copyright (c) 2024 Realtek Semiconductor Corp. All rights reserved.
+Copyright (c) 2025 Realtek Semiconductor Corp. All rights reserved.
 
 ---
 

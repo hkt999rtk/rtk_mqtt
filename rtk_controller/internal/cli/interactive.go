@@ -29,6 +29,7 @@ type InteractiveCLI struct {
 	diagnosisManager *diagnosis.Manager
 	topologyManager  *topology.Manager
 	identityManager  *identity.Manager
+	changesetManager interface{} // Using interface{} to avoid import cycle
 	topologyCommands *TopologyCommands
 	
 	// Command history and state
@@ -129,6 +130,44 @@ func (cli *InteractiveCLI) SetIdentityManager(manager *identity.Manager) {
 	}
 }
 
+// SetChangesetManager sets the changeset manager
+func (cli *InteractiveCLI) SetChangesetManager(manager interface{}) {
+	cli.changesetManager = manager
+}
+
+// handleChangesetCommandWrapper wraps the changeset command handler with type assertion
+func (cli *InteractiveCLI) handleChangesetCommandWrapper(args []string) {
+	if cli.changesetManager == nil {
+		fmt.Println("Changeset manager not initialized")
+		return
+	}
+	
+	// Since we can't import changeset package directly (circular import),
+	// we use interface{} and perform reflection-like operations
+	// This is a temporary solution - in production we'd use proper interfaces
+	
+	// For now, provide basic changeset functionality
+	if len(args) == 0 {
+		fmt.Println("Changeset commands: create, list, show, execute, rollback")
+		fmt.Println("(Full changeset functionality requires proper type integration)")
+		return
+	}
+	
+	switch args[0] {
+	case "help":
+		fmt.Println("Changeset Management Commands:")
+		fmt.Println("  changeset create [description]  - Create new changeset")
+		fmt.Println("  changeset list                  - List all changesets")
+		fmt.Println("  changeset show <id>             - Show changeset details")
+		fmt.Println("  changeset execute <id>          - Execute changeset")
+		fmt.Println("  changeset rollback <id>         - Rollback changeset")
+	default:
+		fmt.Printf("Changeset command '%s' recognized but not fully implemented\n", args[0])
+		fmt.Println("Changeset functionality requires proper integration")
+		fmt.Println("Use 'changeset help' for available commands")
+	}
+}
+
 // executor handles command execution
 func (cli *InteractiveCLI) executor(input string) {
 	input = strings.TrimSpace(input)
@@ -168,6 +207,10 @@ func (cli *InteractiveCLI) executor(input string) {
 		cli.handleEventCommand(args)
 	case "diagnosis", "diag":
 		cli.handleDiagnosisCommand(args)
+	case "llm", "ai":
+		cli.handleLLMCommand(args)
+	case "changeset", "cs":
+		cli.handleChangesetCommandWrapper(args)
 	case "config", "cfg":
 		cli.handleConfigCommand(args)
 	case "log":
@@ -220,6 +263,33 @@ func (cli *InteractiveCLI) createCompleter() readline.AutoCompleter {
 			readline.PcItem("list"),
 			readline.PcItem("show"),
 			readline.PcItem("analyzers"),
+		),
+		readline.PcItem("llm",
+			readline.PcItem("list"),
+			readline.PcItem("exec",
+				readline.PcItem("topology.get_full"),
+				readline.PcItem("clients.list"),
+				readline.PcItem("qos.get_status"),
+				readline.PcItem("traffic.get_stats"),
+				readline.PcItem("network.speedtest_full"),
+				readline.PcItem("diagnostics.wan_connectivity"),
+			),
+			readline.PcItem("session",
+				readline.PcItem("create"),
+				readline.PcItem("list"),
+				readline.PcItem("close"),
+				readline.PcItem("show"),
+			),
+			readline.PcItem("history"),
+		),
+		readline.PcItem("changeset",
+			readline.PcItem("create"),
+			readline.PcItem("list"),
+			readline.PcItem("show"),
+			readline.PcItem("execute"),
+			readline.PcItem("rollback"),
+			readline.PcItem("add"),
+			readline.PcItem("help"),
 		),
 		readline.PcItem("config",
 			readline.PcItem("show"),
@@ -278,6 +348,8 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("  command <subcommand> - Command management")
 		fmt.Println("  event <subcommand> - Event monitoring")
 		fmt.Println("  diagnosis <subcommand> - Diagnosis management")
+		fmt.Println("  llm <subcommand>   - LLM diagnostic tools")
+		fmt.Println("  changeset <subcommand> - Changeset management")
 		fmt.Println("  topology <subcommand> - Network topology management")
 		fmt.Println("  identity <subcommand> - Device identity management")
 		fmt.Println("  config <subcommand> - Configuration management")
@@ -322,6 +394,42 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("  topology roaming [device_id] - Show roaming information")
 		fmt.Println("  topology monitoring - Show monitoring status")
 		fmt.Println("  topology alerts - Show topology alerts")
+	case "llm", "ai":
+		fmt.Println("LLM Diagnostic Tool Commands:")
+		fmt.Println("  llm list                           - List available LLM tools")
+		fmt.Println("  llm exec <tool> [params]           - Execute LLM tool")
+		fmt.Println("  llm session create [device_id]     - Create new session")
+		fmt.Println("  llm session list                   - List active sessions")
+		fmt.Println("  llm session close <session_id>     - Close session")
+		fmt.Println("  llm session show <session_id>      - Show session details")
+		fmt.Println("  llm history [limit]                - Show execution history")
+		fmt.Println("")
+		fmt.Println("Available Tools:")
+		fmt.Println("  topology.get_full                  - Get complete network topology")
+		fmt.Println("  clients.list                       - List all network clients") 
+		fmt.Println("  qos.get_status                     - Get QoS status")
+		fmt.Println("  traffic.get_stats                  - Get traffic statistics")
+		fmt.Println("  network.speedtest_full             - Run comprehensive speed test")
+		fmt.Println("  diagnostics.wan_connectivity       - Test WAN connectivity")
+		fmt.Println("")
+		fmt.Println("Parameter Examples:")
+		fmt.Println("  llm exec clients.list include_offline=true")
+		fmt.Println("  llm exec traffic.get_stats time_range_hours=24")
+		fmt.Println("  llm exec qos.get_status include_recommendations=false")
+	case "changeset", "cs":
+		fmt.Println("Changeset Management Commands:")
+		fmt.Println("  changeset create [description]       - Create new changeset")
+		fmt.Println("  changeset list                       - List all changesets")
+		fmt.Println("  changeset show <id>                  - Show changeset details")
+		fmt.Println("  changeset execute <id>               - Execute changeset")
+		fmt.Println("  changeset rollback <id>              - Rollback changeset")
+		fmt.Println("  changeset add <id> <device> <op> [args] - Add command to changeset")
+		fmt.Println("")
+		fmt.Println("Examples:")
+		fmt.Println("  changeset create \"Update WiFi settings\"")
+		fmt.Println("  changeset add cs-123 device1 configure_wifi --ssid=NewSSID")
+		fmt.Println("  changeset execute cs-123")
+		fmt.Println("  changeset rollback cs-123")
 	case "identity":
 		fmt.Println("Identity management commands:")
 		fmt.Println("  identity list - List device identities")

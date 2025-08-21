@@ -1,0 +1,188 @@
+@startuml RTK_Controller_Tools_Architecture
+!define RECTANGLE class
+
+title RTK Controller - 診斷工具詳細架構 (22個工具)
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+' Define color scheme based on tool categories
+!define READ_COLOR #74B9FF
+!define TEST_COLOR #00B894
+!define ACT_COLOR #FDCB6E
+!define WIFI_COLOR #E17055
+
+package "LLM Tool Engine" {
+  [Tool Registry] as Registry
+  [Session Manager] as Sessions
+  [Metrics Collector] as Metrics
+  [Tool Executor] as Executor
+}
+
+package "Basic Diagnostic Tools (6 tools)" {
+  
+  package "Topology Tools" <<READ_COLOR>> {
+    [topology.get_full] as TopoFull
+    [clients.list] as ClientsList
+    note top of TopoFull : **Category**: Read\n**Capabilities**: topology_reader
+    note top of ClientsList : **Category**: Read\n**Capabilities**: client_lister
+  }
+  
+  package "Network Tools" <<TEST_COLOR>> {
+    [network.speedtest_full] as SpeedTest
+    [diagnostics.wan_connectivity] as WANTest
+    note top of SpeedTest : **Category**: Test\n**Capabilities**: speed_tester
+    note top of WANTest : **Category**: Test\n**Capabilities**: connectivity_tester
+  }
+  
+  package "QoS Tools" <<READ_COLOR>> {
+    [qos.get_status] as QoSStatus
+    [traffic.get_stats] as TrafficStats
+    note top of QoSStatus : **Category**: Read\n**Capabilities**: qos_reader
+    note top of TrafficStats : **Category**: Read\n**Capabilities**: traffic_analyzer
+  }
+}
+
+package "WiFi Advanced Tools (8 tools)" <<WIFI_COLOR>> {
+  
+  package "Spectrum Analysis" <<WIFI_COLOR>> {
+    [wifi.scan_channels] as WifiScan
+    [wifi.analyze_interference] as WifiInterference
+    [wifi.spectrum_utilization] as WifiSpectrum
+    note top of WifiScan : **Category**: WiFi\n**Capabilities**: channel_scanner, spectrum_analyzer
+    note top of WifiInterference : **Category**: WiFi\n**Capabilities**: interference_detector, signal_classifier
+    note top of WifiSpectrum : **Category**: WiFi\n**Capabilities**: spectrum_analyzer, utilization_monitor
+  }
+  
+  package "Signal & Coverage" <<WIFI_COLOR>> {
+    [wifi.signal_strength_map] as WifiSignal
+    [wifi.coverage_analysis] as WifiCoverage
+    [wifi.roaming_optimization] as WifiRoaming
+    note top of WifiSignal : **Category**: WiFi\n**Capabilities**: signal_mapper, rssi_monitor
+    note top of WifiCoverage : **Category**: WiFi\n**Capabilities**: coverage_mapper, path_loss_calculator
+    note top of WifiRoaming : **Category**: WiFi\n**Capabilities**: roaming_analyzer, handoff_monitor
+  }
+  
+  package "Performance Analysis" <<WIFI_COLOR>> {
+    [wifi.throughput_analysis] as WifiThroughput
+    [wifi.latency_profiling] as WifiLatency
+    note top of WifiThroughput : **Category**: WiFi\n**Capabilities**: throughput_tester, bottleneck_analyzer
+    note top of WifiLatency : **Category**: WiFi\n**Capabilities**: latency_profiler, jitter_analyzer
+  }
+}
+
+package "Mesh Network Tools (6 tools)" {
+  
+  package "Topology & Relationships" <<READ_COLOR>> {
+    [mesh.get_topology] as MeshTopo
+    [mesh.node_relationship] as MeshNodes
+    note top of MeshTopo : **Category**: Read\n**Capabilities**: mesh_scanner, topology_mapper
+    note top of MeshNodes : **Category**: Read\n**Capabilities**: relationship_analyzer, dependency_mapper
+  }
+  
+  package "Optimization & Testing" <<ACT_COLOR>> {
+    [mesh.path_optimization] as MeshPath
+    [mesh.load_balancing] as MeshLoad
+    note top of MeshPath : **Category**: Act\n**Capabilities**: path_optimizer, routing_analyzer
+    note top of MeshLoad : **Category**: Act\n**Capabilities**: load_balancer, traffic_analyzer
+  }
+  
+  package "Performance & Reliability" <<TEST_COLOR>> {
+    [mesh.backhaul_test] as MeshBackhaul
+    [mesh.failover_simulation] as MeshFailover
+    note top of MeshBackhaul : **Category**: Test\n**Capabilities**: backhaul_tester, bandwidth_analyzer
+    note top of MeshFailover : **Category**: Test\n**Capabilities**: failover_simulator, resilience_tester
+  }
+}
+
+package "Configuration Management (8 tools)" {
+  
+  package "Configuration Changes" <<ACT_COLOR>> {
+    [config.wifi_settings] as ConfigWifi
+    [config.qos_policies] as ConfigQoS
+    [config.security_settings] as ConfigSecurity
+    [config.band_steering] as ConfigBand
+    note top of ConfigWifi : **Category**: Act\n**Capabilities**: config_manager, wifi_controller
+    note top of ConfigQoS : **Category**: Act\n**Capabilities**: qos_manager, policy_engine
+    note top of ConfigSecurity : **Category**: Act\n**Capabilities**: security_manager, encryption_controller
+    note top of ConfigBand : **Category**: Act\n**Capabilities**: band_steering_controller, client_analyzer
+  }
+  
+  package "Configuration Optimization" <<ACT_COLOR>> {
+    [config.auto_optimize] as ConfigAuto
+    [config.rollback_safe] as ConfigRollback
+    note top of ConfigAuto : **Category**: Act\n**Capabilities**: auto_optimizer, ml_analyzer
+    note top of ConfigRollback : **Category**: Act\n**Capabilities**: backup_manager, rollback_controller
+  }
+  
+  package "Validation & Analysis" <<TEST_COLOR>> {
+    [config.validate_changes] as ConfigValidate
+    [config.impact_analysis] as ConfigImpact
+    note top of ConfigValidate : **Category**: Test\n**Capabilities**: config_validator, safety_checker
+    note top of ConfigImpact : **Category**: Read\n**Capabilities**: impact_analyzer, risk_assessor
+  }
+}
+
+' Tool Engine connections
+Registry --> TopoFull
+Registry --> ClientsList
+Registry --> SpeedTest
+Registry --> WANTest
+Registry --> QoSStatus
+Registry --> TrafficStats
+
+Registry --> WifiScan
+Registry --> WifiInterference
+Registry --> WifiSpectrum
+Registry --> WifiSignal
+Registry --> WifiCoverage
+Registry --> WifiRoaming
+Registry --> WifiThroughput
+Registry --> WifiLatency
+
+Registry --> MeshTopo
+Registry --> MeshNodes
+Registry --> MeshPath
+Registry --> MeshLoad
+Registry --> MeshBackhaul
+Registry --> MeshFailover
+
+Registry --> ConfigWifi
+Registry --> ConfigQoS
+Registry --> ConfigSecurity
+Registry --> ConfigBand
+Registry --> ConfigAuto
+Registry --> ConfigValidate
+Registry --> ConfigRollback
+Registry --> ConfigImpact
+
+Executor --> Registry : "Get Tool"
+Sessions --> Metrics : "Record Usage"
+
+note top of Registry : **22 Registered Tools**\n- Basic: 6 tools\n- WiFi Advanced: 8 tools\n- Mesh Network: 6 tools\n- Configuration: 8 tools
+
+note bottom of "Basic Diagnostic Tools (6 tools)" : Foundation tools for\nbasic network diagnostics\nand topology analysis
+
+note bottom of "WiFi Advanced Tools (8 tools)" : Specialized WiFi tools for\nadvanced spectrum analysis,\nsignal optimization, and\nperformance diagnostics
+
+note bottom of "Mesh Network Tools (6 tools)" : Comprehensive mesh network\ntools for topology analysis,\nload balancing, and\nfailover testing
+
+note bottom of "Configuration Management (8 tools)" : Intelligent configuration\nmanagement with validation,\noptimization, and safe\nrollback capabilities
+
+' Legend
+note as Legend
+  **Tool Categories:**
+  • **Read** (Blue): Information gathering
+  • **Test** (Green): Performance testing
+  • **Act** (Orange): Configuration changes
+  • **WiFi** (Red): WiFi-specific operations
+  
+  **Implementation Status:**
+  ✅ All 22 tools implemented
+  ✅ All tools tested
+  ✅ Engine integration complete
+end note
+
+@enduml

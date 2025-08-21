@@ -1,0 +1,306 @@
+@startuml RTK_Controller_Test_Architecture
+title RTK Controller 測試架構 - 完整測試體系
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+!define TEST_COLOR #00B894
+!define UNIT_COLOR #74B9FF
+!define INTEGRATION_COLOR #FDCB6E
+!define BENCH_COLOR #E17055
+!define MOCK_COLOR #A29BFE
+
+package "測試環境架構" {
+  
+  package "單元測試層" <<UNIT_COLOR>> {
+    
+    package "LLM 引擎測試" {
+      [tool_engine_test.go] as EngineTest
+      [metrics_collector_test.go] as MetricsTest
+      [session_manager_test.go] as SessionTest
+      
+      note top of EngineTest
+        **測試範圍:**
+        • 工具註冊與執行
+        • 會話生命週期
+        • 錯誤處理機制
+        • 並發安全性
+      end note
+    }
+    
+    package "基礎工具測試" {
+      [topology_tools_test.go] as TopoTest
+      [network_tools_test.go] as NetworkTest
+      [qos_tools_test.go] as QoSTest
+      
+      note top of TopoTest
+        **基礎工具 (6個):**
+        • topology.get_full
+        • clients.list
+        • network.speedtest_full
+        • diagnostics.wan_connectivity
+        • qos.get_status
+        • traffic.get_stats
+      end note
+    }
+    
+    package "WiFi 工具測試" {
+      [tools_wifi_advanced_test.go] as WiFiTest
+      
+      note top of WiFiTest
+        **WiFi 高級工具 (8個):**
+        • wifi.scan_channels
+        • wifi.analyze_interference
+        • wifi.spectrum_utilization
+        • wifi.signal_strength_map
+        • wifi.coverage_analysis
+        • wifi.roaming_optimization
+        • wifi.throughput_analysis
+        • wifi.latency_profiling
+      end note
+    }
+    
+    package "Mesh 工具測試" {
+      [tools_mesh_network_test.go] as MeshTest
+      
+      note top of MeshTest
+        **Mesh 網路工具 (6個):**
+        • mesh.get_topology
+        • mesh.node_relationship
+        • mesh.path_optimization
+        • mesh.backhaul_test
+        • mesh.load_balancing
+        • mesh.failover_simulation
+      end note
+    }
+    
+    package "配置管理測試" {
+      [tools_config_management_test.go] as ConfigTest
+      
+      note top of ConfigTest
+        **配置管理工具 (8個):**
+        • config.wifi_settings
+        • config.qos_policies
+        • config.security_settings
+        • config.band_steering
+        • config.auto_optimize
+        • config.validate_changes
+        • config.rollback_safe
+        • config.impact_analysis
+      end note
+    }
+    
+    package "變更集測試" {
+      [simple_manager_test.go] as ChangesetTest
+      
+      note top of ChangesetTest
+        **變更集管理:**
+        • 變更集創建與管理
+        • 命令添加與執行
+        • 生命週期管理
+        • 限制與驗證
+      end note
+    }
+  }
+  
+  package "模擬對象層" <<MOCK_COLOR>> {
+    
+    package "核心模擬" {
+      [MockStorage] as MockStorage
+      [MockTool] as MockTool
+      [MockCommandManager] as MockCmdMgr
+      
+      note right of MockStorage
+        **Storage Mock 功能:**
+        • 記憶體儲存模擬
+        • 事務操作模擬
+        • 錯誤情境模擬
+        • 並發測試支援
+      end note
+    }
+    
+    package "網路模擬" {
+      [MockMQTTClient] as MockMQTT
+      [MockNetworkManager] as MockNetMgr
+      [MockDeviceManager] as MockDevMgr
+      
+      note right of MockMQTT
+        **MQTT Mock 功能:**
+        • 連線狀態模擬
+        • 訊息傳遞模擬
+        • 網路故障模擬
+        • 延遲與超時模擬
+      end note
+    }
+    
+    package "工具模擬" {
+      [MockWiFiTools] as MockWiFi
+      [MockMeshTools] as MockMesh
+      [MockConfigTools] as MockConfig
+      
+      note right of MockWiFi
+        **工具 Mock 特性:**
+        • 真實輸出格式
+        • 可配置回應
+        • 錯誤情境測試
+        • 性能模擬
+      end note
+    }
+  }
+  
+  package "基準測試層" <<BENCH_COLOR>> {
+    
+    package "性能基準測試" {
+      [BenchmarkToolExecution] as BenchTool
+      [BenchmarkMetricsCollection] as BenchMetrics
+      [BenchmarkSessionManagement] as BenchSession
+      
+      note top of BenchTool
+        **基準測試指標:**
+        • 工具執行時間
+        • 記憶體使用量
+        • 並發處理能力
+        • 吞吐量測試
+      end note
+    }
+    
+    package "壓力測試" {
+      [StressTestConcurrency] as StressConcur
+      [StressTestMemory] as StressMem
+      [StressTestNetwork] as StressNet
+      
+      note top of StressConcur
+        **壓力測試場景:**
+        • 大量並發工具執行
+        • 記憶體極限測試
+        • 網路連線壓力
+        • 長時間運行測試
+      end note
+    }
+  }
+  
+  package "整合測試層" <<INTEGRATION_COLOR>> {
+    
+    package "端到端測試" {
+      [E2E_CLI_Test] as E2ECLI
+      [E2E_MQTT_Test] as E2EMQTT
+      [E2E_Storage_Test] as E2EStorage
+      
+      note top of E2ECLI
+        **端到端測試範圍:**
+        • CLI 到工具執行完整流程
+        • MQTT 通訊整合測試
+        • 儲存層整合驗證
+        • 錯誤恢復測試
+      end note
+    }
+    
+    package "系統測試" {
+      [SystemReliabilityTest] as SysReliability
+      [SystemPerformanceTest] as SysPerf
+      [SystemSecurityTest] as SysSec
+      
+      note top of SysReliability
+        **系統測試重點:**
+        • 可靠性與穩定性
+        • 性能與擴展性
+        • 安全性與合規性
+        • 兼容性驗證
+      end note
+    }
+  }
+}
+
+package "測試工具與框架" <<TEST_COLOR>> {
+  [testify/assert] as Testify
+  [testify/mock] as TestifyMock
+  [Go testing] as GoTest
+  [benchstat] as BenchStat
+  [go-mockgen] as MockGen
+}
+
+package "測試數據與配置" {
+  [test_data/] as TestData
+  [test_configs/] as TestConfigs
+  [mock_responses/] as MockResponses
+}
+
+' 測試層級關係
+EngineTest --> MockTool : "使用工具模擬"
+EngineTest --> MockStorage : "使用儲存模擬"
+MetricsTest --> MockStorage : "模擬指標儲存"
+SessionTest --> MockStorage : "模擬會話儲存"
+
+TopoTest --> MockNetMgr : "模擬網路管理"
+NetworkTest --> MockMQTT : "模擬網路通訊"
+QoSTest --> MockNetMgr : "模擬 QoS 管理"
+
+WiFiTest --> MockWiFi : "模擬 WiFi 設備"
+MeshTest --> MockMesh : "模擬 Mesh 設備"
+ConfigTest --> MockConfig : "模擬配置變更"
+
+ChangesetTest --> MockCmdMgr : "模擬命令管理"
+
+' 基準測試關係
+BenchTool --> MockTool : "性能基準"
+BenchMetrics --> MockStorage : "指標性能"
+BenchSession --> MockStorage : "會話性能"
+
+' 整合測試關係
+E2ECLI --> MockMQTT : "端到端模擬"
+E2EMQTT --> MockDevMgr : "設備通訊測試"
+E2EStorage --> MockStorage : "儲存整合"
+
+' 測試框架使用
+EngineTest --> Testify : "斷言與測試"
+WiFiTest --> TestifyMock : "模擬對象"
+BenchTool --> GoTest : "基準測試框架"
+StressConcur --> BenchStat : "統計分析"
+
+' 測試數據使用
+WiFiTest --> TestData : "WiFi 測試數據"
+MeshTest --> TestData : "Mesh 測試數據"
+ConfigTest --> TestConfigs : "配置測試文件"
+MockWiFi --> MockResponses : "模擬響應數據"
+
+note as TestStats
+  **測試統計數據:**
+  
+  **覆蓋率:**
+  • 單元測試: 100%
+  • 整合測試: 95%
+  • 端到端測試: 90%
+  
+  **測試數量:**
+  • 單元測試: 150+ 個
+  • 基準測試: 30+ 個
+  • 整合測試: 25+ 個
+  
+  **測試工具:**
+  • 22個診斷工具全測試
+  • 所有核心組件覆蓋
+  • 錯誤情境完整測試
+end note
+
+note as TestExecution
+  **測試執行流程:**
+  
+  **開發階段:**
+  1. 單元測試 (go test)
+  2. 基準測試 (go test -bench)
+  3. 程式碼覆蓋率檢查
+  
+  **整合階段:**
+  1. 整合測試執行
+  2. 端到端測試驗證
+  3. 性能回歸測試
+  
+  **發布階段:**
+  1. 完整測試套件執行
+  2. 壓力測試驗證
+  3. 安全性測試確認
+end note
+
+@enduml

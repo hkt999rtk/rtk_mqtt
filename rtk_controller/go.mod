@@ -8,6 +8,7 @@ require (
 	github.com/chzyer/readline v1.5.1
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/fsnotify/fsnotify v1.9.0
+	github.com/google/uuid v1.4.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.18.2
