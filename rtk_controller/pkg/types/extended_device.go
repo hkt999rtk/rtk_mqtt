@@ -6,20 +6,20 @@ import (
 
 // Device represents a complete device with all its data
 type Device struct {
-	DeviceID    string     `json:"device_id"`
-	Tenant      string     `json:"tenant"`
-	Site        string     `json:"site"`
-	DeviceType  string     `json:"device_type"`
-	Health      string     `json:"health"`      // ok, warning, critical, unknown
-	Online      bool       `json:"online"`
-	FirstSeen   *time.Time `json:"first_seen,omitempty"`
-	LastSeen    *time.Time `json:"last_seen,omitempty"`
-	State       *DeviceStateData   `json:"state,omitempty"`
-	Attributes  *DeviceAttributes  `json:"attributes,omitempty"`
-	EventCount  int        `json:"event_count"`
-	CommandCount int       `json:"command_count"`
-	CreatedAt   time.Time  `json:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at"`
+	DeviceID     string            `json:"device_id"`
+	Tenant       string            `json:"tenant"`
+	Site         string            `json:"site"`
+	DeviceType   string            `json:"device_type"`
+	Health       string            `json:"health"` // ok, warning, critical, unknown
+	Online       bool              `json:"online"`
+	FirstSeen    *time.Time        `json:"first_seen,omitempty"`
+	LastSeen     *time.Time        `json:"last_seen,omitempty"`
+	State        *DeviceStateData  `json:"state,omitempty"`
+	Attributes   *DeviceAttributes `json:"attributes,omitempty"`
+	EventCount   int               `json:"event_count"`
+	CommandCount int               `json:"command_count"`
+	CreatedAt    time.Time         `json:"created_at"`
+	UpdatedAt    time.Time         `json:"updated_at"`
 }
 
 // DeviceStateData represents device state information
@@ -42,7 +42,7 @@ type DeviceAttributes struct {
 	FwVersion  *string `json:"fw_version,omitempty"`
 }
 
-// ExtendedDeviceFilter represents extended filtering criteria for devices  
+// ExtendedDeviceFilter represents extended filtering criteria for devices
 type ExtendedDeviceFilter struct {
 	Tenant string `json:"tenant,omitempty"`
 	Site   string `json:"site,omitempty"`

@@ -93,19 +93,22 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
   // === 必要共通欄位 ===
   "schema": "<message_type>/<version>",
   "ts": 1699123456789,
-  
-  // === 選用共通欄位 ===
   "device_id": "aabbccddeeff",
+  
+  // === 業務資料包裝 ===
+  "payload": {
+    // 所有訊息特定的業務邏輯欄位都包裝在 payload 中
+    "health": "ok",
+    // 其他業務欄位...
+  },
+  
+  // === 選用欄位 ===
   "trace": {
     "req_id": "unique-request-id",
     "session_id": "llm-session-id"
   },
-  
-  // === 業務資料 ===
-  // 具體的業務邏輯欄位
-  "health": "ok",
-  "data": {
-    // 訊息特定的資料內容
+  "meta": {
+    // 可選的元資料
   }
 }
 ```
@@ -116,13 +119,14 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
 |---------|---------|--------|---------|------|
 | **共通欄位** | `schema` | 必要 | string | 訊息類型與版本標識 |
 | **共通欄位** | `ts` | 必要 | integer | Unix 時間戳（毫秒） |
-| **識別欄位** | `device_id` | 建議 | string | 設備唯一標識符 |
+| **共通欄位** | `device_id` | 必要 | string | 設備唯一標識符 |
+| **業務欄位** | `payload` | 必要 | object | 包裝所有業務邏輯資料 |
 | **追蹤欄位** | `trace` | 選用 | object | 分散式追蹤資訊 |
 | **追蹤欄位** | `trace.req_id` | 選用 | string | 請求識別碼 |
 | **追蹤欄位** | `trace.correlation_id` | 選用 | string | 相關性追蹤 ID |
 | **追蹤欄位** | `trace.session_id` | 選用 | string | LLM 診斷會話 ID |
 | **追蹤欄位** | `trace.trace_id` | 選用 | string | LLM 診斷步驟追蹤 |
-| **業務欄位** | 其他欄位 | 依需求 | mixed | 訊息特定的業務資料 |
+| **元資料欄位** | `meta` | 選用 | object | 可選的元資料資訊 |
 
 ## 訊息類型範例
 
@@ -132,11 +136,13 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
   "schema": "state/1.0",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "health": "ok",
-  "uptime_s": 86400,
-  "connection_status": "connected",
-  "cpu_usage": 45.2,
-  "memory_usage": 62.8
+  "payload": {
+    "health": "ok",
+    "uptime_s": 86400,
+    "connection_status": "connected",
+    "cpu_usage": 45.2,
+    "memory_usage": 62.8
+  }
 }
 ```
 
@@ -146,10 +152,12 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
   "schema": "telemetry.temperature/1.0",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "sensor_id": "temp_001",
-  "value": 23.5,
-  "unit": "celsius",
-  "location": "cpu"
+  "payload": {
+    "sensor_id": "temp_001",
+    "value": 23.5,
+    "unit": "celsius",
+    "location": "cpu"
+  }
 }
 ```
 
@@ -159,11 +167,13 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
   "schema": "evt.wifi.connection_lost/1.0",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "event_type": "connection_lost",
-  "interface": "wlan0",
-  "previous_bssid": "aabbccddeeff",
-  "reason": "signal_lost",
-  "duration_ms": 1500
+  "payload": {
+    "event_type": "connection_lost",
+    "interface": "wlan0",
+    "previous_bssid": "aabbccddeeff",
+    "reason": "signal_lost",
+    "duration_ms": 1500
+  }
 }
 ```
 
@@ -173,14 +183,16 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
   "schema": "cmd.diagnosis.get/1.0",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
+  "payload": {
+    "command": "get_network_status",
+    "parameters": {
+      "include_topology": true,
+      "detailed": false
+    }
+  },
   "trace": {
     "req_id": "diag-20241104-001",
     "session_id": "llm-session-abc123"
-  },
-  "command": "get_network_status",
-  "parameters": {
-    "include_topology": true,
-    "detailed": false
   }
 }
 ```
@@ -222,34 +234,26 @@ RTK MQTT 協議使用標準化的 JSON 訊息格式，確保所有透過 MQTT �
 ## 資料驗證規則
 
 ### JSON Schema 驗證
-每種訊息類型都應該有對應的 JSON Schema 用於驗證。
+每種訊息類型都有對應的 JSON Schema 用於驗證，所有 schema 文件都位於 `schemas/` 目錄中。
 
-範例 Schema 檔案：`schemas/state.json`
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "properties": {
-    "schema": {
-      "type": "string",
-      "enum": ["state/1.0"]
-    },
-    "ts": {
-      "type": "integer",
-      "minimum": 0
-    },
-    "device_id": {
-      "type": "string", 
-      "pattern": "^[a-f0-9]{12}$"
-    },
-    "health": {
-      "type": "string",
-      "enum": ["ok", "warning", "error", "critical"]
-    }
-  },
-  "required": ["schema", "ts"]
-}
+### Schema 文件組織
+- **基礎 Schema**: `schemas/base.json` - 所有消息的基礎結構
+- **狀態訊息**: `schemas/state.json` - 設備狀態訊息
+- **命令 Schema**: `schemas/cmd-*.json` - 各種命令定義
+- **遙測 Schema**: `schemas/telemetry-*.json` - 各類遙測資料
+- **事件 Schema**: `schemas/evt-*.json` - 各種事件定義
+- **屬性 Schema**: `schemas/attr.json` - 設備屬性定義
+
+### 使用範例
+```bash
+# 使用 ajv-cli 驗證狀態訊息
+ajv validate -s schemas/state.json -d state_message.json
+
+# 使用 ajv-cli 驗證命令訊息
+ajv validate -s schemas/cmd-wifi-scan.json -d wifi_scan_command.json
 ```
+
+詳細的 schema 定義請參考：[Schema 目錄說明](schemas/README.md)
 
 ### 資料型態要求
 

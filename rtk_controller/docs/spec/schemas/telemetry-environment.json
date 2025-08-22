@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-environment/1.0",
+  "title": "RTK MQTT Environment Telemetry Schema",
+  "description": "Schema for environment sensor telemetry data",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.environment/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "temperature_c": {
+              "type": "number",
+              "minimum": -50,
+              "maximum": 100,
+              "description": "溫度(攝氏度)"
+            },
+            "humidity_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "濕度(%)"
+            },
+            "pressure_hpa": {
+              "type": "number",
+              "minimum": 0,
+              "description": "氣壓(hPa)"
+            },
+            "air_quality_index": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 500,
+              "description": "空氣品質指數"
+            },
+            "light_lux": {
+              "type": "number",
+              "minimum": 0,
+              "description": "光照度(lux)"
+            },
+            "uv_index": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 12,
+              "description": "紫外線指數"
+            },
+            "motion_detected": {
+              "type": "boolean",
+              "description": "是否偵測到運動"
+            },
+            "noise_level_db": {
+              "type": "number",
+              "minimum": 0,
+              "description": "噪音水平(dB)"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -37,7 +37,9 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  all                - 編譯所有平台版本"
-	@echo "  build              - 編譯本機版本"
+	@echo "  build              - 編譯本機版本（RTK Controller）"
+	@echo "  build-wrapper      - 編譯 RTK MQTT Wrapper"
+	@echo "  build-all-components - 編譯所有組件（Controller + Wrapper）"
 	@echo "  build-all          - 編譯所有平台版本"
 	@echo "  test               - 執行測試"
 	@echo "  release            - 建立完整的發行版本包"
@@ -118,6 +120,18 @@ build: deps $(BUILD_DIR)
 	@echo "正在編譯本機開發版本..."
 	@go build $(BUILD_FLAGS) $(LDFLAGS) -o $(BUILD_DIR)/$(APP_NAME) $(MAIN_PATH)
 	@echo "✓ 開發版本編譯完成: $(BUILD_DIR)/$(APP_NAME)"
+
+# MQTT Wrapper 編譯
+.PHONY: build-wrapper
+build-wrapper: deps $(BUILD_DIR)
+	@echo "正在編譯 RTK MQTT Wrapper..."
+	@cd ../rtk_wrapper && go build $(BUILD_FLAGS) $(LDFLAGS) -o ../rtk_controller/$(BUILD_DIR)/rtk_wrapper cmd/main.go
+	@echo "✓ RTK MQTT Wrapper 編譯完成: $(BUILD_DIR)/rtk_wrapper"
+
+# 編譯所有組件
+.PHONY: build-all-components
+build-all-components: build build-wrapper
+	@echo "✓ 所有組件編譯完成"
 
 # 執行測試
 .PHONY: test

@@ -66,16 +66,19 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "uptime_s": 2592000,
-  "cpu_usage": 15.5,
-  "memory_usage": 35.2,
-  "temperature_c": 42.5,
-  "power_consumption_w": 85.2,
-  "active_ports": 18,
-  "total_ports": 24,
-  "stp_root": true,
-  "vlan_count": 5
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "uptime_s": 2592000,
+    "cpu_usage": 15.5,
+    "memory_usage": 35.2,
+    "temperature_c": 42.5,
+    "power_consumption_w": 85.2,
+    "active_ports": 18,
+    "total_ports": 24,
+    "stp_root": true,
+    "vlan_count": 5
+  }
 }
 ```
 
@@ -84,12 +87,15 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "poe_budget_used_w": 425.5,
-  "poe_budget_total_w": 740,
-  "poe_utilization": 0.575,
-  "powered_devices": 15,
-  "poe_status": "normal"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "poe_budget_used_w": 425.5,
+    "poe_budget_total_w": 740,
+    "poe_utilization": 0.575,
+    "powered_devices": 15,
+    "poe_status": "normal"
+  }
 }
 ```
 
@@ -100,35 +106,38 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "telemetry.ports/1.0",
   "ts": 1699123456789,
-  "ports": [
-    {
-      "port_id": 1,
-      "name": "GigabitEthernet1/0/1",
-      "status": "up",
-      "link_speed": "1000",
-      "duplex": "full",
-      "vlan_id": 100,
-      "rx_bytes": 1048576000,
-      "tx_bytes": 524288000,
-      "rx_packets": 1000000,
-      "tx_packets": 500000,
-      "rx_errors": 0,
-      "tx_errors": 0,
-      "collisions": 0,
-      "last_change": 1699120000000
-    },
-    {
-      "port_id": 2,
-      "name": "GigabitEthernet1/0/2", 
-      "status": "down",
-      "link_speed": "unknown",
-      "duplex": "unknown",
-      "vlan_id": null,
-      "poe_enabled": true,
-      "poe_power_w": 25.5,
-      "poe_status": "delivering"
-    }
-  ]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "ports": [
+      {
+        "port_id": 1,
+        "name": "GigabitEthernet1/0/1",
+        "status": "up",
+        "link_speed": "1000",
+        "duplex": "full",
+        "vlan_id": 100,
+        "rx_bytes": 1048576000,
+        "tx_bytes": 524288000,
+        "rx_packets": 1000000,
+        "tx_packets": 500000,
+        "rx_errors": 0,
+        "tx_errors": 0,
+        "collisions": 0,
+        "last_change": 1699120000000
+      },
+      {
+        "port_id": 2,
+        "name": "GigabitEthernet1/0/2", 
+        "status": "down",
+        "link_speed": "unknown",
+        "duplex": "unknown",
+        "vlan_id": null,
+        "poe_enabled": true,
+        "poe_power_w": 25.5,
+        "poe_status": "delivering"
+      }
+    ]
+  }
 }
 ```
 
@@ -137,30 +146,33 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "telemetry.vlans/1.0",
   "ts": 1699123456789,
-  "vlans": [
-    {
-      "vlan_id": 100,
-      "name": "Management",
-      "status": "active",
-      "port_count": 8,
-      "tagged_ports": [1, 2, 3, 4],
-      "untagged_ports": [5, 6, 7, 8],
-      "rx_bytes": 5242880000,
-      "tx_bytes": 3145728000,
-      "broadcast_packets": 15000,
-      "multicast_packets": 5000
-    },
-    {
-      "vlan_id": 200,
-      "name": "Guest", 
-      "status": "active",
-      "port_count": 12,
-      "tagged_ports": [1, 2],
-      "untagged_ports": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
-      "rx_bytes": 10485760000,
-      "tx_bytes": 8388608000
-    }
-  ]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "vlans": [
+      {
+        "vlan_id": 100,
+        "name": "Management",
+        "status": "active",
+        "port_count": 8,
+        "tagged_ports": [1, 2, 3, 4],
+        "untagged_ports": [5, 6, 7, 8],
+        "rx_bytes": 5242880000,
+        "tx_bytes": 3145728000,
+        "broadcast_packets": 15000,
+        "multicast_packets": 5000
+      },
+      {
+        "vlan_id": 200,
+        "name": "Guest", 
+        "status": "active",
+        "port_count": 12,
+        "tagged_ports": [1, 2],
+        "untagged_ports": [9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+        "rx_bytes": 10485760000,
+        "tx_bytes": 8388608000
+      }
+    ]
+  }
 }
 ```
 
@@ -169,26 +181,29 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "telemetry.traffic/1.0",
   "ts": 1699123456789,
-  "total_throughput_mbps": 450.5,
-  "ingress_utilization": 0.45,
-  "egress_utilization": 0.38,
-  "packet_rate_pps": 125000,
-  "broadcast_rate_pps": 500,
-  "multicast_rate_pps": 1200,
-  "error_rate": 0.001,
-  "top_talkers": [
-    {
-      "source_mac": "aabbccddeeff",
-      "port": 5,
-      "bytes_per_sec": 52428800,
-      "packets_per_sec": 50000
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "total_throughput_mbps": 450.5,
+    "ingress_utilization": 0.45,
+    "egress_utilization": 0.38,
+    "packet_rate_pps": 125000,
+    "broadcast_rate_pps": 500,
+    "multicast_rate_pps": 1200,
+    "error_rate": 0.001,
+    "top_talkers": [
+      {
+        "source_mac": "aabbccddeeff",
+        "port": 5,
+        "bytes_per_sec": 52428800,
+        "packets_per_sec": 50000
+      }
+    ],
+    "protocol_distribution": {
+      "tcp": 0.65,
+      "udp": 0.25,
+      "icmp": 0.05,
+      "other": 0.05
     }
-  ],
-  "protocol_distribution": {
-    "tcp": 0.65,
-    "udp": 0.25,
-    "icmp": 0.05,
-    "other": 0.05
   }
 }
 ```
@@ -198,28 +213,31 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "telemetry.poe/1.0",
   "ts": 1699123456789,
-  "total_power_budget_w": 740,
-  "total_power_used_w": 425.5,
-  "available_power_w": 314.5,
-  "poe_ports": [
-    {
-      "port_id": 1,
-      "poe_enabled": true,
-      "power_consumption_w": 25.5,
-      "voltage_v": 54.2,
-      "current_ma": 470,
-      "device_type": "pd_class_3",
-      "status": "delivering"
-    },
-    {
-      "port_id": 2,
-      "poe_enabled": false,
-      "power_consumption_w": 0,
-      "status": "disabled"
-    }
-  ],
-  "power_efficiency": 0.92,
-  "thermal_shutdown_risk": false
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "total_power_budget_w": 740,
+    "total_power_used_w": 425.5,
+    "available_power_w": 314.5,
+    "poe_ports": [
+      {
+        "port_id": 1,
+        "poe_enabled": true,
+        "power_consumption_w": 25.5,
+        "voltage_v": 54.2,
+        "current_ma": 470,
+        "device_type": "pd_class_3",
+        "status": "delivering"
+      },
+      {
+        "port_id": 2,
+        "poe_enabled": false,
+        "power_consumption_w": 0,
+        "status": "disabled"
+      }
+    ],
+    "power_efficiency": 0.92,
+    "thermal_shutdown_risk": false
+  }
 }
 ```
 
@@ -230,14 +248,17 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "evt.port/1.0",
   "ts": 1699123456789,
-  "event_type": "link_up",
-  "port_id": 5,
-  "port_name": "GigabitEthernet1/0/5",
-  "link_speed": "1000",
-  "duplex": "full",
-  "connected_device_mac": "aabbccddeeff",
-  "auto_negotiation": true,
-  "previous_status": "down"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "link_up",
+    "port_id": 5,
+    "port_name": "GigabitEthernet1/0/5",
+    "link_speed": "1000",
+    "duplex": "full",
+    "connected_device_mac": "aabbccddeeff",
+    "auto_negotiation": true,
+    "previous_status": "down"
+  }
 }
 ```
 
@@ -246,20 +267,23 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "evt.stp/1.0",
   "ts": 1699123456789,
-  "event_type": "topology_change",
-  "instance_id": 0,
-  "vlan_id": 100,
-  "root_bridge_id": "8000.aabbccddeeff",
-  "root_path_cost": 20000,
-  "designated_root": true,
-  "port_role_changes": [
-    {
-      "port_id": 1,
-      "old_role": "blocking",
-      "new_role": "forwarding"
-    }
-  ],
-  "convergence_time_ms": 15000
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "topology_change",
+    "instance_id": 0,
+    "vlan_id": 100,
+    "root_bridge_id": "8000.aabbccddeeff",
+    "root_path_cost": 20000,
+    "designated_root": true,
+    "port_role_changes": [
+      {
+        "port_id": 1,
+        "old_role": "blocking",
+        "new_role": "forwarding"
+      }
+    ],
+    "convergence_time_ms": 15000
+  }
 }
 ```
 
@@ -268,13 +292,16 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "evt.poe/1.0",
   "ts": 1699123456789,
-  "event_type": "power_denied",
-  "port_id": 10,
-  "requested_power_w": 60,
-  "available_power_w": 45,
-  "reason": "insufficient_power",
-  "device_class": "pd_class_4",
-  "action_taken": "deny_power"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "power_denied",
+    "port_id": 10,
+    "requested_power_w": 60,
+    "available_power_w": 45,
+    "reason": "insufficient_power",
+    "device_class": "pd_class_4",
+    "action_taken": "deny_power"
+  }
 }
 ```
 
@@ -283,13 +310,16 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 {
   "schema": "evt.security/1.0",
   "ts": 1699123456789,
-  "event_type": "mac_address_violation",
-  "port_id": 8,
-  "violating_mac": "ffffffffffff",
-  "authorized_mac": "aabbccddeeff",
-  "violation_count": 3,
-  "action_taken": "port_shutdown",
-  "security_level": "critical"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "mac_address_violation",
+    "port_id": 8,
+    "violating_mac": "ffffffffffff",
+    "authorized_mac": "aabbccddeeff",
+    "violation_count": 3,
+    "action_taken": "port_shutdown",
+    "security_level": "critical"
+  }
 }
 ```
 
@@ -300,13 +330,17 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### 端口啟用/停用
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "set_port_state",
   "schema": "cmd.set_port_state/1.0",
-  "args": {
-    "port_id": 5,
-    "state": "enable",
-    "description": "Server connection"
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "set_port_state",
+    "args": {
+      "port_id": 5,
+      "state": "enable",
+      "description": "Server connection"
+    }
   }
 }
 ```
@@ -314,14 +348,18 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### 端口速度設定
 ```json
 {
-  "id": "cmd-1699123456790",
-  "op": "set_port_speed",
   "schema": "cmd.set_port_speed/1.0",
-  "args": {
-    "port_id": 3,
-    "speed": "1000",
-    "duplex": "full",
-    "auto_negotiation": false
+  "ts": 1699123456790,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456790",
+    "op": "set_port_speed",
+    "args": {
+      "port_id": 3,
+      "speed": "1000",
+      "duplex": "full",
+      "auto_negotiation": false
+    }
   }
 }
 ```
@@ -331,13 +369,17 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### 創建VLAN
 ```json
 {
-  "id": "cmd-1699123456791",
-  "op": "create_vlan",
   "schema": "cmd.create_vlan/1.0",
-  "args": {
-    "vlan_id": 300,
-    "name": "IoT_Network",
-    "description": "IoT devices network"
+  "ts": 1699123456791,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456791",
+    "op": "create_vlan",
+    "args": {
+      "vlan_id": 300,
+      "name": "IoT_Network",
+      "description": "IoT devices network"
+    }
   }
 }
 ```
@@ -345,13 +387,17 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### 設定端口VLAN
 ```json
 {
-  "id": "cmd-1699123456792",
-  "op": "set_port_vlan",
   "schema": "cmd.set_port_vlan/1.0",
-  "args": {
-    "port_id": 10,
-    "vlan_id": 300,
-    "mode": "access"
+  "ts": 1699123456792,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456792",
+    "op": "set_port_vlan",
+    "args": {
+      "port_id": 10,
+      "vlan_id": 300,
+      "mode": "access"
+    }
   }
 }
 ```
@@ -361,14 +407,18 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### PoE端口控制
 ```json
 {
-  "id": "cmd-1699123456793",
-  "op": "set_poe_state",
   "schema": "cmd.set_poe_state/1.0",
-  "args": {
-    "port_id": 8,
-    "poe_enabled": true,
-    "power_limit_w": 30,
-    "priority": "high"
+  "ts": 1699123456793,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456793",
+    "op": "set_poe_state",
+    "args": {
+      "port_id": 8,
+      "poe_enabled": true,
+      "power_limit_w": 30,
+      "priority": "high"
+    }
   }
 }
 ```
@@ -378,14 +428,18 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### 端口鏡像設定
 ```json
 {
-  "id": "cmd-1699123456794",
-  "op": "set_port_mirror",
   "schema": "cmd.set_port_mirror/1.0",
-  "args": {
-    "source_ports": [1, 2, 3],
-    "destination_port": 24,
-    "direction": "both",
-    "enabled": true
+  "ts": 1699123456794,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456794",
+    "op": "set_port_mirror",
+    "args": {
+      "source_ports": [1, 2, 3],
+      "destination_port": 24,
+      "direction": "both",
+      "enabled": true
+    }
   }
 }
 ```
@@ -393,14 +447,18 @@ rtk/v1/{tenant}/{site}/{switch_id}/cmd/req
 #### QoS設定
 ```json
 {
-  "id": "cmd-1699123456795",
-  "op": "set_qos_policy",
   "schema": "cmd.set_qos_policy/1.0",
-  "args": {
-    "port_id": 5,
-    "priority_queue": 7,
-    "rate_limit_mbps": 100,
-    "burst_size_kb": 1000
+  "ts": 1699123456795,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456795",
+    "op": "set_qos_policy",
+    "args": {
+      "port_id": 5,
+      "priority_queue": 7,
+      "rate_limit_mbps": 100,
+      "burst_size_kb": 1000
+    }
   }
 }
 ```
@@ -495,10 +553,13 @@ class SwitchMQTTClient:
     def send_ack(self, cmd_id):
         ack_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/ack"
         ack_msg = {
-            "id": cmd_id,
             "schema": "cmd.ack/1.0",
-            "status": "accepted",
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": "accepted"
+            }
         }
         self.client.publish(ack_topic, json.dumps(ack_msg), qos=1)
         
@@ -506,11 +567,14 @@ class SwitchMQTTClient:
         res_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/res"
         status = "completed" if "error" not in result else "failed"
         res_msg = {
-            "id": cmd_id,
             "schema": f"cmd.{operation}.result/1.0",
-            "status": status,
-            "result": result,
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": status,
+                "result": result
+            }
         }
         self.client.publish(res_topic, json.dumps(res_msg), qos=1)
         
@@ -627,11 +691,14 @@ class SwitchMQTTClient:
         state_msg = {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok",
-            "uptime_s": uptime_s,
-            "active_ports": active_ports,
-            "total_ports": len(self.port_data),
-            "vlan_count": len(self.vlan_data)
+            "device_id": self.device_id,
+            "payload": {
+                "health": "ok",
+                "uptime_s": uptime_s,
+                "active_ports": active_ports,
+                "total_ports": len(self.port_data),
+                "vlan_count": len(self.vlan_data)
+            }
         }
         
         self.client.publish(state_topic, json.dumps(state_msg), qos=1, retain=True)
@@ -643,7 +710,10 @@ class SwitchMQTTClient:
         telemetry_msg = {
             "schema": "telemetry.ports/1.0",
             "ts": int(time.time() * 1000),
-            "ports": self.port_data
+            "device_id": self.device_id,
+            "payload": {
+                "ports": self.port_data
+            }
         }
         
         self.client.publish(ports_topic, json.dumps(telemetry_msg), qos=0)
@@ -655,7 +725,10 @@ class SwitchMQTTClient:
         telemetry_msg = {
             "schema": "telemetry.vlans/1.0",
             "ts": int(time.time() * 1000),
-            "vlans": self.vlan_data
+            "device_id": self.device_id,
+            "payload": {
+                "vlans": self.vlan_data
+            }
         }
         
         self.client.publish(vlan_topic, json.dumps(telemetry_msg), qos=0)
@@ -695,11 +768,14 @@ class SwitchMQTTClient:
         evt_msg = {
             "schema": "evt.port/1.0",
             "ts": int(time.time() * 1000),
-            "event_type": event_type,
-            "port_id": port['port_id'],
-            "port_name": port['name'],
-            "link_speed": port['link_speed'],
-            "previous_status": old_status
+            "device_id": self.device_id,
+            "payload": {
+                "event_type": event_type,
+                "port_id": port['port_id'],
+                "port_name": port['name'],
+                "link_speed": port['link_speed'],
+                "previous_status": old_status
+            }
         }
         
         self.client.publish(evt_topic, json.dumps(evt_msg), qos=1)
@@ -781,14 +857,17 @@ class SwitchSimulator:
         return {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok",
-            "uptime_s": random.randint(86400, 2592000),
-            "cpu_usage": random.uniform(10, 30),
-            "memory_usage": random.uniform(20, 50),
-            "temperature_c": random.uniform(35, 50),
-            "active_ports": len([p for p in self.ports if p["status"] == "up"]),
-            "total_ports": self.port_count,
-            "vlan_count": len(self.vlans)
+            "device_id": "aabbccddeeff",
+            "payload": {
+                "health": "ok",
+                "uptime_s": random.randint(86400, 2592000),
+                "cpu_usage": random.uniform(10, 30),
+                "memory_usage": random.uniform(20, 50),
+                "temperature_c": random.uniform(35, 50),
+                "active_ports": len([p for p in self.ports if p["status"] == "up"]),
+                "total_ports": self.port_count,
+                "vlan_count": len(self.vlans)
+            }
         }
         
     def simulate_port_change(self):
@@ -800,10 +879,13 @@ class SwitchSimulator:
         return {
             "schema": "evt.port/1.0",
             "ts": int(time.time() * 1000),
-            "event_type": "link_up" if port["status"] == "up" else "link_down",
-            "port_id": port["port_id"],
-            "port_name": port["name"],
-            "previous_status": old_status
+            "device_id": "aabbccddeeff",
+            "payload": {
+                "event_type": "link_up" if port["status"] == "up" else "link_down",
+                "port_id": port["port_id"],
+                "port_name": port["name"],
+                "previous_status": old_status
+            }
         }
 
 # 使用模擬器進行測試
@@ -844,18 +926,24 @@ print(json.dumps(simulator.get_random_state(), indent=2))
 mosquitto_pub -h localhost -t "rtk/v1/demo/datacenter/switch_001/evt/port" -m '{
   "schema": "evt.port/1.0",
   "ts": 1699123456789,
-  "event_type": "link_down",
-  "port_id": 5,
-  "port_name": "GigabitEthernet1/0/5"
+  "device_id": "switch_001",
+  "payload": {
+    "event_type": "link_down",
+    "port_id": 5,
+    "port_name": "GigabitEthernet1/0/5"
+  }
 }'
 
 # 模擬PoE過載
 mosquitto_pub -h localhost -t "rtk/v1/demo/datacenter/switch_001/evt/poe" -m '{
   "schema": "evt.poe/1.0", 
   "ts": 1699123456789,
-  "event_type": "power_budget_exceeded",
-  "total_budget_w": 740,
-  "current_usage_w": 755
+  "device_id": "switch_001",
+  "payload": {
+    "event_type": "power_budget_exceeded",
+    "total_budget_w": 740,
+    "current_usage_w": 755
+  }
 }'
 ```
 

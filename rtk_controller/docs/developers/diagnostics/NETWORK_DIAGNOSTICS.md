@@ -14,14 +14,18 @@
 #### 命令格式
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "speed_test",
   "schema": "cmd.speed_test/1.0",
-  "args": {
-    "server": "auto",
-    "duration": 10,
-    "direction": "both",
-    "test_size": "10MB"
+  "ts": 1699123456789,
+  "device_id": "router-001",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "speed_test",
+    "args": {
+      "server": "auto",
+      "duration": 10,
+      "direction": "both",
+      "test_size": "10MB"
+    }
   }
 }
 ```
@@ -41,21 +45,25 @@
 #### 結果格式
 ```json
 {
-  "id": "cmd-1699123456789",
   "schema": "cmd.speed_test.result/1.0",
-  "status": "completed",
-  "result": {
-    "download_mbps": 95.42,
-    "upload_mbps": 48.73,
-    "latency_ms": 15.6,
-    "jitter_ms": 2.3,
-    "server_info": {
-      "name": "Speedtest Server",
-      "location": "Taipei, TW",
-      "distance_km": 5.2
-    },
-    "test_duration_s": 10.5,
-    "timestamp": 1699123456789
+  "ts": 1699123456820,
+  "device_id": "router-001",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "status": "completed",
+    "result": {
+      "download_mbps": 95.42,
+      "upload_mbps": 48.73,
+      "latency_ms": 15.6,
+      "jitter_ms": 2.3,
+      "server_info": {
+        "name": "Speedtest Server",
+        "location": "Taipei, TW",
+        "distance_km": 5.2
+      },
+      "test_duration_s": 10.5,
+      "timestamp": 1699123456789
+    }
   }
 }
 ```
@@ -152,14 +160,18 @@ def perform_custom_speed_test(args):
 #### 命令格式
 ```json
 {
-  "id": "cmd-1699123456790",
-  "op": "wan_connectivity",
   "schema": "cmd.wan_connectivity/1.0",
-  "args": {
-    "test_hosts": ["8.8.8.8", "google.com", "cloudflare.com"],
-    "timeout": 5,
-    "ping_count": 3,
-    "trace_route": false
+  "ts": 1699123456790,
+  "device_id": "router-001",
+  "payload": {
+    "id": "cmd-1699123456790",
+    "op": "wan_connectivity",
+    "args": {
+      "test_hosts": ["8.8.8.8", "google.com", "cloudflare.com"],
+      "timeout": 5,
+      "ping_count": 3,
+      "trace_route": false
+    }
   }
 }
 ```

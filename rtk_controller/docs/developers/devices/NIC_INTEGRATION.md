@@ -44,13 +44,16 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "uptime_s": 86400,
-  "connection_status": "connected",
-  "active_interface": "wlan0",
-  "ip_address": "192.168.1.100",
-  "gateway": "192.168.1.1",
-  "dns_servers": ["8.8.8.8", "8.8.4.4"]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "uptime_s": 86400,
+    "connection_status": "connected",
+    "active_interface": "wlan0",
+    "ip_address": "192.168.1.100",
+    "gateway": "192.168.1.1",
+    "dns_servers": ["8.8.8.8", "8.8.4.4"]
+  }
 }
 ```
 
@@ -66,16 +69,19 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 {
   "schema": "telemetry.network/1.0",
   "ts": 1699123456789,
-  "interface": "wlan0",
-  "tx_bytes": 1048576,
-  "rx_bytes": 2097152,
-  "tx_packets": 1024,
-  "rx_packets": 2048,
-  "tx_errors": 0,
-  "rx_errors": 0,
-  "latency_ms": 15.5,
-  "jitter_ms": 2.1,
-  "packet_loss_rate": 0.01
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "interface": "wlan0",
+    "tx_bytes": 1048576,
+    "rx_bytes": 2097152,
+    "tx_packets": 1024,
+    "rx_packets": 2048,
+    "tx_errors": 0,
+    "rx_errors": 0,
+    "latency_ms": 15.5,
+    "jitter_ms": 2.1,
+    "packet_loss_rate": 0.01
+  }
 }
 ```
 
@@ -84,15 +90,18 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 {
   "schema": "telemetry.wifi/1.0",
   "ts": 1699123456789,
-  "ssid": "Office-WiFi",
-  "bssid": "aabbccddeeff",
-  "channel": 6,
-  "frequency": 2437,
-  "signal_strength": -45,
-  "link_quality": 85,
-  "tx_rate_mbps": 150,
-  "rx_rate_mbps": 130,
-  "security": "WPA2-PSK"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "ssid": "Office-WiFi",
+    "bssid": "aabbccddeeff",
+    "channel": 6,
+    "frequency": 2437,
+    "signal_strength": -45,
+    "link_quality": 85,
+    "tx_rate_mbps": 150,
+    "rx_rate_mbps": 130,
+    "security": "WPA2-PSK"
+  }
 }
 ```
 
@@ -103,11 +112,14 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 {
   "schema": "evt.connection/1.0",
   "ts": 1699123456789,
-  "event_type": "disconnected",
-  "interface": "wlan0",
-  "reason": "signal_lost",
-  "previous_state": "connected",
-  "duration_s": 3600
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "disconnected",
+    "interface": "wlan0",
+    "reason": "signal_lost",
+    "previous_state": "connected",
+    "duration_s": 3600
+  }
 }
 ```
 
@@ -116,12 +128,15 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 {
   "schema": "evt.roaming/1.0",
   "ts": 1699123456789,
-  "event_type": "roam_completed",
-  "from_bssid": "aabbccddeeff",
-  "to_bssid": "aabbccddeeff",
-  "roam_time_ms": 150,
-  "trigger": "signal_strength",
-  "success": true
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "roam_completed",
+    "from_bssid": "aabbccddeeff",
+    "to_bssid": "aabbccddeeff",
+    "roam_time_ms": 150,
+    "trigger": "signal_strength",
+    "success": true
+  }
 }
 ```
 
@@ -132,13 +147,17 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 #### 速度測試
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "speed_test",
   "schema": "cmd.speed_test/1.0",
-  "args": {
-    "server": "auto",
-    "duration": 10,
-    "direction": "both"
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "speed_test",
+    "args": {
+      "server": "auto",
+      "duration": 10,
+      "direction": "both"
+    }
   }
 }
 ```
@@ -146,12 +165,16 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 #### 連線測試
 ```json
 {
-  "id": "cmd-1699123456790",
-  "op": "wan_connectivity",
   "schema": "cmd.wan_connectivity/1.0",
-  "args": {
-    "test_hosts": ["8.8.8.8", "google.com"],
-    "timeout": 5
+  "ts": 1699123456790,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456790",
+    "op": "wan_connectivity",
+    "args": {
+      "test_hosts": ["8.8.8.8", "google.com"],
+      "timeout": 5
+    }
   }
 }
 ```
@@ -161,13 +184,17 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 #### WiFi 掃描
 ```json
 {
-  "id": "cmd-1699123456791",
-  "op": "wifi_scan",
   "schema": "cmd.wifi_scan/1.0",
-  "args": {
-    "scan_type": "active",
-    "channels": [1, 6, 11],
-    "duration": 10
+  "ts": 1699123456791,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456791",
+    "op": "wifi_scan",
+    "args": {
+      "scan_type": "active",
+      "channels": [1, 6, 11],
+      "duration": 10
+    }
   }
 }
 ```
@@ -177,11 +204,15 @@ rtk/v1/{tenant}/{site}/{nic_mac}/evt/roaming
 #### 重新啟動網路服務
 ```json
 {
-  "id": "cmd-1699123456792",
-  "op": "restart_service",
   "schema": "cmd.restart_service/1.0",
-  "args": {
-    "service": "network-manager"
+  "ts": 1699123456792,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456792",
+    "op": "restart_service",
+    "args": {
+      "service": "network-manager"
+    }
   }
 }
 ```
@@ -223,19 +254,20 @@ class NICMQTTClient:
             print(f"Error processing command: {e}")
             
     def handle_command(self, command):
-        cmd_id = command.get("id")
-        operation = command.get("op")
+        payload = command.get("payload", {})
+        cmd_id = payload.get("id")
+        operation = payload.get("op")
         
         # 發送確認
         self.send_ack(cmd_id)
         
         # 處理命令
         if operation == "speed_test":
-            result = self.speed_test(command.get("args", {}))
+            result = self.speed_test(payload.get("args", {}))
         elif operation == "wifi_scan":
-            result = self.wifi_scan(command.get("args", {}))
+            result = self.wifi_scan(payload.get("args", {}))
         elif operation == "wan_connectivity":
-            result = self.wan_connectivity_test(command.get("args", {}))
+            result = self.wan_connectivity_test(payload.get("args", {}))
         else:
             result = {"error": "Unsupported command"}
             
@@ -245,21 +277,27 @@ class NICMQTTClient:
     def send_ack(self, cmd_id):
         ack_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/ack"
         ack_msg = {
-            "id": cmd_id,
             "schema": "cmd.ack/1.0",
-            "status": "accepted",
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": "accepted"
+            }
         }
         self.client.publish(ack_topic, json.dumps(ack_msg), qos=1)
         
     def send_result(self, cmd_id, operation, result):
         res_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/res"
         res_msg = {
-            "id": cmd_id,
             "schema": f"cmd.{operation}.result/1.0",
-            "status": "completed" if "error" not in result else "failed",
-            "result": result,
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": "completed" if "error" not in result else "failed",
+                "result": result
+            }
         }
         self.client.publish(res_topic, json.dumps(res_msg), qos=1)
         
@@ -308,10 +346,13 @@ class NICMQTTClient:
         state_msg = {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok",
-            "uptime_s": int(time.time() - psutil.boot_time()),
-            "connection_status": "connected",
-            "active_interface": "wlan0"
+            "device_id": self.device_id,
+            "payload": {
+                "health": "ok",
+                "uptime_s": int(time.time() - psutil.boot_time()),
+                "connection_status": "connected",
+                "active_interface": "wlan0"
+            }
         }
         self.client.publish(state_topic, json.dumps(state_msg), qos=1, retain=True)
         
@@ -322,11 +363,14 @@ class NICMQTTClient:
         telemetry_msg = {
             "schema": "telemetry.network/1.0",
             "ts": int(time.time() * 1000),
-            "interface": "wlan0",
-            "tx_bytes": stats.bytes_sent,
-            "rx_bytes": stats.bytes_recv,
-            "tx_packets": stats.packets_sent,
-            "rx_packets": stats.packets_recv
+            "device_id": self.device_id,
+            "payload": {
+                "interface": "wlan0",
+                "tx_bytes": stats.bytes_sent,
+                "rx_bytes": stats.bytes_recv,
+                "tx_packets": stats.packets_sent,
+                "rx_packets": stats.packets_recv
+            }
         }
         self.client.publish(telemetry_topic, json.dumps(telemetry_msg), qos=0)
         
@@ -553,10 +597,14 @@ mosquitto_sub -h localhost -t "rtk/v1/+/+/+/#" -v
 
 # 發送測試命令
 mosquitto_pub -h localhost -t "rtk/v1/demo/office/test-nic/cmd/req" -m '{
-  "id": "test-cmd-123",
-  "op": "speed_test",
   "schema": "cmd.speed_test/1.0",
-  "args": {"duration": 5}
+  "ts": 1699123456789,
+  "device_id": "test-nic",
+  "payload": {
+    "id": "test-cmd-123",
+    "op": "speed_test",
+    "args": {"duration": 5}
+  }
 }'
 
 # 檢查網路介面狀態

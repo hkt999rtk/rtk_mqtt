@@ -71,6 +71,18 @@ The RTK MQTT protocol provides standardized communication for IoT devices with:
 
 **Topic Structure**: `rtk/v1/{tenant}/{site}/{device_id}/{message_type}[/{sub_type}]`
 
+**Standard Message Format**: All messages follow a consistent JSON structure with `payload` wrapper:
+```json
+{
+  "schema": "message_type/version",
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    // Business logic fields wrapped here
+  }
+}
+```
+
 **Key Features**:
 - Device state management and health monitoring
 - Real-time telemetry and event reporting
@@ -78,6 +90,7 @@ The RTK MQTT protocol provides standardized communication for IoT devices with:
 - Network topology discovery and analysis
 - Quality of Service monitoring and optimization
 - Comprehensive diagnostics and troubleshooting
+- **JSON Schema validation** for all message formats
 
 **Supported Devices**:
 - Access Points and Routers
@@ -85,6 +98,8 @@ The RTK MQTT protocol provides standardized communication for IoT devices with:
 - IoT Sensors and Actuators
 - Mesh Network Nodes
 - Network Switches
+
+**Quality Assurance**: All JSON examples in this documentation comply with the RTK MQTT protocol specifications and can be directly used in implementations.
 
 ## Getting Help
 

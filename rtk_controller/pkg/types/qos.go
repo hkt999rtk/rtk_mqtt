@@ -98,7 +98,7 @@ type ProtocolTrafficInfo struct {
 type TrafficAnomaly struct {
 	ID          string  `json:"id"`
 	DeviceID    string  `json:"device_id"`
-	Type        string  `json:"type"` // spike, sustained_high, unusual_protocol
+	Type        string  `json:"type"`     // spike, sustained_high, unusual_protocol
 	Severity    string  `json:"severity"` // low, medium, high, critical
 	Description string  `json:"description"`
 	Value       float64 `json:"value"`
@@ -110,13 +110,13 @@ type TrafficAnomaly struct {
 
 // QoSRecommendation provides QoS policy recommendations
 type QoSRecommendation struct {
-	ID          string         `json:"id"`
-	Type        string         `json:"type"` // bandwidth_cap, traffic_shaping, priority_queue
-	Reason      string         `json:"reason"`
-	Description string         `json:"description"`
-	Priority    int            `json:"priority"`
-	Impact      string         `json:"impact"` // low, medium, high
-	Rule        interface{}    `json:"rule,omitempty"` // BandwidthRule, TrafficRule, or QueueInfo
-	Devices     []string       `json:"affected_devices,omitempty"`
-	CreatedAt   int64          `json:"created_at"`
+	ID          string      `json:"id"`
+	Type        string      `json:"type"` // bandwidth_cap, traffic_shaping, priority_queue
+	Reason      string      `json:"reason"`
+	Description string      `json:"description"`
+	Priority    int         `json:"priority"`
+	Impact      string      `json:"impact"`         // low, medium, high
+	Rule        interface{} `json:"rule,omitempty"` // BandwidthRule, TrafficRule, or QueueInfo
+	Devices     []string    `json:"affected_devices,omitempty"`
+	CreatedAt   int64       `json:"created_at"`
 }

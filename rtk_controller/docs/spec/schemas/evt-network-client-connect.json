@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/evt-network-client-connect/1.0",
+  "title": "RTK MQTT Network Client Connect Event Schema",
+  "description": "Schema for network client connection events",
+  "allOf": [
+    {
+      "$ref": "event.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["evt.network.client_connect/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "event_type": {
+              "enum": ["client_connect"]
+            },
+            "client_mac": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+              "description": "客戶端MAC地址"
+            },
+            "ip_address": {
+              "type": "string",
+              "format": "ipv4",
+              "description": "分配的IP地址"
+            },
+            "connection_type": {
+              "type": "string",
+              "enum": ["wifi", "ethernet"],
+              "description": "連接類型"
+            },
+            "ssid": {
+              "type": "string",
+              "description": "WiFi網絡名稱（WiFi連接時）"
+            },
+            "signal_strength": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 0,
+              "description": "信號強度(dBm，WiFi連接時)"
+            },
+            "hostname": {
+              "type": "string",
+              "description": "客戶端主機名稱"
+            },
+            "device_type": {
+              "type": "string",
+              "description": "設備類型識別"
+            }
+          },
+          "required": ["event_type", "client_mac", "ip_address", "connection_type"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

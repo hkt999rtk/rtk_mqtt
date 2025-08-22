@@ -13,19 +13,19 @@ import (
 func main() {
 	// Create sample topology data
 	topology := generateSampleTopology()
-	
+
 	// Convert to JSON
 	data, err := json.MarshalIndent(topology, "", "  ")
 	if err != nil {
 		log.Fatalf("Failed to marshal topology: %v", err)
 	}
-	
+
 	fmt.Println(string(data))
 }
 
 func generateSampleTopology() *types.NetworkTopology {
 	now := time.Now()
-	
+
 	// Create sample devices
 	devices := map[string]*types.NetworkDevice{
 		"gateway-01": {
@@ -349,7 +349,7 @@ func generateSampleTopology() *types.NetworkTopology {
 			Capabilities: []string{"client"},
 		},
 	}
-	
+
 	// Create connections
 	connections := []types.DeviceConnection{
 		// Gateway to Switch
@@ -360,11 +360,11 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "port1",
 			ConnectionType: "ethernet",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      0.5,
-				PacketLoss:   0.0,
-				Bandwidth:    1000.0,
-				Jitter:       0.1,
-				LastUpdated:  now.Unix(),
+				Latency:     0.5,
+				PacketLoss:  0.0,
+				Bandwidth:   1000.0,
+				Jitter:      0.1,
+				LastUpdated: now.Unix(),
 			},
 		},
 		// Switch to AP-01
@@ -375,11 +375,11 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "eth0",
 			ConnectionType: "ethernet",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      0.3,
-				PacketLoss:   0.0,
-				Bandwidth:    1000.0,
-				Jitter:       0.05,
-				LastUpdated:  now.Unix(),
+				Latency:     0.3,
+				PacketLoss:  0.0,
+				Bandwidth:   1000.0,
+				Jitter:      0.05,
+				LastUpdated: now.Unix(),
 			},
 		},
 		// Switch to AP-02
@@ -390,11 +390,11 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "eth0",
 			ConnectionType: "ethernet",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      0.3,
-				PacketLoss:   0.0,
-				Bandwidth:    1000.0,
-				Jitter:       0.05,
-				LastUpdated:  now.Unix(),
+				Latency:     0.3,
+				PacketLoss:  0.0,
+				Bandwidth:   1000.0,
+				Jitter:      0.05,
+				LastUpdated: now.Unix(),
 			},
 		},
 		// Laptop to AP-01 (WiFi)
@@ -405,11 +405,11 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "wlan0",
 			ConnectionType: "wireless",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      2.5,
-				PacketLoss:   0.1,
-				Bandwidth:    433.3,
-				Jitter:       0.8,
-				LastUpdated:  now.Unix(),
+				Latency:     2.5,
+				PacketLoss:  0.1,
+				Bandwidth:   433.3,
+				Jitter:      0.8,
+				LastUpdated: now.Unix(),
 			},
 		},
 		// Phone to AP-02 (WiFi)
@@ -420,11 +420,11 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "wlan0",
 			ConnectionType: "wireless",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      3.2,
-				PacketLoss:   0.2,
-				Bandwidth:    173.3,
-				Jitter:       1.2,
-				LastUpdated:  now.Unix(),
+				Latency:     3.2,
+				PacketLoss:  0.2,
+				Bandwidth:   173.3,
+				Jitter:      1.2,
+				LastUpdated: now.Unix(),
 			},
 		},
 		// IoT device to AP-01 (WiFi)
@@ -435,25 +435,25 @@ func generateSampleTopology() *types.NetworkTopology {
 			ToInterface:    "wlan0",
 			ConnectionType: "wireless",
 			Metrics: &types.ConnectionMetrics{
-				Latency:      5.5,
-				PacketLoss:   0.5,
-				Bandwidth:    72.2,
-				Jitter:       2.0,
-				LastUpdated:  now.Unix(),
+				Latency:     5.5,
+				PacketLoss:  0.5,
+				Bandwidth:   72.2,
+				Jitter:      2.0,
+				LastUpdated: now.Unix(),
 			},
 		},
 	}
-	
+
 	// Create gateway info
 	gateway := &types.GatewayInfo{
-		DeviceID:       "gateway-01",
-		IPAddress:      "192.168.1.1",
-		MACAddress:     "00:11:22:33:44:55",
-		Interface:      "eth0",
-		IsDefault:      true,
+		DeviceID:         "gateway-01",
+		IPAddress:        "192.168.1.1",
+		MACAddress:       "00:11:22:33:44:55",
+		Interface:        "eth0",
+		IsDefault:        true,
 		ConnectedDevices: 6,
 	}
-	
+
 	return &types.NetworkTopology{
 		ID:          fmt.Sprintf("topology-%d", rand.Int63()),
 		Tenant:      "demo",

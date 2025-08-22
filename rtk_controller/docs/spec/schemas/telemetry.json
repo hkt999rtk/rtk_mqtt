@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry/1.0",
+  "title": "RTK MQTT Telemetry Schema",
+  "description": "Base schema for telemetry messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "pattern": "^telemetry\\.[a-z_\\.]+/\\d+\\.\\d+$"
+        },
+        "payload": {
+          "type": "object",
+          "description": "遙測數據內容，具體結構依據遙測類型而定",
+          "additionalProperties": true
+        }
+      }
+    }
+  ]
+}

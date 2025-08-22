@@ -53,8 +53,11 @@
     "payload": {
       "schema": "lwt/1.0",
       "ts": 1699123456789,
-      "status": "offline",
-      "last_seen": 1699123456789
+      "device_id": "aabbccddeeff",
+      "payload": {
+        "status": "offline",
+        "last_seen": 1699123456789
+      }
     },
     "qos": 1,
     "retain": true
@@ -69,23 +72,26 @@
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "uptime_s": 86400,
-  "cpu_usage": 25.4,
-  "memory_usage": 45.2,
-  "connection_status": "connected",
-  "wifi": {
-    "enabled": true,
-    "ssid": "HomeNetwork",
-    "channel": 6,
-    "connected_clients": 12,
-    "signal_strength": -45
-  },
-  "network": {
-    "wan_connected": true,
-    "lan_ip": "192.168.1.1",
-    "wan_ip": "203.0.113.1",
-    "throughput_mbps": 85.2
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "uptime_s": 86400,
+    "cpu_usage": 25.4,
+    "memory_usage": 45.2,
+    "connection_status": "connected",
+    "wifi": {
+      "enabled": true,
+      "ssid": "HomeNetwork",
+      "channel": 6,
+      "connected_clients": 12,
+      "signal_strength": -45
+    },
+    "network": {
+      "wan_connected": true,
+      "lan_ip": "192.168.1.1",
+      "wan_ip": "203.0.113.1",
+      "throughput_mbps": 85.2
+    }
   }
 }
 ```
@@ -97,27 +103,30 @@
 {
   "schema": "attr/1.0",
   "ts": 1699123456789,
-  "device_type": "router",
-  "manufacturer": "Example Corp",
-  "model": "EX-R1000",
-  "firmware_version": "1.2.3",
-  "hardware_version": "A1",
-  "serial_number": "ABC123456789",
-  "mac_address": "aabbccddeeff",
-  "capabilities": [
-    "wifi",
-    "ethernet", 
-    "mesh",
-    "qos",
-    "firewall",
-    "dhcp"
-  ],
-  "wifi_capabilities": {
-    "bands": ["2.4GHz", "5GHz"],
-    "max_clients": 100,
-    "mesh_support": true,
-    "channels_2_4": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-    "channels_5": [36, 40, 44, 48, 149, 153, 157, 161, 165]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "device_type": "router",
+    "manufacturer": "Example Corp",
+    "model": "EX-R1000",
+    "firmware_version": "1.2.3",
+    "hardware_version": "A1",
+    "serial_number": "ABC123456789",
+    "mac_address": "aabbccddeeff",
+    "capabilities": [
+      "wifi",
+      "ethernet", 
+      "mesh",
+      "qos",
+      "firewall",
+      "dhcp"
+    ],
+    "wifi_capabilities": {
+      "bands": ["2.4GHz", "5GHz"],
+      "max_clients": 100,
+      "mesh_support": true,
+      "channels_2_4": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+      "channels_5": [36, 40, 44, 48, 149, 153, 157, 161, 165]
+    }
   }
 }
 ```
@@ -132,7 +141,7 @@
   "schema": "telemetry.wifi/1.0", 
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "data": {
+  "payload": {
     "interfaces": [
       {
         "name": "wlan0",
@@ -173,7 +182,7 @@
   "schema": "telemetry.clients/1.0",
   "ts": 1699123456789, 
   "device_id": "aabbccddeeff",
-  "data": {
+  "payload": {
     "total_clients": 12,
     "wifi_clients": 10,
     "ethernet_clients": 2,
@@ -212,17 +221,20 @@ def setup_command_listener(mqtt_client):
 **接收命令**:
 ```json
 {
-  "id": "cmd-wifi-scan-123",
-  "op": "wifi_scan",
   "schema": "cmd.wifi_scan/1.0",
-  "args": {
-    "scan_type": "active",
-    "duration": 10,
-    "channels": [1, 6, 11, 36, 149],
-    "include_hidden": true
-  },
-  "timeout_ms": 30000,
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-wifi-scan-123",
+    "op": "wifi_scan",
+    "args": {
+      "scan_type": "active",
+      "duration": 10,
+      "channels": [1, 6, 11, 36, 149],
+      "include_hidden": true
+    },
+    "timeout_ms": 30000
+  }
 }
 ```
 
@@ -243,11 +255,14 @@ def handle_wifi_scan(command):
         
         # 發送結果
         result = {
-            "id": command["id"],
             "schema": "cmd.wifi_scan.result/1.0",
-            "status": "completed",
-            "result": scan_result,
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": get_device_id(),
+            "payload": {
+                "id": command["payload"]["id"],
+                "status": "completed",
+                "result": scan_result
+            }
         }
         
         send_result(result)
@@ -255,14 +270,17 @@ def handle_wifi_scan(command):
     except Exception as e:
         # 發送錯誤
         error_result = {
-            "id": command["id"],
-            "schema": "cmd.error/1.0", 
-            "status": "failed",
-            "error": {
-                "code": 1000,
-                "message": str(e)
-            },
-            "ts": int(time.time() * 1000)
+            "schema": "cmd.error/1.0",
+            "ts": int(time.time() * 1000),
+            "device_id": get_device_id(),
+            "payload": {
+                "id": command["payload"]["id"],
+                "status": "failed",
+                "error": {
+                    "code": 1000,
+                    "message": str(e)
+                }
+            }
         }
         send_result(error_result)
 ```
@@ -270,26 +288,28 @@ def handle_wifi_scan(command):
 **返回結果**:
 ```json
 {
-  "id": "cmd-wifi-scan-123",
   "schema": "cmd.wifi_scan.result/1.0",
-  "status": "completed",
-  "result": {
-    "networks": [
-      {
-        "ssid": "NeighborNetwork",
-        "bssid": "bbccddeeff00",
-        "channel": 6,
-        "frequency": 2437,
-        "signal_strength": -65,
-        "security": "WPA2-PSK",
+  "ts": 1699123456820,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-wifi-scan-123",
+    "status": "completed",
+    "result": {
+      "networks": [
+        {
+          "ssid": "NeighborNetwork",
+          "bssid": "bbccddeeff00",
+          "channel": 6,
+          "frequency": 2437,
+          "signal_strength": -65,
+          "security": "WPA2-PSK",
         "bandwidth": "20MHz",
         "hidden": false
       }
     ],
     "scan_duration": 10,
     "channels_scanned": [1, 6, 11, 36, 149]
-  },
-  "ts": 1699123456820
+  }
 }
 ```
 
@@ -307,16 +327,19 @@ def handle_client_list(command):
         )
         
         result = {
-            "id": command["id"],
-            "schema": "cmd.client_list.result/1.0", 
-            "status": "completed",
-            "result": {
-                "clients": clients,
-                "total_count": len(clients),
-                "online_count": sum(1 for c in clients if c["online"]),
-                "timestamp": int(time.time() * 1000)
-            },
-            "ts": int(time.time() * 1000)
+            "schema": "cmd.client_list.result/1.0",
+            "ts": int(time.time() * 1000),
+            "device_id": get_device_id(),
+            "payload": {
+                "id": command["payload"]["id"],
+                "status": "completed",
+                "result": {
+                    "clients": clients,
+                    "total_count": len(clients),
+                    "online_count": sum(1 for c in clients if c["online"]),
+                    "timestamp": int(time.time() * 1000)
+                }
+            }
         }
         
         send_result(result)
@@ -330,26 +353,29 @@ def handle_client_list(command):
 **接收命令**:
 ```json
 {
-  "id": "cmd-qos-123",
-  "op": "qos_config",
   "schema": "cmd.qos_config/1.0",
-  "args": {
-    "policy": "gaming",
-    "rules": [
-      {
-        "name": "high_priority_gaming",
-        "match": {
-          "protocol": "udp",
-          "port_range": "3000-4000"
-        },
-        "priority": "high",
-        "bandwidth_limit": null
-      }
-    ],
-    "apply_immediately": true
-  },
-  "timeout_ms": 10000,
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-qos-123",
+    "op": "qos_config",
+    "args": {
+      "policy": "gaming",
+      "rules": [
+        {
+          "name": "high_priority_gaming",
+          "match": {
+            "protocol": "udp",
+            "port_range": "3000-4000"
+          },
+          "priority": "high",
+          "bandwidth_limit": null
+        }
+      ],
+      "apply_immediately": true
+    },
+    "timeout_ms": 10000
+  }
 }
 ```
 
@@ -372,7 +398,7 @@ def on_client_connected(client_info):
         "schema": "evt.network.client_connect/1.0",
         "ts": int(time.time() * 1000),
         "device_id": get_device_id(),
-        "data": {
+        "payload": {
             "client_mac": client_info["mac"],
             "ip_address": client_info["ip"],
             "connection_type": client_info["type"],
@@ -392,7 +418,7 @@ def on_client_roamed(client_mac, old_ap, new_ap, reason):
         "schema": "evt.wifi.roam_triggered/1.0",
         "ts": int(time.time() * 1000),
         "device_id": get_device_id(),
-        "data": {
+        "payload": {
             "client_mac": client_mac,
             "from_ap": old_ap,
             "to_ap": new_ap,

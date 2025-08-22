@@ -9,30 +9,45 @@
 ### 感測器設備
 ```json
 {
-  "device_type": "sensor",
-  "sensor_types": ["temperature", "humidity", "motion", "light"],
-  "capabilities": ["telemetry", "threshold_alerts"],
-  "power_mode": "battery"
+  "schema": "device.config/1.0",
+  "ts": 1699123456789,
+  "device_id": "sensor-001",
+  "payload": {
+    "device_type": "sensor",
+    "sensor_types": ["temperature", "humidity", "motion", "light"],
+    "capabilities": ["telemetry", "threshold_alerts"],
+    "power_mode": "battery"
+  }
 }
 ```
 
 ### 智慧家電
 ```json
 {
-  "device_type": "smart_appliance", 
-  "appliance_type": "thermostat",
-  "capabilities": ["control", "scheduling", "energy_monitoring"],
-  "power_mode": "mains"
+  "schema": "device.config/1.0",
+  "ts": 1699123456789,
+  "device_id": "thermostat-001",
+  "payload": {
+    "device_type": "smart_appliance", 
+    "appliance_type": "thermostat",
+    "capabilities": ["control", "scheduling", "energy_monitoring"],
+    "power_mode": "mains"
+  }
 }
 ```
 
 ### 工業設備
 ```json
 {
-  "device_type": "industrial",
-  "equipment_type": "pump_controller",
-  "capabilities": ["monitoring", "control", "maintenance_alerts"],
-  "protocols": ["modbus", "bacnet"]
+  "schema": "device.config/1.0",
+  "ts": 1699123456789,
+  "device_id": "pump-001",
+  "payload": {
+    "device_type": "industrial",
+    "equipment_type": "pump_controller",
+    "capabilities": ["monitoring", "control", "maintenance_alerts"],
+    "protocols": ["modbus", "bacnet"]
+  }
 }
 ```
 
@@ -60,14 +75,17 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "battery_level": 85,
-  "signal_strength": -65,
-  "last_reading": 1699123456000,
-  "sensor_status": {
-    "temperature": "active",
-    "humidity": "active",
-    "motion": "inactive"
+  "device_id": "sensor-001",
+  "payload": {
+    "health": "ok",
+    "battery_level": 85,
+    "signal_strength": -65,
+    "last_reading": 1699123456000,
+    "sensor_status": {
+      "temperature": "active",
+      "humidity": "active",
+      "motion": "inactive"
+    }
   }
 }
 ```
@@ -77,12 +95,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "state/1.0", 
   "ts": 1699123456789,
-  "health": "ok",
-  "power_state": "on",
-  "operating_mode": "auto",
-  "current_setpoint": 22.5,
-  "system_status": "heating",
-  "energy_usage_w": 150
+  "device_id": "thermostat-001",
+  "payload": {
+    "health": "ok",
+    "power_state": "on",
+    "operating_mode": "auto",
+    "current_setpoint": 22.5,
+    "system_status": "heating",
+    "energy_usage_w": 150
+  }
 }
 ```
 
@@ -91,12 +112,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok", 
-  "operational_state": "running",
-  "runtime_hours": 1234.5,
-  "maintenance_due": false,
-  "alarm_status": "clear",
-  "production_rate": 95.2
+  "device_id": "pump-001",
+  "payload": {
+    "health": "ok", 
+    "operational_state": "running",
+    "runtime_hours": 1234.5,
+    "maintenance_due": false,
+    "alarm_status": "clear",
+    "production_rate": 95.2
+  }
 }
 ```
 
@@ -107,12 +131,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "telemetry.environment/1.0",
   "ts": 1699123456789,
-  "temperature_c": 23.5,
-  "humidity_percent": 65.2,
-  "pressure_hpa": 1013.25,
-  "air_quality_index": 42,
-  "light_lux": 350,
-  "uv_index": 3
+  "device_id": "sensor-env-001",
+  "payload": {
+    "temperature_c": 23.5,
+    "humidity_percent": 65.2,
+    "pressure_hpa": 1013.25,
+    "air_quality_index": 42,
+    "light_lux": 350,
+    "uv_index": 3
+  }
 }
 ```
 
@@ -121,11 +148,14 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "telemetry.motion/1.0",
   "ts": 1699123456789,
-  "motion_detected": true,
-  "detection_count": 5,
-  "last_motion": 1699123450000,
-  "sensitivity_level": 7,
-  "detection_zone": "main_area"
+  "device_id": "motion-001",
+  "payload": {
+    "motion_detected": true,
+    "detection_count": 5,
+    "last_motion": 1699123450000,
+    "sensitivity_level": 7,
+    "detection_zone": "main_area"
+  }
 }
 ```
 
@@ -134,12 +164,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "telemetry.energy/1.0",
   "ts": 1699123456789,
-  "power_w": 125.5,
-  "energy_kwh": 2.45,
-  "voltage_v": 230.2,
-  "current_a": 0.55,
-  "power_factor": 0.95,
-  "frequency_hz": 50.1
+  "device_id": "energy-001",
+  "payload": {
+    "power_w": 125.5,
+    "energy_kwh": 2.45,
+    "voltage_v": 230.2,
+    "current_a": 0.55,
+    "power_factor": 0.95,
+    "frequency_hz": 50.1
+  }
 }
 ```
 
@@ -148,12 +181,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "telemetry.industrial/1.0",
   "ts": 1699123456789,
-  "pressure_bar": 3.2,
-  "flow_rate_lpm": 45.8,
-  "temperature_c": 68.5,
-  "vibration_mm_s": 2.1,
-  "rpm": 1450,
-  "efficiency_percent": 87.3
+  "device_id": "pump-001",
+  "payload": {
+    "pressure_bar": 3.2,
+    "flow_rate_lpm": 45.8,
+    "temperature_c": 68.5,
+    "vibration_mm_s": 2.1,
+    "rpm": 1450,
+    "efficiency_percent": 87.3
+  }
 }
 ```
 
@@ -164,13 +200,16 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "evt.threshold/1.0",
   "ts": 1699123456789,
-  "event_type": "threshold_exceeded",
-  "sensor_type": "temperature",
-  "current_value": 35.2,
-  "threshold_value": 30.0,
-  "threshold_type": "max",
-  "severity": "warning",
-  "duration_s": 120
+  "device_id": "sensor-temp-001",
+  "payload": {
+    "event_type": "threshold_exceeded",
+    "sensor_type": "temperature",
+    "current_value": 35.2,
+    "threshold_value": 30.0,
+    "threshold_type": "max",
+    "severity": "warning",
+    "duration_s": 120
+  }
 }
 ```
 
@@ -179,12 +218,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "evt.fault/1.0",
   "ts": 1699123456789,
-  "event_type": "sensor_failure",
-  "component": "humidity_sensor",
-  "fault_code": "SENSOR_001",
-  "description": "Humidity sensor reading out of range",
-  "severity": "critical",
-  "recommended_action": "Replace sensor"
+  "device_id": "sensor-001",
+  "payload": {
+    "event_type": "sensor_failure",
+    "component": "humidity_sensor",
+    "fault_code": "SENSOR_001",
+    "description": "Humidity sensor reading out of range",
+    "severity": "critical",
+    "recommended_action": "Replace sensor"
+  }
 }
 ```
 
@@ -193,12 +235,15 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 {
   "schema": "evt.maintenance/1.0",
   "ts": 1699123456789,
-  "event_type": "maintenance_due",
-  "maintenance_type": "preventive",
-  "component": "filter",
-  "due_date": 1699200000000,
-  "priority": "medium",
-  "estimated_duration_hours": 2
+  "device_id": "pump-001",
+  "payload": {
+    "event_type": "maintenance_due",
+    "maintenance_type": "preventive",
+    "component": "filter",
+    "due_date": 1699200000000,
+    "priority": "medium",
+    "estimated_duration_hours": 2
+  }
 }
 ```
 
@@ -209,14 +254,18 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 #### 設定感測器閾值
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "set_threshold",
   "schema": "cmd.set_threshold/1.0",
-  "args": {
-    "sensor_type": "temperature",
-    "threshold_type": "max",
-    "value": 30.0,
-    "hysteresis": 1.0
+  "ts": 1699123456789,
+  "device_id": "sensor-temp-001",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "set_threshold",
+    "args": {
+      "sensor_type": "temperature",
+      "threshold_type": "max",
+      "value": 30.0,
+      "hysteresis": 1.0
+    }
   }
 }
 ```
@@ -238,13 +287,17 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 #### 執行校準
 ```json
 {
-  "id": "cmd-1699123456791",
-  "op": "calibrate_sensor",
   "schema": "cmd.calibrate_sensor/1.0",
-  "args": {
-    "sensor_type": "temperature",
-    "reference_value": 25.0,
-    "calibration_type": "offset"
+  "ts": 1699123456791,
+  "device_id": "sensor-001",
+  "payload": {
+    "id": "cmd-1699123456791",
+    "op": "calibrate_sensor",
+    "args": {
+      "sensor_type": "temperature",
+      "reference_value": 25.0,
+      "calibration_type": "offset"
+    }
   }
 }
 ```
@@ -252,13 +305,17 @@ rtk/v1/{tenant}/{site}/{device_id}/cmd/res
 #### 控制家電設備
 ```json
 {
-  "id": "cmd-1699123456792",
-  "op": "set_temperature",
   "schema": "cmd.set_temperature/1.0",
-  "args": {
-    "target_temperature": 22.5,
-    "mode": "auto",
-    "schedule_enabled": true
+  "ts": 1699123456792,
+  "device_id": "thermostat-001",
+  "payload": {
+    "id": "cmd-1699123456792",
+    "op": "set_temperature",
+    "args": {
+      "target_temperature": 22.5,
+      "mode": "auto",
+      "schedule_enabled": true
+    }
   }
 }
 ```
@@ -539,10 +596,13 @@ class IoTMQTTClient:
     def send_ack(self, cmd_id):
         ack_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/ack"
         ack_msg = {
-            "id": cmd_id,
             "schema": "cmd.ack/1.0",
-            "status": "accepted",
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": "accepted"
+            }
         }
         self.client.publish(ack_topic, json.dumps(ack_msg), qos=1)
         
@@ -550,11 +610,14 @@ class IoTMQTTClient:
         res_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.device_id}/cmd/res"
         status = "completed" if "error" not in result else "failed"
         res_msg = {
-            "id": cmd_id,
             "schema": f"cmd.{operation}.result/1.0",
-            "status": status,
-            "result": result,
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.device_id,
+            "payload": {
+                "id": cmd_id,
+                "status": status,
+                "result": result
+            }
         }
         self.client.publish(res_topic, json.dumps(res_msg), qos=1)
         
@@ -601,12 +664,15 @@ class IoTMQTTClient:
         state_msg = {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok",
-            "sensor_status": {
-                "temperature": "active",
-                "motion": "active"
-            },
-            "relay_state": "on" if GPIO.input(24) else "off"
+            "device_id": self.device_id,
+            "payload": {
+                "health": "ok",
+                "sensor_status": {
+                    "temperature": "active",
+                    "motion": "active"
+                },
+                "relay_state": "on" if GPIO.input(24) else "off"
+            }
         }
         self.client.publish(state_topic, json.dumps(state_msg), qos=1, retain=True)
         
@@ -622,8 +688,11 @@ class IoTMQTTClient:
             telemetry_msg = {
                 "schema": "telemetry.environment/1.0",
                 "ts": int(time.time() * 1000),
-                "temperature_c": temperature,
-                "motion_detected": motion_detected
+                "device_id": self.device_id,
+                "payload": {
+                    "temperature_c": temperature,
+                    "motion_detected": motion_detected
+                }
             }
             self.client.publish(telemetry_topic, json.dumps(telemetry_msg), qos=0)
             
@@ -639,12 +708,15 @@ class IoTMQTTClient:
             evt_msg = {
                 "schema": "evt.threshold/1.0",
                 "ts": int(time.time() * 1000),
-                "event_type": "threshold_exceeded",
-                "sensor_type": "temperature",
-                "current_value": current_temp,
-                "threshold_value": self.temperature_threshold,
-                "threshold_type": "max",
-                "severity": "warning"
+                "device_id": self.device_id,
+                "payload": {
+                    "event_type": "threshold_exceeded",
+                    "sensor_type": "temperature",
+                    "current_value": current_temp,
+                    "threshold_value": self.temperature_threshold,
+                    "threshold_type": "max",
+                    "severity": "warning"
+                }
             }
             self.client.publish(evt_topic, json.dumps(evt_msg), qos=1)
             
@@ -695,11 +767,14 @@ if __name__ == "__main__":
 {
   "schema": "telemetry.battery/1.0",
   "ts": 1699123456789,
-  "battery_level": 75,
-  "voltage": 3.7,
-  "charging": false,
-  "estimated_runtime_hours": 48,
-  "power_consumption_mw": 125
+  "device_id": "sensor-001",
+  "payload": {
+    "battery_level": 75,
+    "voltage": 3.7,
+    "charging": false,
+    "estimated_runtime_hours": 48,
+    "power_consumption_mw": 125
+  }
 }
 ```
 
@@ -710,10 +785,13 @@ if __name__ == "__main__":
 {
   "schema": "telemetry.power/1.0",
   "ts": 1699123456789,
-  "power_consumption_w": 5.2,
-  "voltage_v": 5.0,
-  "current_ma": 1040,
-  "power_state": "active"
+  "device_id": "thermostat-001",
+  "payload": {
+    "power_consumption_w": 5.2,
+    "voltage_v": 5.0,
+    "current_ma": 1040,
+    "power_state": "active"
+  }
 }
 ```
 

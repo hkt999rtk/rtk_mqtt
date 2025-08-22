@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-cpu/1.0",
+  "title": "RTK MQTT CPU Telemetry Schema",
+  "description": "Schema for CPU telemetry data",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.cpu/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "usage_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "CPU使用率(%)"
+            },
+            "load_average": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": 0
+              },
+              "minItems": 3,
+              "maxItems": 3,
+              "description": "1分鐘、5分鐘、15分鐘負載平均值"
+            },
+            "temperature": {
+              "type": "number",
+              "description": "CPU溫度(攝氏度)"
+            },
+            "frequency_mhz": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "CPU頻率(MHz)"
+            },
+            "cores": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "CPU核心數"
+            }
+          },
+          "required": ["usage_percent"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

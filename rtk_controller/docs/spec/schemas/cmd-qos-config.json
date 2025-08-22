@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-qos-config/1.0",
+  "title": "RTK MQTT QoS Config Command Schema",
+  "description": "Schema for QoS configuration command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.qos_config/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["qos_config"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "policy": {
+                  "type": "string",
+                  "enum": ["gaming", "streaming", "work", "balanced", "custom"],
+                  "description": "QoS政策類型"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "規則名稱"
+                      },
+                      "match": {
+                        "type": "object",
+                        "properties": {
+                          "protocol": {
+                            "type": "string",
+                            "enum": ["tcp", "udp", "icmp", "any"]
+                          },
+                          "port_range": {
+                            "type": "string",
+                            "pattern": "^\\d+(-\\d+)?$",
+                            "description": "端口範圍，如 '80' 或 '3000-4000'"
+                          },
+                          "src_ip": {
+                            "type": "string",
+                            "format": "ipv4"
+                          },
+                          "dst_ip": {
+                            "type": "string",
+                            "format": "ipv4"
+                          },
+                          "device_mac": {
+                            "type": "string",
+                            "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      "priority": {
+                        "type": "string",
+                        "enum": ["high", "medium", "low"]
+                      },
+                      "bandwidth_limit": {
+                        "type": ["integer", "null"],
+                        "minimum": 1,
+                        "description": "頻寬限制(Mbps)"
+                      },
+                      "bandwidth_guarantee": {
+                        "type": ["integer", "null"],
+                        "minimum": 1,
+                        "description": "頻寬保證(Mbps)"
+                      }
+                    },
+                    "required": ["name", "match", "priority"],
+                    "additionalProperties": false
+                  }
+                },
+                "enable": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否啟用QoS"
+                }
+              },
+              "required": ["policy"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

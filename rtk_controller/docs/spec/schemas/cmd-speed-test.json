@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-speed-test/1.0",
+  "title": "RTK MQTT Speed Test Command Schema",
+  "description": "Schema for network speed test command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.speed_test/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["speed_test"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "server": {
+                  "type": "string",
+                  "enum": ["auto", "ookla", "custom_url"],
+                  "default": "auto",
+                  "description": "測試伺服器選擇"
+                },
+                "duration": {
+                  "type": "integer",
+                  "minimum": 5,
+                  "maximum": 60,
+                  "default": 10,
+                  "description": "測試持續時間(秒)"
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": ["download", "upload", "both"],
+                  "default": "both",
+                  "description": "測試方向"
+                },
+                "test_size": {
+                  "type": "string",
+                  "enum": ["1MB", "10MB", "100MB"],
+                  "default": "10MB",
+                  "description": "測試檔案大小"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

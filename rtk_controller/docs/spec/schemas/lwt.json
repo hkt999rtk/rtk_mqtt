@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/lwt/1.0",
+  "title": "RTK MQTT Last Will Testament Schema",
+  "description": "Schema for Last Will Testament messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["lwt/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["online", "offline", "disconnected"],
+              "description": "設備連線狀態"
+            },
+            "last_seen": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "最後在線時間戳(毫秒)"
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["normal", "timeout", "error", "reboot"],
+              "description": "離線原因"
+            }
+          },
+          "required": ["status"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

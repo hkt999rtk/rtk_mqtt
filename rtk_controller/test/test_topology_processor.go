@@ -25,13 +25,13 @@ func main() {
 
 	// Create schema manager
 	schemaConfig := schema.Config{
-		Enabled:            false, // Disable for testing without schemas
-		SchemaFiles:        []string{},
-		StrictValidation:   false,
+		Enabled:             false, // Disable for testing without schemas
+		SchemaFiles:         []string{},
+		StrictValidation:    false,
 		LogValidationErrors: true,
-		CacheResults:       true,
-		CacheSize:          100,
-		StoreResults:       false,
+		CacheResults:        true,
+		CacheSize:           100,
+		StoreResults:        false,
 	}
 	schemaManager, err := schema.NewManager(schemaConfig, store)
 	if err != nil {
@@ -61,7 +61,7 @@ func main() {
 
 func testTopologyDiscovery(processor *mqtt.TopologyProcessor) {
 	fmt.Println("\n1. Testing Topology Discovery Message")
-	
+
 	message := map[string]interface{}{
 		"schema":    "topology.discovery.v1",
 		"timestamp": time.Now().Unix() * 1000,
@@ -93,7 +93,7 @@ func testTopologyDiscovery(processor *mqtt.TopologyProcessor) {
 	// Check if it's a topology message
 	if processor.IsTopologyMessage(topic) {
 		fmt.Println("✓ Message identified as topology message")
-		
+
 		// Process the message
 		if err := processor.ProcessMessage(topic, payload); err != nil {
 			fmt.Printf("✗ Failed to process message: %v\n", err)
@@ -107,7 +107,7 @@ func testTopologyDiscovery(processor *mqtt.TopologyProcessor) {
 
 func testWiFiClients(processor *mqtt.TopologyProcessor) {
 	fmt.Println("\n2. Testing WiFi Clients Message")
-	
+
 	message := map[string]interface{}{
 		"schema":    "telemetry.wifi_clients.v1",
 		"timestamp": time.Now().Unix() * 1000,
@@ -132,7 +132,7 @@ func testWiFiClients(processor *mqtt.TopologyProcessor) {
 
 	if processor.IsTopologyMessage(topic) {
 		fmt.Println("✓ Message identified as topology message")
-		
+
 		if err := processor.ProcessMessage(topic, payload); err != nil {
 			fmt.Printf("✗ Failed to process message: %v\n", err)
 		} else {
@@ -145,7 +145,7 @@ func testWiFiClients(processor *mqtt.TopologyProcessor) {
 
 func testConnections(processor *mqtt.TopologyProcessor) {
 	fmt.Println("\n3. Testing Connections Message")
-	
+
 	message := map[string]interface{}{
 		"schema":    "topology.connections.v1",
 		"timestamp": time.Now().Unix() * 1000,
@@ -175,7 +175,7 @@ func testConnections(processor *mqtt.TopologyProcessor) {
 
 	if processor.IsTopologyMessage(topic) {
 		fmt.Println("✓ Message identified as topology message")
-		
+
 		if err := processor.ProcessMessage(topic, payload); err != nil {
 			fmt.Printf("✗ Failed to process message: %v\n", err)
 		} else {
@@ -188,7 +188,7 @@ func testConnections(processor *mqtt.TopologyProcessor) {
 
 func verifyTopologyData(topologyStorage *storage.TopologyStorage) {
 	fmt.Println("\n4. Verifying Processed Data")
-	
+
 	// Get topology
 	topology, err := topologyStorage.GetTopology("default", "default")
 	if err != nil {
@@ -196,7 +196,7 @@ func verifyTopologyData(topologyStorage *storage.TopologyStorage) {
 		return
 	}
 
-	fmt.Printf("✓ Topology loaded: %d devices, %d connections\n", 
+	fmt.Printf("✓ Topology loaded: %d devices, %d connections\n",
 		len(topology.Devices), len(topology.Connections))
 
 	// Check for test devices
@@ -213,13 +213,13 @@ func verifyTopologyData(topologyStorage *storage.TopologyStorage) {
 	fmt.Println("\nTopology Summary:")
 	fmt.Printf("- Total Devices: %d\n", len(topology.Devices))
 	fmt.Printf("- Total Connections: %d\n", len(topology.Connections))
-	
+
 	for id, device := range topology.Devices {
 		status := "offline"
 		if device.Online {
 			status = "online"
 		}
-		fmt.Printf("  - %s: %s (%s) - %s\n", 
+		fmt.Printf("  - %s: %s (%s) - %s\n",
 			id, device.Hostname, device.DeviceType, status)
 	}
 }

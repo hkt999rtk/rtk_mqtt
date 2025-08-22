@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/event/1.0",
+  "title": "RTK MQTT Event Schema",
+  "description": "Base schema for event messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "pattern": "^evt\\.[a-z_\\.]+/\\d+\\.\\d+$"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "event_type": {
+              "type": "string",
+              "description": "事件類型"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["info", "warning", "error", "critical"],
+              "description": "事件嚴重程度"
+            }
+          },
+          "required": ["event_type"],
+          "additionalProperties": true
+        }
+      }
+    }
+  ]
+}

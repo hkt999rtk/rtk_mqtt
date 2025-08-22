@@ -28,9 +28,13 @@ Internet ── Router (gateway-001) ── Switch (switch-001)
 ```json
 // 1. 檢查 WAN 連線狀態
 {
-  "id": "cmd-wan-check-001",
-  "op": "diagnostics.wan_connectivity",
   "schema": "cmd.diagnostics.wan_connectivity/1.0",
+  "ts": 1699123456789,
+  "device_id": "gateway-001",
+  "payload": {
+    "id": "cmd-wan-check-001",
+    "op": "diagnostics.wan_connectivity"
+  },
   "trace": {
     "session_id": "diag-session-001",
     "trace_id": "wan-check-step-01"
@@ -39,13 +43,18 @@ Internet ── Router (gateway-001) ── Switch (switch-001)
 
 // 結果：WAN 連線正常
 {
-  "id": "cmd-wan-check-001",
-  "status": "completed",
-  "result": {
-    "wan_status": "connected",
-    "public_ip": "203.123.45.67",
-    "gateway_reachable": true,
-    "dns_resolution": true
+  "schema": "cmd.diagnostics.wan_connectivity.result/1.0",
+  "ts": 1699123456820,
+  "device_id": "gateway-001",
+  "payload": {
+    "id": "cmd-wan-check-001",
+    "status": "completed",
+    "result": {
+      "wan_status": "connected",
+      "public_ip": "203.123.45.67",
+      "gateway_reachable": true,
+      "dns_resolution": true
+    }
   }
 }
 ```

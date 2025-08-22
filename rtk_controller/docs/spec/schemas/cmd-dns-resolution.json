@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-dns-resolution/1.0",
+  "title": "RTK MQTT DNS Resolution Test Command Schema",
+  "description": "Schema for DNS resolution test command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.dns_resolution/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["dns_resolution"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "test_domains": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "測試域名列表"
+                },
+                "dns_servers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "DNS伺服器列表"
+                },
+                "query_types": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["A", "AAAA", "MX", "CNAME", "NS", "TXT"]
+                  },
+                  "description": "查詢類型"
+                }
+              },
+              "required": ["test_domains"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

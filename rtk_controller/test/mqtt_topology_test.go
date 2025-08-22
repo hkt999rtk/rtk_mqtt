@@ -5,36 +5,36 @@ import (
 	"fmt"
 	"log"
 	"time"
-	
+
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // TopologyDiscoveryMessage represents a device discovery message
 type TopologyDiscoveryMessage struct {
-	Schema      string                 `json:"schema"`
-	Timestamp   int64                  `json:"timestamp"`
-	DeviceID    string                 `json:"device_id"`
-	DeviceInfo  map[string]interface{} `json:"device_info"`
+	Schema      string                   `json:"schema"`
+	Timestamp   int64                    `json:"timestamp"`
+	DeviceID    string                   `json:"device_id"`
+	DeviceInfo  map[string]interface{}   `json:"device_info"`
 	Interfaces  []map[string]interface{} `json:"interfaces,omitempty"`
-	RoutingInfo map[string]interface{} `json:"routing_info,omitempty"`
-	BridgeInfo  map[string]interface{} `json:"bridge_info,omitempty"`
+	RoutingInfo map[string]interface{}   `json:"routing_info,omitempty"`
+	BridgeInfo  map[string]interface{}   `json:"bridge_info,omitempty"`
 }
 
 // WiFiClientsMessage represents WiFi client telemetry
 type WiFiClientsMessage struct {
-	Schema    string                 `json:"schema"`
-	Timestamp int64                  `json:"timestamp"`
-	DeviceID  string                 `json:"device_id"`
-	SSID      string                 `json:"ssid"`
-	BSSID     string                 `json:"bssid"`
+	Schema    string                   `json:"schema"`
+	Timestamp int64                    `json:"timestamp"`
+	DeviceID  string                   `json:"device_id"`
+	SSID      string                   `json:"ssid"`
+	BSSID     string                   `json:"bssid"`
 	Clients   []map[string]interface{} `json:"clients"`
 }
 
 // ConnectionsMessage represents network connections
 type ConnectionsMessage struct {
-	Schema      string                 `json:"schema"`
-	Timestamp   int64                  `json:"timestamp"`
-	DeviceID    string                 `json:"device_id"`
+	Schema      string                   `json:"schema"`
+	Timestamp   int64                    `json:"timestamp"`
+	DeviceID    string                   `json:"device_id"`
 	Connections []map[string]interface{} `json:"connections"`
 }
 
@@ -42,37 +42,37 @@ func main() {
 	// MQTT broker configuration
 	broker := "tcp://localhost:1883"
 	clientID := "topology-test-publisher"
-	
+
 	// Create MQTT client options
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(broker)
 	opts.SetClientID(clientID)
 	opts.SetUsername("test")
 	opts.SetPassword("test123")
-	
+
 	// Create and connect client
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		log.Fatalf("Failed to connect to MQTT broker: %v", token.Error())
 	}
 	defer client.Disconnect(250)
-	
+
 	fmt.Println("Connected to MQTT broker")
-	
+
 	// Test 1: Send topology discovery message for a new router
 	sendTopologyDiscovery(client, "router-02")
-	
+
 	// Test 2: Send WiFi clients telemetry
 	sendWiFiClients(client, "ap-01")
-	
+
 	// Test 3: Send connection updates
 	sendConnections(client, "switch-01")
-	
+
 	// Test 4: Send device identity update
 	sendDeviceIdentity(client, "client-02")
-	
+
 	fmt.Println("All test messages sent successfully")
-	
+
 	// Wait a bit for messages to be processed
 	time.Sleep(2 * time.Second)
 }
@@ -128,7 +128,7 @@ func sendTopologyDiscovery(client mqtt.Client, deviceID string) {
 			},
 		},
 	}
-	
+
 	topic := fmt.Sprintf("rtk/v1/default/default/%s/topology/discovery", deviceID)
 	publishMessage(client, topic, message)
 	fmt.Printf("Sent topology discovery for %s\n", deviceID)
@@ -143,32 +143,32 @@ func sendWiFiClients(client mqtt.Client, deviceID string) {
 		BSSID:     "00:11:22:33:44:67",
 		Clients: []map[string]interface{}{
 			{
-				"mac_address":     "AA:BB:CC:DD:EE:02",
-				"ip_address":      "192.168.1.102",
-				"hostname":        "phone-02",
-				"rssi":            -48,
-				"tx_rate":         200.5,
-				"rx_rate":         150.3,
-				"connected_time":  3600,
-				"idle_time":       10,
-				"tx_bytes":        50000000,
-				"rx_bytes":        20000000,
+				"mac_address":    "AA:BB:CC:DD:EE:02",
+				"ip_address":     "192.168.1.102",
+				"hostname":       "phone-02",
+				"rssi":           -48,
+				"tx_rate":        200.5,
+				"rx_rate":        150.3,
+				"connected_time": 3600,
+				"idle_time":      10,
+				"tx_bytes":       50000000,
+				"rx_bytes":       20000000,
 			},
 			{
-				"mac_address":     "AA:BB:CC:DD:EE:03",
-				"ip_address":      "192.168.1.103",
-				"hostname":        "tablet-01",
-				"rssi":            -55,
-				"tx_rate":         150.0,
-				"rx_rate":         100.0,
-				"connected_time":  7200,
-				"idle_time":       120,
-				"tx_bytes":        10000000,
-				"rx_bytes":        5000000,
+				"mac_address":    "AA:BB:CC:DD:EE:03",
+				"ip_address":     "192.168.1.103",
+				"hostname":       "tablet-01",
+				"rssi":           -55,
+				"tx_rate":        150.0,
+				"rx_rate":        100.0,
+				"connected_time": 7200,
+				"idle_time":      120,
+				"tx_bytes":       10000000,
+				"rx_bytes":       5000000,
 			},
 		},
 	}
-	
+
 	topic := fmt.Sprintf("rtk/v1/default/default/%s/telemetry/wifi_clients", deviceID)
 	publishMessage(client, topic, message)
 	fmt.Printf("Sent WiFi clients telemetry for %s\n", deviceID)
@@ -218,7 +218,7 @@ func sendConnections(client mqtt.Client, deviceID string) {
 			},
 		},
 	}
-	
+
 	topic := fmt.Sprintf("rtk/v1/default/default/%s/topology/connections", deviceID)
 	publishMessage(client, topic, message)
 	fmt.Printf("Sent connections update for %s\n", deviceID)
@@ -239,11 +239,11 @@ func sendDeviceIdentity(client mqtt.Client, deviceID string) {
 			"version": "11",
 			"build":   "22000",
 		},
-		"location":     "Office Area B",
-		"owner":        "Jane Smith",
-		"tags":         []string{"engineering", "development"},
+		"location": "Office Area B",
+		"owner":    "Jane Smith",
+		"tags":     []string{"engineering", "development"},
 	}
-	
+
 	topic := fmt.Sprintf("rtk/v1/default/default/%s/device/identity", deviceID)
 	publishMessage(client, topic, message)
 	fmt.Printf("Sent device identity for %s\n", deviceID)
@@ -255,7 +255,7 @@ func publishMessage(client mqtt.Client, topic string, message interface{}) {
 		log.Printf("Failed to marshal message: %v", err)
 		return
 	}
-	
+
 	token := client.Publish(topic, 1, false, payload)
 	token.Wait()
 	if token.Error() != nil {

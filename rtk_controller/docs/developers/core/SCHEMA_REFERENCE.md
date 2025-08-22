@@ -4,6 +4,10 @@
 
 本文檔定義RTK MQTT協議中所有消息類型的JSON Schema，用於消息驗證和開發參考。
 
+**完整的 Schema 定義文件位於**: [`docs/spec/schemas/`](../../spec/schemas/) 目錄
+
+所有 Schema 都基於統一的 payload 包裝格式，確保消息結構的一致性。
+
 ## 通用Schema結構
 
 ### 基礎消息結構
@@ -27,9 +31,24 @@
       "minLength": 1,
       "maxLength": 64,
       "description": "設備標識符"
+    },
+    "payload": {
+      "type": "object",
+      "description": "包裝所有業務邏輯資料",
+      "additionalProperties": true
+    },
+    "trace": {
+      "type": "object",
+      "description": "可選的分散式追蹤資訊",
+      "additionalProperties": true
+    },
+    "meta": {
+      "type": "object",
+      "description": "可選的元數據",
+      "additionalProperties": true
     }
   },
-  "required": ["schema", "ts", "device_id"]
+  "required": ["schema", "ts", "device_id", "payload"]
 }
 ```
 
@@ -54,33 +73,40 @@
       "minLength": 1,
       "maxLength": 64
     },
-    "health": {
-      "type": "string",
-      "enum": ["ok", "warning", "error", "unknown"]
-    },
-    "uptime_s": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "設備運行時間(秒)"
-    },
-    "cpu_usage": {
-      "type": "number",
-      "minimum": 0,
-      "maximum": 100,
-      "description": "CPU使用率(%)"
-    },
-    "memory_usage": {
-      "type": "number", 
-      "minimum": 0,
-      "maximum": 100,
-      "description": "內存使用率(%)"
-    },
-    "connection_status": {
-      "type": "string",
-      "enum": ["connected", "disconnected", "connecting", "error"]
+    "payload": {
+      "type": "object",
+      "properties": {
+        "health": {
+          "type": "string",
+          "enum": ["ok", "warning", "error", "unknown"]
+        },
+        "uptime_s": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "設備運行時間(秒)"
+        },
+        "cpu_usage": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "CPU使用率(%)"
+        },
+        "memory_usage": {
+          "type": "number", 
+          "minimum": 0,
+          "maximum": 100,
+          "description": "內存使用率(%)"
+        },
+        "connection_status": {
+          "type": "string",
+          "enum": ["connected", "disconnected", "connecting", "error"]
+        }
+      },
+      "required": ["health"],
+      "additionalProperties": true
     }
   },
-  "required": ["schema", "ts", "device_id", "health"]
+  "required": ["schema", "ts", "device_id", "payload"]
 }
 ```
 
@@ -628,8 +654,38 @@ except jsonschema.exceptions.ValidationError as e:
 - 提供友好的錯誤消息
 - 實施寬鬆的解析策略(忽略未知字段)
 
+## 完整 Schema 文件清單
+
+以下是 `docs/spec/schemas/` 目錄中的完整 schema 文件：
+
+### 基礎 Schema
+- [`base.json`](../../spec/schemas/base.json) - 所有消息的基礎結構
+- [`state.json`](../../spec/schemas/state.json) - 設備狀態消息
+- [`attr.json`](../../spec/schemas/attr.json) - 設備屬性消息
+
+### 命令 Schema
+- [`cmd-request.json`](../../spec/schemas/cmd-request.json) - 命令請求通用格式
+- [`cmd-ack.json`](../../spec/schemas/cmd-ack.json) - 命令確認消息
+- [`cmd-result.json`](../../spec/schemas/cmd-result.json) - 命令結果消息
+- [`cmd-error.json`](../../spec/schemas/cmd-error.json) - 命令錯誤消息
+- [`cmd-wifi-scan.json`](../../spec/schemas/cmd-wifi-scan.json) - WiFi 掃描命令
+- [`cmd-speed-test.json`](../../spec/schemas/cmd-speed-test.json) - 速度測試命令
+- [`cmd-wan-connectivity.json`](../../spec/schemas/cmd-wan-connectivity.json) - WAN 連線測試命令
+
+### 遙測 Schema
+- [`telemetry.json`](../../spec/schemas/telemetry.json) - 遙測消息基礎格式
+- [`telemetry-cpu.json`](../../spec/schemas/telemetry-cpu.json) - CPU 遙測資料
+- [`telemetry-network.json`](../../spec/schemas/telemetry-network.json) - 網絡遙測資料
+- [`telemetry-environment.json`](../../spec/schemas/telemetry-environment.json) - 環境感測器遙測資料
+
+### 事件 Schema
+- [`event.json`](../../spec/schemas/event.json) - 事件消息基礎格式
+- [`evt-wifi-connection-lost.json`](../../spec/schemas/evt-wifi-connection-lost.json) - WiFi 連接丟失事件
+- [`evt-threshold.json`](../../spec/schemas/evt-threshold.json) - 閾值超限事件
+
 ## 相關文檔
 
 - [MQTT Protocol Specification](MQTT_PROTOCOL_SPEC.md) - 完整協議規範
 - [Commands Reference](COMMANDS_EVENTS_REFERENCE.md) - 命令和事件參考
 - [Topic Structure](TOPIC_STRUCTURE.md) - 主題結構詳解
+- [Schema 目錄說明](../../spec/schemas/README.md) - Schema 使用指南

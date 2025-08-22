@@ -4,6 +4,8 @@
 
 本文檔提供RTK MQTT系統專用的測試工具，包含訊息驗證、負載測試、協議測試和效能分析等工具。
 
+📋 **JSON Schema 驗證**: 所有測試工具都使用 [`docs/spec/schemas/`](../../spec/schemas/) 中的 JSON Schema 進行訊息格式驗證。
+
 ## 工具列表
 
 ### 1. RTK MQTT 訊息驗證器 (Message Validator)
@@ -683,9 +685,12 @@ class SimulatedDevice:
         return {
             "schema": "telemetry.system/1.0",
             "ts": int(time.time() * 1000),
-            "cpu_usage": random.uniform(10, 80),
-            "memory_usage": random.uniform(20, 90),
-            "disk_usage": random.uniform(10, 95)
+            "device_id": self.device_id,
+            "payload": {
+                "cpu_usage": random.uniform(10, 80),
+                "memory_usage": random.uniform(20, 90),
+                "disk_usage": random.uniform(10, 95)
+            }
         }
     
     def generate_event_message(self):
@@ -1272,9 +1277,12 @@ class RTKProtocolTester:
         telemetry_message = {
             "schema": "telemetry.system/1.0",
             "ts": int(time.time() * 1000),
-            "cpu_usage": 45.2,
-            "memory_usage": 62.8,
-            "disk_usage": 35.1
+            "device_id": self.device_id,
+            "payload": {
+                "cpu_usage": 45.2,
+                "memory_usage": 62.8,
+                "disk_usage": 35.1
+            }
         }
         
         try:

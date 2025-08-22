@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-clients/1.0",
+  "title": "RTK MQTT Clients Telemetry Schema",
+  "description": "Schema for connected clients telemetry data",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.clients/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "total_clients": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "總客戶端數量"
+            },
+            "wifi_clients": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "WiFi客戶端數量"
+            },
+            "ethernet_clients": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "有線客戶端數量"
+            },
+            "clients": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "mac": {
+                    "type": "string",
+                    "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+                    "description": "客戶端MAC地址"
+                  },
+                  "ip": {
+                    "type": "string",
+                    "format": "ipv4",
+                    "description": "IP地址"
+                  },
+                  "hostname": {
+                    "type": "string",
+                    "description": "主機名稱"
+                  },
+                  "connection_type": {
+                    "type": "string",
+                    "enum": ["wifi", "ethernet"],
+                    "description": "連接類型"
+                  },
+                  "ssid": {
+                    "type": "string",
+                    "description": "WiFi網絡名稱（WiFi客戶端）"
+                  },
+                  "signal_strength": {
+                    "type": "integer",
+                    "minimum": -100,
+                    "maximum": 0,
+                    "description": "信號強度(dBm)"
+                  },
+                  "tx_rate_mbps": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "傳輸速率(Mbps)"
+                  },
+                  "rx_rate_mbps": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "接收速率(Mbps)"
+                  },
+                  "connected_time": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "連接時間(秒)"
+                  },
+                  "bytes_sent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "已發送字節數"
+                  },
+                  "bytes_received": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "已接收字節數"
+                  },
+                  "online": {
+                    "type": "boolean",
+                    "description": "是否在線"
+                  }
+                },
+                "required": ["mac", "connection_type", "online"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["total_clients", "clients"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

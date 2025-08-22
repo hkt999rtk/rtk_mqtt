@@ -48,12 +48,12 @@ func getEnvOrDefault(key, defaultValue string) string {
 // createTestMQTTClient creates a test MQTT client for publishing test messages
 func createTestMQTTClient(t *testing.T, clientID string) mqtt.Client {
 	brokerInfo := getTestBrokerInfo()
-	
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", brokerInfo.Host, brokerInfo.Port))
 	opts.SetClientID(clientID)
 	opts.SetCleanSession(true)
-	
+
 	if brokerInfo.Username != "" {
 		opts.SetUsername(brokerInfo.Username)
 		opts.SetPassword(brokerInfo.Password)
@@ -61,10 +61,10 @@ func createTestMQTTClient(t *testing.T, clientID string) mqtt.Client {
 
 	client := mqtt.NewClient(opts)
 	token := client.Connect()
-	
+
 	require.True(t, token.WaitTimeout(10*time.Second), "Failed to connect to test MQTT broker")
 	require.NoError(t, token.Error(), "MQTT connection error")
-	
+
 	return client
 }
 
@@ -120,10 +120,10 @@ func TestMQTTClient_ConnectionAndReconnection(t *testing.T) {
 
 	// Test graceful disconnection
 	client.Disconnect()
-	
+
 	// Give some time for disconnection
 	time.Sleep(100 * time.Millisecond)
-	
+
 	// In most implementations, IsConnected should return false after disconnect
 	// Note: Some MQTT clients might still show connected during graceful shutdown
 }
@@ -247,7 +247,7 @@ func TestMQTTClient_MessageLogging(t *testing.T) {
 		},
 		Logging: config.MQTTLogging{
 			Enabled:          true,
-			RetentionSeconds: 300, // 5 minutes for testing
+			RetentionSeconds: 300,   // 5 minutes for testing
 			PurgeInterval:    "10s", // More frequent for testing
 			BatchSize:        10,
 			MaxMessageSize:   1024,
@@ -320,7 +320,7 @@ func TestMQTTClient_MessageLogging(t *testing.T) {
 	require.NotNil(t, messageLogger)
 
 	stats := messageLogger.GetStats()
-	
+
 	// We should have logged at least 2 messages (excluding the internal one)
 	assert.GreaterOrEqual(t, stats.TotalMessages, int64(2))
 
@@ -401,23 +401,23 @@ func TestMQTTClient_DeviceStateIntegration(t *testing.T) {
 		{
 			topic: "rtk/v1/tenant1/site1/router1/state",
 			payload: map[string]interface{}{
-				"device_id":     "router1",
-				"timestamp":     time.Now().Unix(),
-				"status":        "online",
-				"cpu_usage":     45.2,
-				"memory_usage":  67.8,
-				"uptime":        3600,
-				"wifi_clients":  12,
+				"device_id":    "router1",
+				"timestamp":    time.Now().Unix(),
+				"status":       "online",
+				"cpu_usage":    45.2,
+				"memory_usage": 67.8,
+				"uptime":       3600,
+				"wifi_clients": 12,
 			},
 		},
 		{
 			topic: "rtk/v1/tenant1/site1/switch1/state",
 			payload: map[string]interface{}{
-				"device_id":     "switch1",
-				"timestamp":     time.Now().Unix(),
-				"status":        "online",
-				"port_status":   []string{"up", "up", "down", "up"},
-				"power_usage":   15.3,
+				"device_id":   "switch1",
+				"timestamp":   time.Now().Unix(),
+				"status":      "online",
+				"port_status": []string{"up", "up", "down", "up"},
+				"power_usage": 15.3,
 			},
 		},
 	}
@@ -537,7 +537,7 @@ func TestMQTTClient_CommandFlow(t *testing.T) {
 	resPayload := map[string]interface{}{
 		"command_id": "test-cmd-456",
 		"status":     "success",
-		"result":     map[string]interface{}{
+		"result": map[string]interface{}{
 			"uptime": 0, // Device rebooted
 		},
 		"timestamp": time.Now().Unix(),
@@ -564,26 +564,26 @@ type MockDeviceManager struct {
 
 func (m *MockDeviceManager) UpdateDeviceState(deviceInfo types.DeviceInfo, state map[string]interface{}) error {
 	key := fmt.Sprintf("%s:%s:%s", deviceInfo.Tenant, deviceInfo.Site, deviceInfo.DeviceID)
-	
+
 	deviceState := &types.DeviceState{
 		DeviceInfo: deviceInfo,
 		Status:     types.DeviceStatusOnline,
 		State:      state,
 		LastSeen:   time.Now(),
 	}
-	
+
 	m.devices[key] = deviceState
 	return nil
 }
 
 func (m *MockDeviceManager) SetDeviceStatus(deviceInfo types.DeviceInfo, status types.DeviceStatus) error {
 	key := fmt.Sprintf("%s:%s:%s", deviceInfo.Tenant, deviceInfo.Site, deviceInfo.DeviceID)
-	
+
 	if device, exists := m.devices[key]; exists {
 		device.Status = status
 		device.LastSeen = time.Now()
 	}
-	
+
 	return nil
 }
 
@@ -619,7 +619,7 @@ func TestMQTTClient_ErrorHandling(t *testing.T) {
 	// Connection should fail
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	err = client.Connect(ctx)
 	assert.Error(t, err) // Should fail to connect to invalid broker
 
@@ -682,7 +682,7 @@ func TestMQTTClient_LargeMessageHandling(t *testing.T) {
 	}
 
 	err = client.Publish("rtk/v1/test/site1/device1/state", largeMessage, 1, false)
-	
+
 	// Publishing might succeed, but message handling should respect size limits
 	// The exact behavior depends on implementation
 	assert.NoError(t, err) // MQTT publish itself should work

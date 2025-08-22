@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-error/1.0",
+  "title": "RTK MQTT Command Error Schema",
+  "description": "Schema for command error messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.error/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "對應的命令ID"
+            },
+            "status": {
+              "enum": ["failed"]
+            },
+            "error": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "minimum": 1000,
+                  "maximum": 9999,
+                  "description": "錯誤代碼"
+                },
+                "message": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "description": "錯誤訊息"
+                },
+                "details": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "詳細錯誤信息"
+                }
+              },
+              "required": ["code", "message"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["id", "status", "error"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

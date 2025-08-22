@@ -52,7 +52,7 @@ func main() {
 
 			qosManager.UpdateTraffic(dev.ID, dev.MAC, upload, download, connections)
 		}
-		
+
 		if i == 0 {
 			fmt.Printf("Initial traffic update completed\n")
 		}
@@ -69,7 +69,7 @@ func main() {
 	if qosInfo.TrafficStats != nil {
 		fmt.Printf("Total Bandwidth: %.0f Mbps\n", qosInfo.TrafficStats.TotalBandwidthMbps)
 		fmt.Printf("Used Bandwidth: %.2f Mbps\n", qosInfo.TrafficStats.UsedBandwidthMbps)
-		fmt.Printf("Utilization: %.1f%%\n", 
+		fmt.Printf("Utilization: %.1f%%\n",
 			(qosInfo.TrafficStats.UsedBandwidthMbps/qosInfo.TrafficStats.TotalBandwidthMbps)*100)
 		fmt.Printf("Active Devices: %d\n", len(qosInfo.TrafficStats.DeviceTraffic))
 	}
@@ -80,7 +80,7 @@ func main() {
 	fmt.Println("--------------------------")
 	if qosInfo.TrafficStats != nil && len(qosInfo.TrafficStats.TopTalkers) > 0 {
 		for _, talker := range qosInfo.TrafficStats.TopTalkers {
-			fmt.Printf("#%d: Device %s - %.2f Mbps\n", 
+			fmt.Printf("#%d: Device %s - %.2f Mbps\n",
 				talker.Rank, talker.DeviceID, talker.TotalMbps)
 		}
 	} else {
@@ -113,7 +113,7 @@ func main() {
 	// Test 5: Add QoS rules
 	fmt.Println("5. Adding QoS Rules")
 	fmt.Println("-------------------")
-	
+
 	// Add bandwidth cap rule
 	bwRule := &types.BandwidthRule{
 		RuleID:        "test-bw-rule",
@@ -123,7 +123,7 @@ func main() {
 		Priority:      3,
 		Enabled:       true,
 	}
-	
+
 	if err := qosManager.AddBandwidthRule(bwRule); err != nil {
 		fmt.Printf("✗ Failed to add bandwidth rule: %v\n", err)
 	} else {
@@ -138,7 +138,7 @@ func main() {
 		Action:   "throttle",
 		Priority: 5,
 	}
-	
+
 	if err := qosManager.AddTrafficRule(trafficRule); err != nil {
 		fmt.Printf("✗ Failed to add traffic rule: %v\n", err)
 	} else {
@@ -151,7 +151,7 @@ func main() {
 		Priority:     9,
 		BandwidthPct: 30,
 	}
-	
+
 	if err := qosManager.AddQueue(queue); err != nil {
 		fmt.Printf("✗ Failed to add queue: %v\n", err)
 	} else {
@@ -165,11 +165,11 @@ func main() {
 	// Simulate traffic spike
 	fmt.Println("Simulating traffic spike for dev-03...")
 	for i := 0; i < 5; i++ {
-		qosManager.UpdateTraffic("dev-03", "AA:BB:CC:DD:EE:03", 
+		qosManager.UpdateTraffic("dev-03", "AA:BB:CC:DD:EE:03",
 			50+float64(i*20), 100+float64(i*30), 50)
 		time.Sleep(100 * time.Millisecond)
 	}
-	
+
 	// Check for new recommendations after anomaly
 	newRecs := qosManager.GetRecommendations()
 	anomalyRecs := 0
@@ -182,7 +182,7 @@ func main() {
 			}
 		}
 	}
-	
+
 	if anomalyRecs == 0 {
 		fmt.Println("No anomalies detected (may need more data)")
 	}

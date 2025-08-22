@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-request/1.0",
+  "title": "RTK MQTT Command Request Schema",
+  "description": "Schema for command request messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "pattern": "^cmd\\.[a-z_\\.]+/\\d+\\.\\d+$"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "description": "命令唯一標識符"
+            },
+            "op": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "description": "操作名稱"
+            },
+            "args": {
+              "type": "object",
+              "description": "命令參數"
+            },
+            "timeout_ms": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 600000,
+              "description": "超時時間(毫秒)"
+            },
+            "expect": {
+              "type": "string",
+              "enum": ["ack", "result"],
+              "description": "期望響應類型"
+            },
+            "reply_to": {
+              "type": ["string", "null"],
+              "description": "回應主題"
+            }
+          },
+          "required": ["id", "op", "args"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

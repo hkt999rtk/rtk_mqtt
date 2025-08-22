@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-network/1.0",
+  "title": "RTK MQTT Network Telemetry Schema",
+  "description": "Schema for network telemetry data",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.network/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "interfaces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "網絡介面名稱"
+                  },
+                  "rx_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "接收字節數"
+                  },
+                  "tx_bytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "傳送字節數"
+                  },
+                  "rx_packets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "接收封包數"
+                  },
+                  "tx_packets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "傳送封包數"
+                  },
+                  "rx_errors": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "接收錯誤數"
+                  },
+                  "tx_errors": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "傳送錯誤數"
+                  },
+                  "speed_mbps": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "連接速度(Mbps)"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["up", "down", "unknown"],
+                    "description": "介面狀態"
+                  }
+                },
+                "required": ["name", "rx_bytes", "tx_bytes"],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["interfaces"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

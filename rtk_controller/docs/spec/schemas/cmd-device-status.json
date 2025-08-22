@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-device-status/1.0",
+  "title": "RTK MQTT Device Status Command Schema",
+  "description": "Schema for device status query command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.device.status/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["device.status"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "include_details": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否包含詳細資訊"
+                },
+                "include_diagnostics": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "是否包含診斷資訊"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-ack/1.0",
+  "title": "RTK MQTT Command Acknowledgment Schema",
+  "description": "Schema for command acknowledgment messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.ack/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "對應的命令ID"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["accepted", "rejected"],
+              "description": "確認狀態"
+            },
+            "reason": {
+              "type": "string",
+              "description": "拒絕原因（當status為rejected時）"
+            }
+          },
+          "required": ["id", "status"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

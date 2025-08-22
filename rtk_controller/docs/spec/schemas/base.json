@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/base/1.0",
+  "title": "RTK MQTT Base Message Schema",
+  "description": "Base schema for all RTK MQTT messages",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "pattern": "^[a-z_]+\\.[a-z_]+/\\d+\\.\\d+$|^[a-z_]+/\\d+\\.\\d+$",
+      "description": "消息架構標識"
+    },
+    "ts": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Unix時間戳(毫秒)"
+    },
+    "device_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "description": "設備標識符"
+    },
+    "payload": {
+      "type": "object",
+      "description": "包裝所有業務邏輯資料",
+      "additionalProperties": true
+    },
+    "trace": {
+      "type": "object",
+      "description": "可選的分散式追蹤資訊",
+      "properties": {
+        "req_id": {
+          "type": "string",
+          "description": "請求識別碼"
+        },
+        "correlation_id": {
+          "type": "string",
+          "description": "相關性追蹤 ID"
+        },
+        "session_id": {
+          "type": "string",
+          "description": "LLM 診斷會話 ID"
+        },
+        "trace_id": {
+          "type": "string",
+          "description": "LLM 診斷步驟追蹤"
+        }
+      },
+      "additionalProperties": true
+    },
+    "meta": {
+      "type": "object",
+      "description": "可選的元數據",
+      "additionalProperties": true
+    }
+  },
+  "required": ["schema", "ts", "device_id", "payload"],
+  "additionalProperties": false
+}

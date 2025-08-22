@@ -79,11 +79,14 @@ rtk/v1/{tenant}/{site}/{device_id}/{message_type}[/{sub_type}]
   "schema": "message_type.sub_type/version",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "data": {
-    // 具體消息內容
+  "payload": {
+    // 所有業務邏輯資料包裝在此
+  },
+  "trace": {
+    // 可選的追蹤資訊
   },
   "meta": {
-    // 元數據 (可選)
+    // 可選的元數據
   }
 }
 ```
@@ -92,7 +95,8 @@ rtk/v1/{tenant}/{site}/{device_id}/{message_type}[/{sub_type}]
 - `schema`: 消息架構標識，格式為 `{type}.{subtype}/{version}`
 - `ts`: Unix時間戳 (毫秒)
 - `device_id`: 設備標識符
-- `data`: 消息負載數據
+- `payload`: 包裝所有業務邏輯資料的必要欄位
+- `trace`: 可選的分散式追蹤資訊
 - `meta`: 可選元數據 (如來源、優先級等)
 
 ## 命令執行協議
@@ -100,41 +104,50 @@ rtk/v1/{tenant}/{site}/{device_id}/{message_type}[/{sub_type}]
 ### 命令請求格式 (cmd/req)
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "wifi_scan",
   "schema": "cmd.wifi_scan/1.0",
-  "args": {
-    "scan_type": "active",
-    "duration": 10
-  },
-  "timeout_ms": 30000,
-  "expect": "result",
-  "reply_to": null,
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "wifi_scan",
+    "args": {
+      "scan_type": "active",
+      "duration": 10
+    },
+    "timeout_ms": 30000,
+    "expect": "result",
+    "reply_to": null
+  }
 }
 ```
 
 ### 命令確認格式 (cmd/ack)
 ```json
 {
-  "id": "cmd-1699123456789",
   "schema": "cmd.ack/1.0",
-  "status": "accepted",
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "status": "accepted"
+  }
 }
 ```
 
 ### 命令響應格式 (cmd/res)
 ```json
 {
-  "id": "cmd-1699123456789",
   "schema": "cmd.wifi_scan.result/1.0",
-  "status": "completed",
-  "result": {
-    // 命令執行結果
-  },
-  "error": null,
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "status": "completed",
+    "result": {
+      // 命令執行結果
+    },
+    "error": null
+  }
 }
 ```
 

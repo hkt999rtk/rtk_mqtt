@@ -4,6 +4,8 @@
 
 本指南幫助開發者快速開始使用RTK MQTT協議，從環境設置到第一個設備整合，提供step-by-step的實作步驟。
 
+📋 **JSON Schema 參考**: 所有 MQTT 訊息格式的完整 JSON Schema 定義位於 [`docs/spec/schemas/`](../../spec/schemas/) 目錄，確保訊息格式符合規範。
+
 ## 先決條件
 
 ### 系統需求
@@ -227,10 +229,17 @@ class SimpleRTKDevice:
         telemetry_msg = {
             "schema": "telemetry.system/1.0",
             "ts": int(time.time() * 1000),
-            "cpu_usage": random.uniform(10, 50),
-            "memory_usage": random.uniform(20, 80),
-            "temperature_c": random.uniform(35, 45),
-            "load_average": random.uniform(0.1, 2.0)
+            "device_id": self.device_id,
+            "payload": {
+                "cpu_usage": random.uniform(10, 50),
+                "memory_usage": random.uniform(20, 80),
+                "temperature_celsius": random.uniform(35, 45),
+                "load_average": {
+                    "1min": random.uniform(0.1, 2.0),
+                    "5min": random.uniform(0.1, 1.5),
+                    "15min": random.uniform(0.1, 1.0)
+                }
+            }
         }
         self.client.publish(telemetry_topic, json.dumps(telemetry_msg), qos=0)
         

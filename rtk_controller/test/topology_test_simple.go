@@ -12,19 +12,19 @@ import (
 func main() {
 	// Create simple sample topology data
 	topology := generateSimpleTopology()
-	
+
 	// Convert to JSON
 	data, err := json.MarshalIndent(topology, "", "  ")
 	if err != nil {
 		log.Fatalf("Failed to marshal topology: %v", err)
 	}
-	
+
 	fmt.Println(string(data))
 }
 
 func generateSimpleTopology() *types.NetworkTopology {
 	now := time.Now()
-	
+
 	// Create sample devices
 	devices := map[string]*types.NetworkDevice{
 		"gateway-01": {
@@ -134,7 +134,7 @@ func generateSimpleTopology() *types.NetworkTopology {
 			Capabilities: []string{"client"},
 		},
 	}
-	
+
 	// Create connections
 	connections := []types.DeviceConnection{
 		{
@@ -171,7 +171,7 @@ func generateSimpleTopology() *types.NetworkTopology {
 			Discovered: now.Add(-2 * time.Hour).Unix(),
 		},
 	}
-	
+
 	// Create gateway info
 	gateway := &types.GatewayInfo{
 		DeviceID:   "gateway-01",
@@ -180,7 +180,7 @@ func generateSimpleTopology() *types.NetworkTopology {
 		ISPInfo:    "Demo ISP",
 		DNSServers: []string{"8.8.8.8", "8.8.4.4"},
 	}
-	
+
 	return &types.NetworkTopology{
 		ID:          "topology-default",
 		Tenant:      "default",

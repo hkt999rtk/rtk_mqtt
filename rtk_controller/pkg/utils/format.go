@@ -9,7 +9,7 @@ import (
 // FormatTimeAgo formats a time as "X ago" format
 func FormatTimeAgo(t time.Time) string {
 	duration := time.Since(t)
-	
+
 	if duration < time.Minute {
 		return fmt.Sprintf("%ds ago", int(duration.Seconds()))
 	} else if duration < time.Hour {
@@ -47,27 +47,26 @@ func FormatBytes(bytes uint64) string {
 	if bytes < unit {
 		return fmt.Sprintf("%dB", bytes)
 	}
-	
+
 	div, exp := uint64(unit), 0
 	for n := bytes / unit; n >= unit; n /= unit {
 		div *= unit
 		exp++
 	}
-	
+
 	return fmt.Sprintf("%.1f%cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
-
 
 // TruncateString truncates a string to maxLen characters
 func TruncateString(s string, maxLen int) string {
 	if len(s) <= maxLen {
 		return s
 	}
-	
+
 	if maxLen <= 3 {
 		return s[:maxLen]
 	}
-	
+
 	return s[:maxLen-3] + "..."
 }
 
@@ -80,7 +79,7 @@ func FormatJSON(data []byte) ([]byte, error) {
 // ParseKeyValue parses key=value strings into a map
 func ParseKeyValue(args []string) map[string]string {
 	result := make(map[string]string)
-	
+
 	for _, arg := range args {
 		if strings.Contains(arg, "=") {
 			parts := strings.SplitN(arg, "=", 2)
@@ -88,7 +87,7 @@ func ParseKeyValue(args []string) map[string]string {
 			result[key] = parts[1]
 		}
 	}
-	
+
 	return result
 }
 
@@ -97,13 +96,13 @@ func FormatTable(headers []string, rows [][]string) string {
 	if len(rows) == 0 {
 		return "No data to display"
 	}
-	
+
 	// Calculate column widths
 	widths := make([]int, len(headers))
 	for i, header := range headers {
 		widths[i] = len(header)
 	}
-	
+
 	for _, row := range rows {
 		for i, cell := range row {
 			if i < len(widths) && len(cell) > widths[i] {
@@ -111,10 +110,10 @@ func FormatTable(headers []string, rows [][]string) string {
 			}
 		}
 	}
-	
+
 	// Build table
 	var result strings.Builder
-	
+
 	// Header
 	for i, header := range headers {
 		if i > 0 {
@@ -123,7 +122,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		result.WriteString(fmt.Sprintf("%-*s", widths[i], header))
 	}
 	result.WriteString("\n")
-	
+
 	// Separator
 	for i, width := range widths {
 		if i > 0 {
@@ -132,7 +131,7 @@ func FormatTable(headers []string, rows [][]string) string {
 		result.WriteString(strings.Repeat("-", width))
 	}
 	result.WriteString("\n")
-	
+
 	// Rows
 	for _, row := range rows {
 		for i, cell := range row {
@@ -147,6 +146,6 @@ func FormatTable(headers []string, rows [][]string) string {
 		}
 		result.WriteString("\n")
 	}
-	
+
 	return result.String()
 }

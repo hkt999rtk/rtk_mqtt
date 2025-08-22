@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wifi-analyze-interference/1.0",
+  "title": "RTK MQTT WiFi Interference Analysis Command Schema",
+  "description": "Schema for WiFi interference analysis command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wifi_analyze_interference/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wifi_analyze_interference"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "current_channel": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 165,
+                  "description": "當前使用頻道"
+                },
+                "scan_duration": {
+                  "type": "integer",
+                  "minimum": 10,
+                  "maximum": 300,
+                  "description": "掃描持續時間(秒)"
+                },
+                "include_spectrum": {
+                  "type": "boolean",
+                  "description": "是否包含頻譜分析"
+                },
+                "threshold_dbm": {
+                  "type": "integer",
+                  "minimum": -100,
+                  "maximum": 0,
+                  "description": "干擾檢測閾值(dBm)"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

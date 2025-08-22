@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-latency-test/1.0",
+  "title": "RTK MQTT Latency Test Command Schema",
+  "description": "Schema for network latency test command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.latency_test/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["latency_test"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target_hosts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "目標主機列表"
+                },
+                "packet_count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "封包數量"
+                },
+                "packet_size": {
+                  "type": "integer",
+                  "minimum": 32,
+                  "maximum": 1472,
+                  "description": "封包大小(bytes)"
+                },
+                "interval_ms": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 5000,
+                  "description": "發送間隔(毫秒)"
+                }
+              },
+              "required": ["target_hosts"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

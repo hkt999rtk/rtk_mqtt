@@ -52,7 +52,7 @@ func main() {
 	fmt.Printf("- Site: %s\n", loaded.Site)
 	fmt.Printf("- Devices: %d\n", len(loaded.Devices))
 	fmt.Printf("- Connections: %d\n", len(loaded.Connections))
-	
+
 	if loaded.Gateway != nil {
 		fmt.Printf("- Gateway: %s (%s)\n", loaded.Gateway.DeviceID, loaded.Gateway.IPAddress)
 	}
@@ -69,15 +69,15 @@ func main() {
 
 	// Test device queries
 	fmt.Printf("\nDevice Queries:\n")
-	
+
 	// Check device count
 	fmt.Printf("  - Total devices in topology: %d\n", len(loaded.Devices))
-	
+
 	// Check gateway
 	if device, ok := loaded.Devices["gateway-01"]; ok {
 		fmt.Printf("  - Found gateway device: %s (%s)\n", device.DeviceID, device.Hostname)
 	}
-	
+
 	// Check connections
 	fmt.Printf("  - Total connections: %d\n", len(loaded.Connections))
 

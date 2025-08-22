@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/attr/1.0",
+  "title": "RTK MQTT Device Attributes Schema",
+  "description": "Schema for device attribute messages",
+  "allOf": [
+    {
+      "$ref": "base.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["attr/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "device_type": {
+              "type": "string",
+              "enum": ["router", "switch", "access_point", "gateway", "sensor", "camera", "other"],
+              "description": "設備類型"
+            },
+            "manufacturer": {
+              "type": "string",
+              "description": "製造商"
+            },
+            "model": {
+              "type": "string",
+              "description": "設備型號"
+            },
+            "firmware_version": {
+              "type": "string",
+              "description": "韌體版本"
+            },
+            "hardware_version": {
+              "type": "string",
+              "description": "硬體版本"
+            },
+            "serial_number": {
+              "type": "string",
+              "description": "序列號"
+            },
+            "mac_address": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+              "description": "MAC 地址"
+            },
+            "capabilities": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["wifi", "ethernet", "mesh", "vpn", "qos", "firewall", "dhcp"]
+              },
+              "description": "設備能力"
+            }
+          },
+          "required": ["device_type"],
+          "additionalProperties": true
+        }
+      }
+    }
+  ]
+}

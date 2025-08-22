@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/evt-wifi-roam-triggered/1.0",
+  "title": "RTK MQTT WiFi Roam Triggered Event Schema",
+  "description": "Schema for WiFi roaming triggered events",
+  "allOf": [
+    {
+      "$ref": "event.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["evt.wifi.roam_triggered/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "event_type": {
+              "enum": ["roam_triggered"]
+            },
+            "client_mac": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+              "description": "客戶端MAC地址"
+            },
+            "from_ap": {
+              "type": "string",
+              "description": "原AP標識"
+            },
+            "to_ap": {
+              "type": "string",
+              "description": "目標AP標識"
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["better_signal", "load_balancing", "band_steering", "user_triggered", "automatic"],
+              "description": "漫遊原因"
+            },
+            "old_signal": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 0,
+              "description": "原信號強度(dBm)"
+            },
+            "new_signal": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 0,
+              "description": "新信號強度(dBm)"
+            },
+            "old_channel": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 165,
+              "description": "原頻道"
+            },
+            "new_channel": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 165,
+              "description": "新頻道"
+            },
+            "roam_time_ms": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "漫遊耗時(毫秒)"
+            }
+          },
+          "required": ["event_type", "client_mac", "from_ap", "to_ap", "reason"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

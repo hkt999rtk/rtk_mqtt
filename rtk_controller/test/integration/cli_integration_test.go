@@ -37,9 +37,9 @@ type TestCLIEnvironment struct {
 
 // MockMQTTClientForCLI implements the MQTT client interface for CLI testing
 type MockMQTTClientForCLI struct {
-	connected       bool
-	publishedMsgs   []PublishedMessage
-	messageLogger   *MockMessageLogger
+	connected     bool
+	publishedMsgs []PublishedMessage
+	messageLogger *MockMessageLogger
 }
 
 type PublishedMessage struct {
@@ -74,12 +74,12 @@ func (m *MockMessageLogger) GetMessages(offset, limit int) ([]types.MQTTMessageL
 	if offset >= len(m.messages) {
 		return []types.MQTTMessageLog{}, nil
 	}
-	
+
 	end := offset + limit
 	if end > len(m.messages) {
 		end = len(m.messages)
 	}
-	
+
 	return m.messages[offset:end], nil
 }
 
@@ -100,7 +100,7 @@ func (m *MockMQTTClientForCLI) Publish(topic string, payload interface{}, qos in
 	if !m.connected {
 		return fmt.Errorf("client not connected")
 	}
-	
+
 	msg := PublishedMessage{
 		Topic:     topic,
 		Payload:   payload,
@@ -166,9 +166,9 @@ func NewTestCLIEnvironment(t *testing.T) *TestCLIEnvironment {
 	// Create managers
 	deviceManager := device.NewManager(storage)
 	commandManager := command.NewManager(mockMQTT, storage)
-	
+
 	diagnosisConfig := config.DiagnosisConfig{
-		Enabled: true,
+		Enabled:          true,
 		DefaultAnalyzers: []string{"builtin_wifi_analyzer"},
 	}
 	diagnosisManager := diagnosis.NewManager(diagnosisConfig, storage)
@@ -218,7 +218,7 @@ func (env *TestCLIEnvironment) Cleanup() {
 func (env *TestCLIEnvironment) ExecuteCommand(command string) (string, error) {
 	// Create a buffer to capture output
 	var outputBuffer bytes.Buffer
-	
+
 	// Parse and execute the command
 	args := strings.Fields(command)
 	if len(args) == 0 {
@@ -239,7 +239,7 @@ func (env *TestCLIEnvironment) ExecuteCommand(command string) (string, error) {
 
 	// Read captured output
 	output, _ := io.ReadAll(r)
-	
+
 	return string(output) + outputBuffer.String(), err
 }
 
@@ -321,7 +321,7 @@ func TestCLI_DeviceCommands(t *testing.T) {
 		"memory_usage": 67.8,
 		"uptime":       3600,
 	}
-	
+
 	err = env.DeviceManager.UpdateDeviceState(testDevices[0].DeviceInfo, stateData)
 	require.NoError(t, err)
 
@@ -353,7 +353,7 @@ func TestCLI_CommandManagement(t *testing.T) {
 		DeviceInfo: deviceInfo,
 		Location:   "Test Location",
 	}
-	
+
 	err = env.DeviceManager.RegisterDevice(testDevice)
 	require.NoError(t, err)
 
@@ -514,7 +514,7 @@ func TestCLI_DiagnosisCommands(t *testing.T) {
 		DeviceInfo: deviceInfo,
 		Location:   "Test Location",
 	}
-	
+
 	err = env.DeviceManager.RegisterDevice(testDevice)
 	require.NoError(t, err)
 
@@ -696,21 +696,21 @@ func TestCLI_ConcurrentOperations(t *testing.T) {
 	testDevice := types.ExtendedDeviceInfo{
 		DeviceInfo: deviceInfo,
 	}
-	
+
 	err = env.DeviceManager.RegisterDevice(testDevice)
 	require.NoError(t, err)
 
 	// Test concurrent command execution
 	const numCommands = 5
 	done := make(chan bool, numCommands)
-	
+
 	for i := 0; i < numCommands; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
-			
+
 			command := fmt.Sprintf("command send test-tenant test-site router-001 test-action-%d", id)
 			output, err := env.ExecuteCommand(command)
-			
+
 			assert.NoError(t, err)
 			assert.Contains(t, output, "Command sent successfully")
 		}(i)
@@ -724,7 +724,7 @@ func TestCLI_ConcurrentOperations(t *testing.T) {
 	// Verify all commands were processed
 	commands := env.CommandManager.ListCommands("")
 	assert.Len(t, commands, numCommands)
-	
+
 	// Verify all MQTT messages were published
 	assert.Len(t, env.MQTTClient.publishedMsgs, numCommands)
 }

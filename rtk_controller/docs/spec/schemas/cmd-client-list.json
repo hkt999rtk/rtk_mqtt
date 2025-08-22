@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-client-list/1.0",
+  "title": "RTK MQTT Client List Command Schema",
+  "description": "Schema for client list command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.client_list/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["client_list"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "include_offline": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否包含離線客戶端"
+                },
+                "include_details": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否包含詳細資訊"
+                },
+                "filter_by_type": {
+                  "type": ["string", "null"],
+                  "enum": ["wifi", "ethernet", null],
+                  "description": "按連接類型過濾"
+                },
+                "max_results": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000,
+                  "description": "最大返回結果數"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -4,6 +4,8 @@
 
 本指南提供RTK MQTT系統的完整測試策略，包含單元測試、整合測試、負載測試和驗收測試的實作方法和最佳實務。
 
+📋 **JSON Schema 參考**: 測試中使用的所有 MQTT 訊息格式必須符合 [`docs/spec/schemas/`](../../spec/schemas/) 中定義的 JSON Schema 規範。
+
 ## 測試架構
 
 ### 測試層級
@@ -485,9 +487,12 @@ class TestDevice:
         telemetry_msg = {
             "schema": "telemetry.system/1.0",
             "ts": int(time.time() * 1000),
-            "cpu_usage": random.uniform(10, 80),
-            "memory_usage": random.uniform(20, 90),
-            "temperature_c": random.uniform(30, 50)
+            "device_id": self.device_id,
+            "payload": {
+                "cpu_usage": random.uniform(10, 80),
+                "memory_usage": random.uniform(20, 90),
+                "temperature_celsius": random.uniform(30, 50)
+            }
         }
         self.client.publish(telemetry_topic, json.dumps(telemetry_msg), qos=0)
         
@@ -792,9 +797,12 @@ class LatencyTest:
             telemetry_msg = {
                 "schema": "telemetry.system/1.0",
                 "ts": int(time.time() * 1000),
-                "message_id": sent_count,
-                "cpu_usage": 50.0,
-                "memory_usage": 60.0
+                "device_id": "sender",
+                "payload": {
+                    "message_id": sent_count,
+                    "cpu_usage": 50.0,
+                    "memory_usage": 60.0
+                }
             }
             
             sender_client.publish(telemetry_topic, json.dumps(telemetry_msg), qos=0)

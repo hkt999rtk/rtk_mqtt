@@ -30,11 +30,11 @@ func TopicMatches(pattern, topic string) bool {
 func mqttToRegex(pattern string) string {
 	// Escape regex special characters except MQTT wildcards
 	escaped := regexp.QuoteMeta(pattern)
-	
+
 	// Replace escaped MQTT wildcards with regex equivalents
-	escaped = strings.ReplaceAll(escaped, `\+`, `[^/]+`)  // + matches single level
-	escaped = strings.ReplaceAll(escaped, `\#`, `.*`)     // # matches multi-level
-	
+	escaped = strings.ReplaceAll(escaped, `\+`, `[^/]+`) // + matches single level
+	escaped = strings.ReplaceAll(escaped, `\#`, `.*`)    // # matches multi-level
+
 	// Anchor the pattern
 	return "^" + escaped + "$"
 }
@@ -63,20 +63,20 @@ func ExtractMessageType(topic string) string {
 func ExtractTopicParts(topic string) (tenant, site, deviceID, messageType string, subParts []string) {
 	// Topic format: rtk/v1/{tenant}/{site}/{device_id}/{message_type}/{sub_parts...}
 	parts := strings.Split(topic, "/")
-	
+
 	if len(parts) < 6 {
 		return "", "", "", "", nil
 	}
-	
+
 	tenant = parts[2]
 	site = parts[3]
 	deviceID = parts[4]
 	messageType = parts[5]
-	
+
 	if len(parts) > 6 {
 		subParts = parts[6:]
 	}
-	
+
 	return
 }
 
@@ -89,43 +89,43 @@ func DeviceMatches(pattern, deviceID string) bool {
 	if pattern == deviceID {
 		return true
 	}
-	
+
 	// Support prefix matching with *
 	if strings.HasSuffix(pattern, "*") {
 		prefix := strings.TrimSuffix(pattern, "*")
 		return strings.HasPrefix(deviceID, prefix)
 	}
-	
+
 	// Support suffix matching with *
 	if strings.HasPrefix(pattern, "*") {
 		suffix := strings.TrimPrefix(pattern, "*")
 		return strings.HasSuffix(deviceID, suffix)
 	}
-	
+
 	return false
 }
 
 // IsValidTopic validates if a topic follows RTK format
 func IsValidTopic(topic string) bool {
 	parts := strings.Split(topic, "/")
-	
+
 	// Minimum parts: rtk/v1/{tenant}/{site}/{device_id}/{message_type}
 	if len(parts) < 6 {
 		return false
 	}
-	
+
 	// Check protocol prefix
 	if parts[0] != "rtk" || parts[1] != "v1" {
 		return false
 	}
-	
+
 	// Check for empty parts
 	for i := 2; i < 6; i++ {
 		if parts[i] == "" {
 			return false
 		}
 	}
-	
+
 	return true
 }
 

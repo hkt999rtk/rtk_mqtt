@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wifi-scan/1.0",
+  "title": "RTK MQTT WiFi Scan Command Schema",
+  "description": "Schema for WiFi scan command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wifi_scan/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wifi_scan"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "scan_type": {
+                  "type": "string",
+                  "enum": ["active", "passive"],
+                  "default": "active",
+                  "description": "掃描類型"
+                },
+                "duration": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 120,
+                  "default": 10,
+                  "description": "掃描持續時間(秒)"
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 165
+                  },
+                  "description": "指定掃描頻道"
+                },
+                "duration_per_channel": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 5000,
+                  "default": 500,
+                  "description": "每個頻道掃描時間(毫秒)"
+                },
+                "include_hidden": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否包含隱藏SSID"
+                },
+                "band": {
+                  "type": "string",
+                  "enum": ["2.4ghz", "5ghz", "both"],
+                  "default": "both",
+                  "description": "頻段選擇"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

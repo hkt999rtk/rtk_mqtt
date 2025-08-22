@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wifi-scan-channels/1.0",
+  "title": "RTK MQTT WiFi Channel Scan Command Schema",
+  "description": "Schema for WiFi channel scanning command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wifi_scan_channels/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wifi_scan_channels"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "scan_type": {
+                  "type": "string",
+                  "enum": ["active", "passive"],
+                  "description": "掃描類型"
+                },
+                "channels": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 165
+                  },
+                  "description": "指定掃描的頻道列表"
+                },
+                "duration_per_channel": {
+                  "type": "integer",
+                  "minimum": 100,
+                  "maximum": 5000,
+                  "description": "每個頻道掃描時間(毫秒)"
+                },
+                "include_hidden": {
+                  "type": "boolean",
+                  "description": "是否包含隱藏SSID"
+                },
+                "band": {
+                  "type": "string",
+                  "enum": ["2.4ghz", "5ghz", "both"],
+                  "description": "頻段選擇"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -9,26 +9,28 @@ import (
 	"syscall"
 	"time"
 
-	"rtk_controller/internal/config"
-	"rtk_controller/internal/mqtt"
-	"rtk_controller/internal/storage"
-	"rtk_controller/internal/device"
-	"rtk_controller/internal/command"
-	"rtk_controller/internal/diagnosis"
-	"rtk_controller/internal/cli"
-	"rtk_controller/internal/schema"
-	"rtk_controller/internal/logging"
-	"rtk_controller/internal/topology"
-	"rtk_controller/internal/identity"
-	"rtk_controller/internal/qos"
-	"rtk_controller/internal/llm"
 	"rtk_controller/internal/changeset"
+	"rtk_controller/internal/cli"
+	"rtk_controller/internal/command"
+	"rtk_controller/internal/config"
+	"rtk_controller/internal/device"
+	"rtk_controller/internal/diagnosis"
+	"rtk_controller/internal/identity"
+	"rtk_controller/internal/llm"
+	"rtk_controller/internal/logging"
+	"rtk_controller/internal/mcp"
+	"rtk_controller/internal/mqtt"
+	"rtk_controller/internal/qos"
+	"rtk_controller/internal/schema"
+	"rtk_controller/internal/storage"
+	"rtk_controller/internal/topology"
+	"rtk_controller/internal/workflow"
 
 	log "github.com/sirupsen/logrus"
 )
 
 var (
-	Version = "dev"
+	Version   = "dev"
 	BuildTime = "unknown"
 )
 
@@ -36,6 +38,9 @@ func main() {
 	var (
 		configPath = flag.String("config", "configs/controller.yaml", "Path to configuration file")
 		cliMode    = flag.Bool("cli", false, "Run in interactive CLI mode")
+		mcpMode    = flag.Bool("mcp", false, "Run in MCP server mode")
+		mcpHost    = flag.String("mcp-host", "localhost", "MCP server host")
+		mcpPort    = flag.Int("mcp-port", 8080, "MCP server port")
 		version    = flag.Bool("version", false, "Show version information")
 	)
 	flag.Parse()
@@ -66,6 +71,12 @@ func main() {
 		perfLogger.Close()
 	}()
 
+	// If MCP mode is specified, run MCP server
+	if *mcpMode {
+		runMCPServer(cfg, *mcpHost, *mcpPort)
+		return
+	}
+
 	// If CLI mode is specified, run interactive CLI
 	if *cliMode {
 		// Initialize storage for CLI
@@ -87,27 +98,27 @@ func main() {
 
 		// Initialize identity manager
 		identityConfig := identity.ManagerConfig{
-			EnableAutoDiscovery:   true,
-			EnableFingerprinting:  true,
-			FingerprintTimeout:    5 * time.Minute,
-			DeviceRetention:       30 * 24 * time.Hour,
-			CleanupInterval:       1 * time.Hour,
+			EnableAutoDiscovery:  true,
+			EnableFingerprinting: true,
+			FingerprintTimeout:   5 * time.Minute,
+			DeviceRetention:      30 * 24 * time.Hour,
+			CleanupInterval:      1 * time.Hour,
 		}
 		identityManager := identity.NewManager(identityStorage, identityConfig)
 
 		// Initialize topology manager
 		topologyConfig := topology.ManagerConfig{
 			Tenant:                     "default", // TODO: Get from config
-			Site:                      "default", // TODO: Get from config
+			Site:                       "default", // TODO: Get from config
 			TopologyUpdateInterval:     30 * time.Second,
 			MetricsUpdateInterval:      1 * time.Minute,
-			CleanupInterval:           5 * time.Minute,
+			CleanupInterval:            5 * time.Minute,
 			ConnectionHistoryRetention: 24 * time.Hour,
-			MetricsRetention:          7 * 24 * time.Hour,
-			DeviceOfflineRetention:    1 * time.Hour,
-			EnableRealTimeUpdates:     true,
-			EnableConnectionInference: true,
-			EnableMetricsCollection:   true,
+			MetricsRetention:           7 * 24 * time.Hour,
+			DeviceOfflineRetention:     1 * time.Hour,
+			EnableRealTimeUpdates:      true,
+			EnableConnectionInference:  true,
+			EnableMetricsCollection:    true,
 			EnableDeviceClassification: true,
 			// TODO: Add discovery config when fields are available
 			DiscoveryConfig: topology.DiscoveryConfig{},
@@ -121,24 +132,46 @@ func main() {
 		deviceManager := device.NewManager(buntStorage)
 		commandManager := command.NewManager(mqttClient, buntStorage)
 		diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
-		
+
 		// Initialize QoS manager for LLM tools
 		qosManager := qos.NewQoSManager(nil) // Use default config
-		
+
 		// Initialize changeset manager
 		changesetManager := changeset.NewSimpleManager(buntStorage, commandManager)
-		
+
 		// Initialize LLM tool engine
 		llmToolEngine := llm.NewToolEngine(buntStorage, commandManager, topologyManager, qosManager)
 		if err := llmToolEngine.Start(context.Background()); err != nil {
 			log.Fatalf("Failed to start LLM tool engine: %v", err)
 		}
-		
+
+		// Initialize workflow manager
+		workflowConfig := &workflow.EngineConfig{
+			DefaultTimeout:         60 * time.Second,
+			MaxConcurrentWorkflows: 3,
+			RetryAttempts:          2,
+			ConfidenceThreshold:    0.7,
+			FallbackWorkflow:       "general_network_diagnosis",
+		}
+		workflowEngine, err := workflow.NewWorkflowEngine(llmToolEngine, buntStorage, workflowConfig)
+		if err != nil {
+			log.Fatalf("Failed to create workflow engine: %v", err)
+		}
+		if err := workflowEngine.Start(context.Background()); err != nil {
+			log.Fatalf("Failed to start workflow engine: %v", err)
+		}
+
 		// Enable LLM support in diagnosis manager
 		if err := diagnosisManager.EnableLLMSupport(llmToolEngine); err != nil {
 			log.Fatalf("Failed to enable LLM support: %v", err)
 		}
-		
+
+		// Enable workflow support in diagnosis manager
+		workflowAdapter := workflow.NewDiagnosisWorkflowAdapter(workflowEngine)
+		if err := diagnosisManager.EnableWorkflowSupport(workflowAdapter); err != nil {
+			log.Fatalf("Failed to enable workflow support: %v", err)
+		}
+
 		// Start changeset manager
 		if err := changesetManager.Start(context.Background()); err != nil {
 			log.Fatalf("Failed to start changeset manager: %v", err)
@@ -181,7 +214,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create schema manager: %v", err)
 	}
-	
+
 	if err := schemaManager.Initialize(); err != nil {
 		log.Fatalf("Failed to initialize schema manager: %v", err)
 	}
@@ -197,55 +230,77 @@ func main() {
 	eventProcessor := device.NewEventProcessor(buntStorage)
 	commandManager := command.NewManager(mqttClient, buntStorage)
 	diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
-	
-	// Initialize QoS manager for LLM tools  
+
+	// Initialize QoS manager for LLM tools
 	qosManager := qos.NewQoSManager(nil) // Use default config
-	
+
 	// Initialize changeset manager
 	changesetManager := changeset.NewSimpleManager(buntStorage, commandManager)
-	
+
 	// Initialize topology manager for service mode
 	topologyConfig := topology.ManagerConfig{
-		Tenant:                "default", // TODO: Get from config
-		Site:                  "default", // TODO: Get from config  
+		Tenant:                 "default", // TODO: Get from config
+		Site:                   "default", // TODO: Get from config
 		TopologyUpdateInterval: 30 * time.Second,
-		MetricsUpdateInterval: 1 * time.Minute,
+		MetricsUpdateInterval:  1 * time.Minute,
 	}
 	topologyStorage := storage.NewTopologyStorage(buntStorage)
-	identityStorage := storage.NewIdentityStorage(buntStorage) 
+	identityStorage := storage.NewIdentityStorage(buntStorage)
 	identityConfig := identity.ManagerConfig{
-		EnableAutoDiscovery:   true,
-		EnableFingerprinting:  true,
-		FingerprintTimeout:    5 * time.Minute,
-		DeviceRetention:       30 * 24 * time.Hour,
-		CleanupInterval:       1 * time.Hour,
+		EnableAutoDiscovery:  true,
+		EnableFingerprinting: true,
+		FingerprintTimeout:   5 * time.Minute,
+		DeviceRetention:      30 * 24 * time.Hour,
+		CleanupInterval:      1 * time.Hour,
 	}
 	identityManager := identity.NewManager(identityStorage, identityConfig)
 	topologyManager, err := topology.NewManager(topologyStorage, identityStorage, identityManager, topologyConfig)
 	if err != nil {
-		log.Fatalf("Failed to create topology manager: %v", err) 
+		log.Fatalf("Failed to create topology manager: %v", err)
 	}
-	
+
 	// Initialize LLM tool engine
 	llmToolEngine := llm.NewToolEngine(buntStorage, commandManager, topologyManager, qosManager)
 	if err := llmToolEngine.Start(ctx); err != nil {
 		log.Fatalf("Failed to start LLM tool engine: %v", err)
 	}
-	
+
+	// Initialize workflow manager
+	workflowConfig := &workflow.EngineConfig{
+		DefaultTimeout:         60 * time.Second,
+		MaxConcurrentWorkflows: 3,
+		RetryAttempts:          2,
+		ConfidenceThreshold:    0.7,
+		FallbackWorkflow:       "general_network_diagnosis",
+	}
+	workflowEngine, err := workflow.NewWorkflowEngine(llmToolEngine, buntStorage, workflowConfig)
+	if err != nil {
+		log.Fatalf("Failed to create workflow engine: %v", err)
+	}
+	if err := workflowEngine.Start(ctx); err != nil {
+		log.Fatalf("Failed to start workflow engine: %v", err)
+	}
+
 	// Enable LLM support in diagnosis manager
 	if err := diagnosisManager.EnableLLMSupport(llmToolEngine); err != nil {
 		log.Fatalf("Failed to enable LLM support: %v", err)
 	}
-	
+
+	// Enable workflow support in diagnosis manager
+	workflowAdapter := workflow.NewDiagnosisWorkflowAdapter(workflowEngine)
+	if err := diagnosisManager.EnableWorkflowSupport(workflowAdapter); err != nil {
+		log.Fatalf("Failed to enable workflow support: %v", err)
+	}
+
 	// Start changeset manager
 	if err := changesetManager.Start(ctx); err != nil {
 		log.Fatalf("Failed to start changeset manager: %v", err)
 	}
-	
+
 	// Connect MQTT client to device management and schema validation
 	mqttClient.SetDeviceManager(deviceManager)
 	mqttClient.SetEventProcessor(eventProcessor)
-	
+
 	// Create schema validator adapter for MQTT client
 	schemaAdapter := mqtt.NewSchemaValidatorAdapter(schemaManager)
 	mqttClient.SetSchemaValidator(schemaAdapter)
@@ -262,7 +317,7 @@ func main() {
 	if err := deviceManager.Start(ctx); err != nil {
 		log.Fatalf("Failed to start device manager: %v", err)
 	}
-	
+
 	log.Info("Starting event processor...")
 	if err := eventProcessor.Start(ctx); err != nil {
 		log.Fatalf("Failed to start event processor: %v", err)
@@ -375,4 +430,202 @@ func waitForShutdown() {
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	<-sigCh
+}
+
+func runMCPServer(cfg *config.Config, host string, port int) {
+	log.Info("Starting RTK Controller MCP Server...")
+	printBanner()
+
+	// Create context for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Initialize storage
+	buntStorage, err := storage.NewBuntDB(cfg.Storage.Path)
+	if err != nil {
+		log.Fatalf("Failed to initialize storage: %v", err)
+	}
+	defer buntStorage.Close()
+
+	// Initialize topology and identity storage
+	topologyStorage := storage.NewTopologyStorage(buntStorage)
+	identityStorage := storage.NewIdentityStorage(buntStorage)
+
+	// Initialize MQTT client for MCP server
+	mqttClient, err := mqtt.NewClient(cfg.MQTT, buntStorage)
+	if err != nil {
+		log.Fatalf("Failed to create MQTT client: %v", err)
+	}
+
+	// Initialize identity manager
+	identityConfig := identity.ManagerConfig{
+		EnableAutoDiscovery:  true,
+		EnableFingerprinting: true,
+		FingerprintTimeout:   5 * time.Minute,
+		DeviceRetention:      30 * 24 * time.Hour,
+		CleanupInterval:      1 * time.Hour,
+	}
+	identityManager := identity.NewManager(identityStorage, identityConfig)
+
+	// Initialize topology manager
+	topologyConfig := topology.ManagerConfig{
+		Tenant:                     "default",
+		Site:                       "default",
+		TopologyUpdateInterval:     30 * time.Second,
+		MetricsUpdateInterval:      1 * time.Minute,
+		CleanupInterval:            5 * time.Minute,
+		ConnectionHistoryRetention: 24 * time.Hour,
+		MetricsRetention:           7 * 24 * time.Hour,
+		DeviceOfflineRetention:     1 * time.Hour,
+		EnableRealTimeUpdates:      true,
+		EnableConnectionInference:  true,
+		EnableMetricsCollection:    true,
+		EnableDeviceClassification: true,
+		DiscoveryConfig:            topology.DiscoveryConfig{},
+	}
+	topologyManager, err := topology.NewManager(topologyStorage, identityStorage, identityManager, topologyConfig)
+	if err != nil {
+		log.Fatalf("Failed to create topology manager: %v", err)
+	}
+
+	// Initialize core services for MCP server
+	deviceManager := device.NewManager(buntStorage)
+	commandManager := command.NewManager(mqttClient, buntStorage)
+	diagnosisManager := diagnosis.NewManager(cfg.Diagnosis, buntStorage)
+
+	// Initialize QoS manager for LLM tools
+	qosManager := qos.NewQoSManager(nil)
+
+	// Initialize changeset manager
+	changesetManager := changeset.NewSimpleManager(buntStorage, commandManager)
+
+	// Initialize LLM tool engine
+	llmToolEngine := llm.NewToolEngine(buntStorage, commandManager, topologyManager, qosManager)
+	if err := llmToolEngine.Start(ctx); err != nil {
+		log.Fatalf("Failed to start LLM tool engine: %v", err)
+	}
+
+	// Initialize workflow manager
+	workflowConfig := &workflow.EngineConfig{
+		DefaultTimeout:         60 * time.Second,
+		MaxConcurrentWorkflows: 3,
+		RetryAttempts:          2,
+		ConfidenceThreshold:    0.7,
+		FallbackWorkflow:       "general_network_diagnosis",
+	}
+	workflowEngine, err := workflow.NewWorkflowEngine(llmToolEngine, buntStorage, workflowConfig)
+	if err != nil {
+		log.Fatalf("Failed to create workflow engine: %v", err)
+	}
+	if err := workflowEngine.Start(ctx); err != nil {
+		log.Fatalf("Failed to start workflow engine: %v", err)
+	}
+
+	// Enable LLM support in diagnosis manager
+	if err := diagnosisManager.EnableLLMSupport(llmToolEngine); err != nil {
+		log.Fatalf("Failed to enable LLM support: %v", err)
+	}
+
+	// Enable workflow support in diagnosis manager
+	workflowAdapter := workflow.NewDiagnosisWorkflowAdapter(workflowEngine)
+	if err := diagnosisManager.EnableWorkflowSupport(workflowAdapter); err != nil {
+		log.Fatalf("Failed to enable workflow support: %v", err)
+	}
+
+	// Start changeset manager
+	if err := changesetManager.Start(ctx); err != nil {
+		log.Fatalf("Failed to start changeset manager: %v", err)
+	}
+
+	// Create MCP server configuration
+	mcpConfig := mcp.ServerConfig{
+		Name:    "RTK Controller MCP Server",
+		Version: Version,
+		HTTP: mcp.HTTPConfig{
+			Enabled: true,
+			Host:    host,
+			Port:    port,
+			TLS: struct {
+				Enabled  bool   `yaml:"enabled"`
+				CertFile string `yaml:"cert_file"`
+				KeyFile  string `yaml:"key_file"`
+			}{
+				Enabled: false,
+			},
+		},
+		Tools: mcp.ToolsConfig{
+			Categories: []string{"topology", "wifi", "network", "mesh", "qos", "config"},
+			Execution: mcp.ExecutionConfig{
+				Timeout:       60 * time.Second,
+				MaxConcurrent: 5,
+				RetryAttempts: 2,
+			},
+		},
+		Resources: mcp.ResourcesConfig{
+			Topology: struct {
+				Enabled  bool          `yaml:"enabled"`
+				CacheTTL time.Duration `yaml:"cache_ttl"`
+			}{
+				Enabled:  true,
+				CacheTTL: 5 * time.Minute,
+			},
+			Devices: struct {
+				Enabled  bool          `yaml:"enabled"`
+				CacheTTL time.Duration `yaml:"cache_ttl"`
+			}{
+				Enabled:  true,
+				CacheTTL: 5 * time.Minute,
+			},
+			Diagnostics: struct {
+				Enabled      bool `yaml:"enabled"`
+				HistoryLimit int  `yaml:"history_limit"`
+			}{
+				Enabled:      true,
+				HistoryLimit: 100,
+			},
+		},
+		Sessions: mcp.SessionConfig{
+			MaxConcurrent:   10,
+			Timeout:         30 * time.Minute,
+			AutoCleanup:     true,
+			CleanupInterval: 5 * time.Minute,
+		},
+	}
+
+	// Create MCP server
+	mcpServer, err := mcp.NewMCPServer(llmToolEngine, workflowEngine, &mcpConfig, log.StandardLogger())
+	if err != nil {
+		log.Fatalf("Failed to create MCP server: %v", err)
+	}
+
+	// Start MCP server
+	if err := mcpServer.Start(ctx); err != nil {
+		log.Fatalf("Failed to start MCP server: %v", err)
+	}
+
+	log.WithFields(log.Fields{
+		"host": host,
+		"port": port,
+		"mode": "mcp",
+	}).Info("RTK Controller MCP Server started successfully")
+
+	// Wait for shutdown signal
+	waitForShutdown()
+
+	log.Info("Shutting down MCP Server...")
+	cancel()
+
+	// Stop MCP server gracefully
+	if err := mcpServer.Stop(); err != nil {
+		log.Errorf("Error stopping MCP server: %v", err)
+	}
+
+	// Stop other services gracefully
+	changesetManager.Stop()
+	diagnosisManager.Stop()
+	commandManager.Stop()
+	deviceManager.Stop()
+	mqttClient.Disconnect()
+
+	log.Info("RTK Controller MCP Server stopped gracefully")
 }

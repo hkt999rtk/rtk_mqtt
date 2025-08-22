@@ -15,16 +15,19 @@
 **請求格式**:
 ```json
 {
-  "id": "cmd-speed-test-123",
-  "op": "speed_test",
   "schema": "cmd.speed_test/1.0",
-  "args": {
-    "server": "auto",
-    "duration": 30,
-    "direction": "both"
-  },
-  "timeout_ms": 60000,
-  "ts": 1699123456789
+  "ts": 1699123456789,
+  "device_id": "router-001",
+  "payload": {
+    "id": "cmd-speed-test-123",
+    "op": "speed_test",
+    "args": {
+      "server": "auto",
+      "duration": 30,
+      "direction": "both"
+    },
+    "timeout_ms": 60000
+  }
 }
 ```
 
@@ -36,19 +39,22 @@
 **響應格式**:
 ```json
 {
-  "id": "cmd-speed-test-123",
   "schema": "cmd.speed_test.result/1.0",
-  "status": "completed",
-  "result": {
-    "download_mbps": 85.2,
-    "upload_mbps": 12.4,
-    "latency_ms": 15.3,
-    "jitter_ms": 2.1,
-    "packet_loss": 0.0,
-    "server": "speedtest.example.com",
-    "test_duration": 30
-  },
-  "ts": 1699123456820
+  "ts": 1699123456820,
+  "device_id": "router-001",
+  "payload": {
+    "id": "cmd-speed-test-123",
+    "status": "completed",
+    "result": {
+      "download_mbps": 85.2,
+      "upload_mbps": 12.4,
+      "latency_ms": 15.3,
+      "jitter_ms": 2.1,
+      "packet_loss": 0.0,
+      "server": "speedtest.example.com",
+      "test_duration": 30
+    }
+  }
 }
 ```
 
@@ -579,7 +585,7 @@
   "schema": "evt.wifi.connection_lost/1.0",
   "ts": 1699123456789,
   "device_id": "aabbccddeeff",
-  "data": {
+  "payload": {
     "client_mac": "112233445566",
     "ssid": "HomeNetwork",
     "reason": "signal_weak",

@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wifi-signal-strength-map/1.0",
+  "title": "RTK MQTT WiFi Signal Strength Mapping Command Schema",
+  "description": "Schema for WiFi signal strength mapping command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wifi_signal_strength_map/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wifi_signal_strength_map"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "target_ssid": {
+                  "type": "string",
+                  "description": "目標SSID"
+                },
+                "measurement_points": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "x": {
+                        "type": "number",
+                        "description": "X座標"
+                      },
+                      "y": {
+                        "type": "number",
+                        "description": "Y座標"
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "位置描述"
+                      }
+                    },
+                    "required": ["x", "y"],
+                    "additionalProperties": false
+                  },
+                  "description": "測量點列表"
+                },
+                "measurement_duration": {
+                  "type": "integer",
+                  "minimum": 5,
+                  "maximum": 60,
+                  "description": "每點測量時間(秒)"
+                }
+              },
+              "required": ["target_ssid", "measurement_points"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

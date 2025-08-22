@@ -62,14 +62,17 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "mesh_role": "relay",
-  "mesh_id": "mesh_network_001",
-  "node_status": "active",
-  "connected_nodes": 5,
-  "routing_table_size": 12,
-  "uplink_quality": 85,
-  "load_factor": 0.45
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "mesh_role": "relay",
+    "mesh_id": "mesh_network_001",
+    "node_status": "active",
+    "connected_nodes": 5,
+    "routing_table_size": 12,
+    "uplink_quality": 85,
+    "load_factor": 0.45
+  }
 }
 ```
 
@@ -78,13 +81,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "state/1.0",
   "ts": 1699123456789,
-  "health": "ok",
-  "mesh_role": "gateway",
-  "internet_connectivity": true,
-  "total_mesh_nodes": 15,
-  "active_clients": 42,
-  "network_throughput_mbps": 125.5,
-  "gateway_load": 0.32
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "health": "ok",
+    "mesh_role": "gateway",
+    "internet_connectivity": true,
+    "total_mesh_nodes": 15,
+    "active_clients": 42,
+    "network_throughput_mbps": 125.5,
+    "gateway_load": 0.32
+  }
 }
 ```
 
@@ -95,32 +101,35 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "telemetry.mesh_topology/1.0",
   "ts": 1699123456789,
-  "mesh_id": "mesh_network_001",
-  "node_count": 15,
-  "topology_map": {
-    "nodes": [
-      {
-        "node_id": "node_001",
-        "role": "gateway",
-        "coordinates": {"x": 0, "y": 0},
-        "status": "active"
-      },
-      {
-        "node_id": "node_002", 
-        "role": "relay",
-        "coordinates": {"x": 100, "y": 50},
-        "status": "active"
-      }
-    ],
-    "links": [
-      {
-        "from": "node_001",
-        "to": "node_002",
-        "quality": 85,
-        "bandwidth_mbps": 54,
-        "latency_ms": 5.2
-      }
-    ]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "mesh_id": "mesh_network_001",
+    "node_count": 15,
+    "topology_map": {
+      "nodes": [
+        {
+          "node_id": "node_001",
+          "role": "gateway",
+          "coordinates": {"x": 0, "y": 0},
+          "status": "active"
+        },
+        {
+          "node_id": "node_002", 
+          "role": "relay",
+          "coordinates": {"x": 100, "y": 50},
+          "status": "active"
+        }
+      ],
+      "links": [
+        {
+          "from": "node_001",
+          "to": "node_002",
+          "quality": 85,
+          "bandwidth_mbps": 54,
+          "latency_ms": 5.2
+        }
+      ]
+    }
   }
 }
 ```
@@ -130,25 +139,28 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "telemetry.mesh_routing/1.0",
   "ts": 1699123456789,
-  "routing_protocol": "batman-adv",
-  "routing_table": [
-    {
-      "destination": "node_003",
-      "next_hop": "node_002",
-      "metric": 15,
-      "interface": "mesh0",
-      "last_seen": 1699123450000
-    },
-    {
-      "destination": "node_004",
-      "next_hop": "node_002", 
-      "metric": 22,
-      "interface": "mesh0",
-      "last_seen": 1699123455000
-    }
-  ],
-  "table_size": 12,
-  "convergence_time_ms": 150
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "routing_protocol": "batman-adv",
+    "routing_table": [
+      {
+        "destination": "node_003",
+        "next_hop": "node_002",
+        "metric": 15,
+        "interface": "mesh0",
+        "last_seen": 1699123450000
+      },
+      {
+        "destination": "node_004",
+        "next_hop": "node_002", 
+        "metric": 22,
+        "interface": "mesh0",
+        "last_seen": 1699123455000
+      }
+    ],
+    "table_size": 12,
+    "convergence_time_ms": 150
+  }
 }
 ```
 
@@ -157,27 +169,30 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "telemetry.mesh_neighbors/1.0",
   "ts": 1699123456789,
-  "neighbor_count": 3,
-  "neighbors": [
-    {
-      "node_id": "node_002",
-      "signal_strength": -45,
-      "link_quality": 95,
-      "last_seen": 1699123456000,
-      "tx_rate_mbps": 54,
-      "rx_rate_mbps": 48,
-      "packet_loss": 0.01
-    },
-    {
-      "node_id": "node_005",
-      "signal_strength": -65,
-      "link_quality": 75,
-      "last_seen": 1699123455000,
-      "tx_rate_mbps": 24,
-      "rx_rate_mbps": 22,
-      "packet_loss": 0.05
-    }
-  ]
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "neighbor_count": 3,
+    "neighbors": [
+      {
+        "node_id": "node_002",
+        "signal_strength": -45,
+        "link_quality": 95,
+        "last_seen": 1699123456000,
+        "tx_rate_mbps": 54,
+        "rx_rate_mbps": 48,
+        "packet_loss": 0.01
+      },
+      {
+        "node_id": "node_005",
+        "signal_strength": -65,
+        "link_quality": 75,
+        "last_seen": 1699123455000,
+        "tx_rate_mbps": 24,
+        "rx_rate_mbps": 22,
+        "packet_loss": 0.05
+      }
+    ]
+  }
 }
 ```
 
@@ -186,16 +201,19 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "telemetry.mesh_load/1.0",
   "ts": 1699123456789,
-  "cpu_usage": 35.5,
-  "memory_usage": 45.2,
-  "forwarding_rate_pps": 1250,
-  "queue_depth": 15,
-  "buffer_utilization": 0.25,
-  "active_flows": 45,
-  "load_distribution": {
-    "local_traffic": 0.3,
-    "forwarded_traffic": 0.6,
-    "control_traffic": 0.1
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "cpu_usage": 35.5,
+    "memory_usage": 45.2,
+    "forwarding_rate_pps": 1250,
+    "queue_depth": 15,
+    "buffer_utilization": 0.25,
+    "active_flows": 45,
+    "load_distribution": {
+      "local_traffic": 0.3,
+      "forwarded_traffic": 0.6,
+      "control_traffic": 0.1
+    }
   }
 }
 ```
@@ -207,13 +225,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "evt.mesh_topology/1.0",
   "ts": 1699123456789,
-  "event_type": "node_joined",
-  "node_id": "node_015",
-  "mesh_role": "leaf",
-  "connection_point": "node_003",
-  "signal_strength": -55,
-  "auto_configured": true,
-  "topology_version": 15
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "node_joined",
+    "node_id": "node_015",
+    "mesh_role": "leaf",
+    "connection_point": "node_003",
+    "signal_strength": -55,
+    "auto_configured": true,
+    "topology_version": 15
+  }
 }
 ```
 
@@ -222,12 +243,15 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "evt.mesh_routing/1.0",
   "ts": 1699123456789,
-  "event_type": "route_changed",
-  "destination": "node_008",
-  "old_next_hop": "node_003",
-  "new_next_hop": "node_002",
-  "reason": "link_quality_improved",
-  "convergence_time_ms": 200
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "route_changed",
+    "destination": "node_008",
+    "old_next_hop": "node_003",
+    "new_next_hop": "node_002",
+    "reason": "link_quality_improved",
+    "convergence_time_ms": 200
+  }
 }
 ```
 
@@ -236,13 +260,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "evt.mesh_load/1.0",
   "ts": 1699123456789,
-  "event_type": "high_load_warning",
-  "load_type": "cpu",
-  "current_value": 85.5,
-  "threshold": 80.0,
-  "duration_s": 120,
-  "affected_services": ["forwarding", "routing"],
-  "suggested_action": "load_balancing"
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "high_load_warning",
+    "load_type": "cpu",
+    "current_value": 85.5,
+    "threshold": 80.0,
+    "duration_s": 120,
+    "affected_services": ["forwarding", "routing"],
+    "suggested_action": "load_balancing"
+  }
 }
 ```
 
@@ -251,13 +278,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 {
   "schema": "evt.mesh_quality/1.0",
   "ts": 1699123456789,
-  "event_type": "link_degraded",
-  "neighbor_node": "node_007",
-  "signal_strength": -78,
-  "link_quality": 45,
-  "packet_loss": 0.15,
-  "severity": "warning",
-  "duration_s": 300
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "event_type": "link_degraded",
+    "neighbor_node": "node_007",
+    "signal_strength": -78,
+    "link_quality": 45,
+    "packet_loss": 0.15,
+    "severity": "warning",
+    "duration_s": 300
+  }
 }
 ```
 
@@ -268,13 +298,17 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 拓撲掃描
 ```json
 {
-  "id": "cmd-1699123456789",
-  "op": "mesh_topology_scan",
   "schema": "cmd.mesh_topology_scan/1.0",
-  "args": {
-    "scan_depth": 3,
-    "include_inactive": false,
-    "detailed_metrics": true
+  "ts": 1699123456789,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456789",
+    "op": "mesh_topology_scan",
+    "args": {
+      "scan_depth": 3,
+      "include_inactive": false,
+      "detailed_metrics": true
+    }
   }
 }
 ```
@@ -282,12 +316,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 路由表重建
 ```json
 {
-  "id": "cmd-1699123456790",
-  "op": "rebuild_routing_table",
-  "schema": "cmd.rebuild_routing_table/1.0", 
-  "args": {
-    "force_convergence": true,
-    "timeout_s": 30
+  "schema": "cmd.rebuild_routing_table/1.0",
+  "ts": 1699123456790,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456790",
+    "op": "rebuild_routing_table",
+    "args": {
+      "force_convergence": true,
+      "timeout_s": 30
+    }
   }
 }
 ```
@@ -295,12 +333,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 負載均衡優化
 ```json
 {
-  "id": "cmd-1699123456791",
-  "op": "optimize_load_balance",
   "schema": "cmd.optimize_load_balance/1.0",
-  "args": {
-    "target_utilization": 0.7,
-    "redistribution_method": "least_loaded"
+  "ts": 1699123456791,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456791",
+    "op": "optimize_load_balance",
+    "args": {
+      "target_utilization": 0.7,
+      "redistribution_method": "least_loaded"
+    }
   }
 }
 ```
@@ -308,13 +350,17 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 節點角色變更
 ```json
 {
-  "id": "cmd-1699123456792",
-  "op": "change_mesh_role",
   "schema": "cmd.change_mesh_role/1.0",
-  "args": {
-    "new_role": "relay",
-    "migration_timeout_s": 60,
-    "preserve_connections": true
+  "ts": 1699123456792,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456792",
+    "op": "change_mesh_role",
+    "args": {
+      "new_role": "relay",
+      "migration_timeout_s": 60,
+      "preserve_connections": true
+    }
   }
 }
 ```
@@ -324,12 +370,16 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 強制鄰居重新發現
 ```json
 {
-  "id": "cmd-1699123456793",
-  "op": "rediscover_neighbors",
   "schema": "cmd.rediscover_neighbors/1.0",
-  "args": {
-    "scan_channels": [1, 6, 11],
-    "scan_duration_s": 10
+  "ts": 1699123456793,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456793",
+    "op": "rediscover_neighbors",
+    "args": {
+      "scan_channels": [1, 6, 11],
+      "scan_duration_s": 10
+    }
   }
 }
 ```
@@ -337,13 +387,17 @@ rtk/v1/{tenant}/{site}/{node_id}/cmd/req
 #### 連接品質優化
 ```json
 {
-  "id": "cmd-1699123456794",
-  "op": "optimize_connections",
   "schema": "cmd.optimize_connections/1.0",
-  "args": {
-    "min_quality_threshold": 70,
-    "max_connections": 8,
-    "prioritize_stability": true
+  "ts": 1699123456794,
+  "device_id": "aabbccddeeff",
+  "payload": {
+    "id": "cmd-1699123456794",
+    "op": "optimize_connections",
+    "args": {
+      "min_quality_threshold": 70,
+      "max_connections": 8,
+      "prioritize_stability": true
+    }
   }
 }
 ```
@@ -397,9 +451,10 @@ class MeshNodeMQTTClient:
             print(f"Error processing command: {e}")
             
     def handle_command(self, command):
-        cmd_id = command.get("id")
-        operation = command.get("op")
-        args = command.get("args", {})
+        payload = command.get("payload", {})
+        cmd_id = payload.get("id")
+        operation = payload.get("op")
+        args = payload.get("args", {})
         
         # 發送確認
         self.send_ack(cmd_id)
@@ -429,10 +484,13 @@ class MeshNodeMQTTClient:
     def send_ack(self, cmd_id):
         ack_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.node_id}/cmd/ack"
         ack_msg = {
-            "id": cmd_id,
             "schema": "cmd.ack/1.0",
-            "status": "accepted",
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.node_id,
+            "payload": {
+                "id": cmd_id,
+                "status": "accepted"
+            }
         }
         self.client.publish(ack_topic, json.dumps(ack_msg), qos=1)
         
@@ -440,11 +498,14 @@ class MeshNodeMQTTClient:
         res_topic = f"rtk/v1/{self.tenant}/{self.site}/{self.node_id}/cmd/res"
         status = "completed" if "error" not in result else "failed"
         res_msg = {
-            "id": cmd_id,
             "schema": f"cmd.{operation}.result/1.0",
-            "status": status,
-            "result": result,
-            "ts": int(time.time() * 1000)
+            "ts": int(time.time() * 1000),
+            "device_id": self.node_id,
+            "payload": {
+                "id": cmd_id,
+                "status": status,
+                "result": result
+            }
         }
         self.client.publish(res_topic, json.dumps(res_msg), qos=1)
         
@@ -565,13 +626,16 @@ class MeshNodeMQTTClient:
         state_msg = {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok",
-            "mesh_role": self.mesh_role,
-            "mesh_id": self.mesh_id,
-            "node_status": "active",
-            "connected_nodes": len(self.neighbors),
-            "routing_table_size": len(self.routing_table),
-            "load_factor": self.get_current_load()
+            "device_id": self.node_id,
+            "payload": {
+                "health": "ok",
+                "mesh_role": self.mesh_role,
+                "mesh_id": self.mesh_id,
+                "node_status": "active",
+                "connected_nodes": len(self.neighbors),
+                "routing_table_size": len(self.routing_table),
+                "load_factor": self.get_current_load()
+            }
         }
         self.client.publish(state_topic, json.dumps(state_msg), qos=1, retain=True)
         
@@ -585,9 +649,12 @@ class MeshNodeMQTTClient:
             telemetry_msg = {
                 "schema": "telemetry.mesh_topology/1.0",
                 "ts": int(time.time() * 1000),
-                "mesh_id": self.mesh_id,
-                "node_count": topology_data.get("node_count", 0),
-                "topology_map": topology_data.get("topology_map", {})
+                "device_id": self.node_id,
+                "payload": {
+                    "mesh_id": self.mesh_id,
+                    "node_count": topology_data.get("node_count", 0),
+                    "topology_map": topology_data.get("topology_map", {})
+                }
             }
             self.client.publish(topology_topic, json.dumps(telemetry_msg), qos=0)
             
@@ -599,8 +666,11 @@ class MeshNodeMQTTClient:
         telemetry_msg = {
             "schema": "telemetry.mesh_neighbors/1.0",
             "ts": int(time.time() * 1000),
-            "neighbor_count": len(neighbors_data),
-            "neighbors": list(neighbors_data.values())
+            "device_id": self.node_id,
+            "payload": {
+                "neighbor_count": len(neighbors_data),
+                "neighbors": list(neighbors_data.values())
+            }
         }
         self.client.publish(neighbors_topic, json.dumps(telemetry_msg), qos=0)
         
@@ -737,10 +807,13 @@ class OpenWrtMeshNode:
         state_msg = {
             "schema": "state/1.0",
             "ts": int(time.time() * 1000),
-            "health": "ok" if mesh_status["active"] else "error",
-            "mesh_role": "relay",
-            "node_status": "active" if mesh_status["active"] else "inactive",
-            "connected_nodes": mesh_status.get("neighbor_count", 0)
+            "device_id": self.node_id,
+            "payload": {
+                "health": "ok" if mesh_status["active"] else "error",
+                "mesh_role": "relay",
+                "node_status": "active" if mesh_status["active"] else "inactive",
+                "connected_nodes": mesh_status.get("neighbor_count", 0)
+            }
         }
         
         topic = f"rtk/v1/demo/mesh/{self.node_id}/state"

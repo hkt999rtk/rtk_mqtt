@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-qos-anomaly-detection/1.0",
+  "title": "RTK MQTT QoS Anomaly Detection Command Schema",
+  "description": "Schema for QoS anomaly detection command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.qos_anomaly_detection/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["qos_anomaly_detection"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "detection_window": {
+                  "type": "integer",
+                  "minimum": 300,
+                  "maximum": 86400,
+                  "description": "檢測窗口時間(秒)"
+                },
+                "baseline_period": {
+                  "type": "integer",
+                  "minimum": 3600,
+                  "maximum": 604800,
+                  "description": "基線數據期間(秒)"
+                },
+                "sensitivity": {
+                  "type": "string",
+                  "enum": ["low", "medium", "high"],
+                  "description": "檢測敏感度"
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["latency", "throughput", "error_rate", "jitter"]
+                  },
+                  "description": "檢測指標列表"
+                },
+                "detection_methods": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["statistical", "ml_based"]
+                  },
+                  "description": "檢測方法"
+                }
+              },
+              "required": ["detection_window", "metrics"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

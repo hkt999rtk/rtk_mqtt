@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-qos-performance-monitor/1.0",
+  "title": "RTK MQTT QoS Performance Monitor Command Schema",
+  "description": "Schema for QoS performance monitoring command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.qos_performance_monitor/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["qos_performance_monitor"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "monitor_duration": {
+                  "type": "integer",
+                  "minimum": 60,
+                  "maximum": 3600,
+                  "description": "監控持續時間(秒)"
+                },
+                "metrics": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["latency", "throughput", "jitter", "packet_loss"]
+                  },
+                  "description": "監控指標列表"
+                },
+                "target_hosts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "目標主機列表"
+                },
+                "alert_thresholds": {
+                  "type": "object",
+                  "properties": {
+                    "latency_ms": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "jitter_ms": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "packet_loss_percent": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "throughput_mbps": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "additionalProperties": false,
+                  "description": "告警閾值設定"
+                }
+              },
+              "required": ["monitor_duration", "metrics"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

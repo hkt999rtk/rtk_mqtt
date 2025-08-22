@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-qos-auto-optimization/1.0",
+  "title": "RTK MQTT QoS Auto Optimization Command Schema",
+  "description": "Schema for QoS automatic optimization command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.qos_auto_optimization/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["qos_auto_optimization"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "optimization_goals": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["minimize_latency", "maximize_throughput", "improve_reliability"]
+                  },
+                  "description": "優化目標"
+                },
+                "constraints": {
+                  "type": "object",
+                  "properties": {
+                    "max_bandwidth_mbps": {
+                      "type": "number",
+                      "minimum": 1,
+                      "description": "最大頻寬限制(Mbps)"
+                    },
+                    "priority_applications": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["voip", "video_conference", "gaming", "streaming"]
+                      },
+                      "description": "優先應用列表"
+                    },
+                    "time_window": {
+                      "type": "string",
+                      "enum": ["business_hours", "peak_hours", "off_peak", "always"],
+                      "description": "時間窗口"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "dry_run": {
+                  "type": "boolean",
+                  "default": true,
+                  "description": "是否為模擬運行"
+                }
+              },
+              "required": ["optimization_goals"],
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

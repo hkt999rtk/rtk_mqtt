@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wan-connectivity/1.0",
+  "title": "RTK MQTT WAN Connectivity Test Command Schema",
+  "description": "Schema for WAN connectivity test command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wan_connectivity/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wan_connectivity"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "test_hosts": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": ["8.8.8.8", "google.com", "cloudflare.com"],
+                  "description": "測試目標主機列表"
+                },
+                "timeout": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 60,
+                  "default": 5,
+                  "description": "每個測試的超時時間(秒)"
+                },
+                "ping_count": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 10,
+                  "default": 3,
+                  "description": "ping測試次數"
+                },
+                "trace_route": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "是否執行路由追蹤"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}

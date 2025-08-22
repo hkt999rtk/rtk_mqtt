@@ -18,36 +18,48 @@
       "pattern": "^[a-f0-9]{12}$",
       "description": "Device MAC address without colons"
     },
-    "health": {
-      "type": "string",
-      "enum": ["ok", "warning", "error", "critical"],
-      "description": "Overall device health status"
-    },
-    "uptime_s": {
-      "type": "integer",
-      "minimum": 0,
-      "description": "Device uptime in seconds"
-    },
-    "connection_status": {
-      "type": "string",
-      "enum": ["connected", "disconnected", "connecting", "error"]
-    },
-    "capabilities": {
+    "payload": {
       "type": "object",
       "properties": {
-        "device_type": {
+        "health": {
           "type": "string",
-          "enum": ["router", "switch", "ap", "nic", "sensor", "server"]
+          "enum": ["ok", "warning", "error", "critical"],
+          "description": "Overall device health status"
         },
-        "diagnostics": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "uptime_s": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Device uptime in seconds"
+        },
+        "connection_status": {
+          "type": "string",
+          "enum": ["connected", "disconnected", "connecting", "error"]
+        },
+        "capabilities": {
+          "type": "object",
+          "properties": {
+            "device_type": {
+              "type": "string",
+              "enum": ["router", "switch", "ap", "nic", "sensor", "server"]
+            },
+            "diagnostics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
           }
         }
-      }
+      },
+      "required": ["health"],
+      "additionalProperties": true
+    },
+    "meta": {
+      "type": "object",
+      "description": "Optional metadata",
+      "additionalProperties": true
     }
   },
-  "required": ["schema", "ts", "device_id", "health"],
+  "required": ["schema", "ts", "device_id", "payload"],
   "additionalProperties": true
 }

@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-system/1.0",
+  "title": "RTK MQTT System Telemetry Schema",
+  "description": "Schema for system telemetry data including CPU, memory, and general system metrics",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.system/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "cpu_usage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "CPU使用率百分比"
+            },
+            "memory_usage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "記憶體使用率百分比"
+            },
+            "disk_usage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100,
+              "description": "磁碟使用率百分比"
+            },
+            "uptime_seconds": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "系統運行時間(秒)"
+            },
+            "load_average": {
+              "type": "object",
+              "properties": {
+                "1min": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "5min": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "15min": {
+                  "type": "number",
+                  "minimum": 0
+                }
+              },
+              "additionalProperties": false,
+              "description": "系統負載平均值"
+            },
+            "temperature_celsius": {
+              "type": "number",
+              "description": "系統溫度(攝氏度)"
+            },
+            "processes_count": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "進程數量"
+            },
+            "network_connections": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "網路連接數"
+            },
+            "message_id": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "訊息ID(用於測試)"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

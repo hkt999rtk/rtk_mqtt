@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/telemetry-wifi/1.0",
+  "title": "RTK MQTT WiFi Telemetry Schema",
+  "description": "Schema for WiFi telemetry data",
+  "allOf": [
+    {
+      "$ref": "telemetry.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["telemetry.wifi/1.0"]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "interfaces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "WiFi介面名稱"
+                  },
+                  "band": {
+                    "type": "string",
+                    "enum": ["2.4GHz", "5GHz", "6GHz"],
+                    "description": "頻段"
+                  },
+                  "channel": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 165,
+                    "description": "頻道"
+                  },
+                  "channel_utilization": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "description": "頻道利用率(%)"
+                  },
+                  "noise_floor": {
+                    "type": "integer",
+                    "minimum": -120,
+                    "maximum": 0,
+                    "description": "噪聲底線(dBm)"
+                  },
+                  "tx_power": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30,
+                    "description": "發射功率(dBm)"
+                  },
+                  "connected_clients": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "連接的客戶端數量"
+                  },
+                  "throughput_mbps": {
+                    "type": "number",
+                    "minimum": 0,
+                    "description": "吞吐量(Mbps)"
+                  }
+                },
+                "required": ["name", "band", "channel"],
+                "additionalProperties": false
+              },
+              "minItems": 1
+            }
+          },
+          "required": ["interfaces"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

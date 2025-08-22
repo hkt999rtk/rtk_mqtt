@@ -82,12 +82,12 @@ func main() {
 		if device.Online {
 			status = "online"
 		}
-		fmt.Printf("  - %s: %s (%s) - %s\n", 
+		fmt.Printf("  - %s: %s (%s) - %s\n",
 			id, device.Hostname, device.DeviceType, status)
-		
+
 		// Show interfaces
 		for ifName, iface := range device.Interfaces {
-			fmt.Printf("    - Interface %s: %s (%s)\n", 
+			fmt.Printf("    - Interface %s: %s (%s)\n",
 				ifName, iface.MacAddress, iface.Status)
 		}
 	}

@@ -2,12 +2,12 @@ package types
 
 // NetworkDiagnostics represents comprehensive network diagnostic results
 type NetworkDiagnostics struct {
-	DeviceID         string                `json:"device_id"`
-	SpeedTest        *SpeedTestResult      `json:"speed_test,omitempty"`
-	LatencyTest      *LatencyTestResult    `json:"latency_test,omitempty"`
-	WANTest          *WANTestResult        `json:"wan_test,omitempty"`
-	ConnectivityTest *ConnectivityResult   `json:"connectivity_test,omitempty"`
-	Timestamp        int64                 `json:"timestamp"`
+	DeviceID         string              `json:"device_id"`
+	SpeedTest        *SpeedTestResult    `json:"speed_test,omitempty"`
+	LatencyTest      *LatencyTestResult  `json:"latency_test,omitempty"`
+	WANTest          *WANTestResult      `json:"wan_test,omitempty"`
+	ConnectivityTest *ConnectivityResult `json:"connectivity_test,omitempty"`
+	Timestamp        int64               `json:"timestamp"`
 }
 
 // SpeedTestResult contains bandwidth test results
@@ -30,8 +30,8 @@ type LatencyTestResult struct {
 
 // LatencyTarget represents a single latency test target
 type LatencyTarget struct {
-	Target          string  `json:"target"`         // IP or hostname
-	Type            string  `json:"type"`           // gateway, dns, external
+	Target          string  `json:"target"` // IP or hostname
+	Type            string  `json:"type"`   // gateway, dns, external
 	AvgLatency      float64 `json:"avg_latency_ms"`
 	MinLatency      float64 `json:"min_latency_ms"`
 	MaxLatency      float64 `json:"max_latency_ms"`
@@ -92,7 +92,7 @@ type DiagnosticsSummary struct {
 
 // Issue represents a detected network issue
 type Issue struct {
-	Type        string `json:"type"` // high_latency, packet_loss, low_bandwidth, wan_down
+	Type        string `json:"type"`     // high_latency, packet_loss, low_bandwidth, wan_down
 	Severity    string `json:"severity"` // critical, warning, info
 	Description string `json:"description"`
 	Suggestion  string `json:"suggestion,omitempty"`

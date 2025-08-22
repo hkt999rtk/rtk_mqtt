@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/evt-wifi-connection-lost/1.0",
+  "title": "RTK MQTT WiFi Connection Lost Event Schema",
+  "description": "Schema for WiFi connection lost events",
+  "allOf": [
+    {
+      "$ref": "event.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["evt.wifi.connection_lost/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "event_type": {
+              "enum": ["connection_lost"]
+            },
+            "client_mac": {
+              "type": "string",
+              "pattern": "^([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$",
+              "description": "客戶端MAC地址"
+            },
+            "ssid": {
+              "type": "string",
+              "description": "網絡名稱"
+            },
+            "reason": {
+              "type": "string",
+              "enum": ["signal_weak", "timeout", "user_disconnect", "error", "auth_failure"],
+              "description": "斷線原因"
+            },
+            "duration_connected": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "連接持續時間(秒)"
+            },
+            "signal_strength": {
+              "type": "integer",
+              "minimum": -100,
+              "maximum": 0,
+              "description": "信號強度(dBm)"
+            },
+            "channel": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 165,
+              "description": "WiFi頻道"
+            },
+            "frequency": {
+              "type": "integer",
+              "minimum": 2400,
+              "maximum": 6000,
+              "description": "頻率(MHz)"
+            }
+          },
+          "required": ["event_type", "client_mac", "ssid", "reason"],
+          "additionalProperties": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://rtk.mqtt/schemas/cmd-wifi-spectrum-utilization/1.0",
+  "title": "RTK MQTT WiFi Spectrum Utilization Command Schema",
+  "description": "Schema for WiFi spectrum utilization analysis command",
+  "allOf": [
+    {
+      "$ref": "cmd-request.json"
+    },
+    {
+      "properties": {
+        "schema": {
+          "enum": ["cmd.wifi_spectrum_utilization/1.0"]
+        },
+        "payload": {
+          "properties": {
+            "op": {
+              "enum": ["wifi_spectrum_utilization"]
+            },
+            "args": {
+              "type": "object",
+              "properties": {
+                "band": {
+                  "type": "string",
+                  "enum": ["2.4ghz", "5ghz", "both"],
+                  "description": "分析頻段"
+                },
+                "analysis_duration": {
+                  "type": "integer",
+                  "minimum": 30,
+                  "maximum": 300,
+                  "description": "分析持續時間(秒)"
+                },
+                "include_non_wifi": {
+                  "type": "boolean",
+                  "description": "是否包含非WiFi信號"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      }
+    }
+  ]
+}
