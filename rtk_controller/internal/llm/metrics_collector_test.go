@@ -125,7 +125,7 @@ func TestMetricsCollector_HealthStatus(t *testing.T) {
 		mc.RecordToolExecution("error.tool", 100*time.Millisecond, false, "error")
 	}
 	mc.RecordToolExecution("success.tool", 100*time.Millisecond, true, "")
-	
+
 	// Update engine metrics to trigger error rate calculation
 	mc.UpdateEngineMetrics(2, 1024*1024, 10)
 
@@ -199,14 +199,14 @@ func TestMetricsCollector_Reset(t *testing.T) {
 
 func TestMetricsCollector_ConcurrentAccess(t *testing.T) {
 	mc := NewMetricsCollector()
-	
+
 	// Test concurrent access doesn't panic
 	done := make(chan bool, 10)
-	
+
 	for i := 0; i < 10; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
-			
+
 			toolName := fmt.Sprintf("tool%d", id%3)
 			for j := 0; j < 100; j++ {
 				mc.RecordToolExecution(toolName, time.Millisecond, true, "")
@@ -216,12 +216,12 @@ func TestMetricsCollector_ConcurrentAccess(t *testing.T) {
 			}
 		}(i)
 	}
-	
+
 	// Wait for all goroutines to complete
 	for i := 0; i < 10; i++ {
 		<-done
 	}
-	
+
 	// Verify final state is consistent
 	summary := mc.GetMetricsSummary()
 	assert.NotNil(t, summary)
@@ -232,7 +232,7 @@ func TestMetricsCollector_ConcurrentAccess(t *testing.T) {
 // Benchmark tests
 func BenchmarkMetricsCollector_RecordToolExecution(b *testing.B) {
 	mc := NewMetricsCollector()
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		mc.RecordToolExecution("bench.tool", 100*time.Millisecond, true, "")
@@ -241,13 +241,13 @@ func BenchmarkMetricsCollector_RecordToolExecution(b *testing.B) {
 
 func BenchmarkMetricsCollector_GetMetricsSummary(b *testing.B) {
 	mc := NewMetricsCollector()
-	
+
 	// Pre-populate with some data
 	for i := 0; i < 1000; i++ {
 		mc.RecordToolExecution("tool1", 100*time.Millisecond, true, "")
 		mc.RecordToolExecution("tool2", 200*time.Millisecond, true, "")
 	}
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		_ = mc.GetMetricsSummary()

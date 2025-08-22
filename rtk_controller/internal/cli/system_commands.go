@@ -23,7 +23,7 @@ func (c *CLI) systemStatus(cmd *cobra.Command, args []string) error {
 	return c.printSystemStatus()
 }
 
-// systemStats shows system statistics  
+// systemStats shows system statistics
 func (c *CLI) systemStats(cmd *cobra.Command, args []string) error {
 	period, _ := cmd.Flags().GetString("period")
 
@@ -106,7 +106,7 @@ func (c *CLI) printSystemStatus() error {
 	// Device Manager Status
 	if c.deviceManager != nil {
 		deviceStats := c.deviceManager.GetStats()
-		fmt.Printf("Devices:       %d total, %d online, %d offline\n", 
+		fmt.Printf("Devices:       %d total, %d online, %d offline\n",
 			deviceStats.TotalDevices, deviceStats.OnlineDevices, deviceStats.OfflineDevices)
 	}
 
@@ -120,13 +120,13 @@ func (c *CLI) printSystemStatus() error {
 	// System Info
 	var m runtime.MemStats
 	runtime.ReadMemStats(&m)
-	
+
 	fmt.Printf("\nSystem Information\n")
 	fmt.Printf("==================\n")
 	fmt.Printf("Go Version:    %s\n", runtime.Version())
 	fmt.Printf("OS/Arch:       %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	fmt.Printf("Goroutines:    %d\n", runtime.NumGoroutine())
-	fmt.Printf("Memory:        %s allocated, %s system\n", 
+	fmt.Printf("Memory:        %s allocated, %s system\n",
 		utils.FormatBytes(m.Alloc), utils.FormatBytes(m.Sys))
 
 	return nil

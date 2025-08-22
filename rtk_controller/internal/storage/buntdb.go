@@ -196,18 +196,18 @@ func (t *BuntDBTransaction) IteratePrefix(prefix string, fn func(key, value stri
 // DeleteRange deletes keys in a range
 func (t *BuntDBTransaction) DeleteRange(startKey, endKey string) (int, error) {
 	var deleted int
-	
+
 	// First collect keys to delete
 	var keysToDelete []string
 	err := t.tx.AscendRange("", startKey, endKey, func(key, value string) bool {
 		keysToDelete = append(keysToDelete, key)
 		return true
 	})
-	
+
 	if err != nil {
 		return 0, err
 	}
-	
+
 	// Then delete them
 	for _, key := range keysToDelete {
 		if _, err := t.tx.Delete(key); err != nil {
@@ -215,6 +215,6 @@ func (t *BuntDBTransaction) DeleteRange(startKey, endKey string) (int, error) {
 		}
 		deleted++
 	}
-	
+
 	return deleted, nil
 }

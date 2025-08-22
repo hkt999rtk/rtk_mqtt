@@ -1,0 +1,73 @@
+@startuml HA_IoT_MCP_Architecture
+!theme plain
+
+title Home Assistant / MQTT / IoT Device / MCP / Claude Desktop 整合架構
+
+' 組件定義
+package "AI Interface Layer" as ai_layer {
+  component [Claude Desktop] as claude #lightblue
+  note right of claude : AI 助手\n自然語言理解\n智能控制界面
+}
+
+package "Home Automation Layer" as ha_layer {
+  component [Home Assistant] as ha #orange
+  component [MCP Server] as mcp #lightgreen
+  note right of ha : 智能家居中心\nWeb UI 控制\n設備管理和自動化
+  note right of mcp : 附屬於 HA 的組件\nAI 工具接口\n橋接 Claude 與 HA
+}
+
+package "Message Layer" as message_layer {
+  component [MQTT Broker] as mqtt #yellow
+  note right of mqtt : 消息路由中心\n命令轉發\n狀態收集
+}
+
+package "Device Layer" as device_layer {
+  component [IoT Light Device] as light #lightcoral
+  component [IoT Sensor Device] as sensor #lightcoral
+  component [IoT Switch Device] as switch #lightcoral
+  note bottom of light : 實際執行設備\n命令執行\n狀態回報
+}
+
+' 連接關係
+claude --> mcp : MCP Protocol\n工具調用
+
+mcp --> ha : 調用 HA 服務\n設備控制請求
+mcp <-- ha : 執行結果回報
+
+ha --> mqtt : MQTT Publish\n(command_topic)
+ha <-- mqtt : MQTT Subscribe\n(state_topic)
+
+mqtt --> light : Topic: home/livingroom/light1/set\nPayload: ON/OFF
+mqtt <-- light : Topic: home/livingroom/light1/state\nPayload: ON/OFF
+
+mqtt --> sensor : Topic: home/bedroom/sensor1/set
+mqtt <-- sensor : Topic: home/bedroom/sensor1/state
+
+mqtt --> switch : Topic: home/kitchen/switch1/set
+mqtt <-- switch : Topic: home/kitchen/switch1/state
+
+' 數據流向說明
+note as flow_note
+  <b>控制流程範例:</b>
+  1. 用戶: "請打開客廳的燈"
+  2. Claude Desktop 理解指令
+  3. 通過 MCP 調用控制 API
+  4. MCP Server 通知 Home Assistant
+  5. HA 發送 MQTT 消息到 Broker
+  6. MQTT Broker 轉發給 IoT 設備
+  7. 設備執行並回報狀態給 HA
+  8. Claude 回應: "客廳燈已開啟"
+end note
+
+' 主題規範說明
+note as topic_note
+  <b>MQTT 主題規範:</b>
+  狀態主題: home/{room}/{device_type}{device_number}/state
+  命令主題: home/{room}/{device_type}{device_number}/set
+  
+  <b>MCP 工具接口:</b>
+  • control_light(device_id, action, brightness)
+  • get_device_status(device_id)
+end note
+
+@enduml

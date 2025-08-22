@@ -42,7 +42,7 @@ func (t *MeshGetTopologyTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("scan_depth parameter must be a number")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -69,29 +69,29 @@ func (t *MeshGetTopologyTool) Execute(ctx context.Context, params map[string]int
 		},
 		"node_hierarchy": []map[string]interface{}{
 			{
-				"node_id":     "mesh-controller-001",
-				"node_type":   "gateway",
-				"level":       0,
-				"children":    []string{"mesh-node-002", "mesh-node-003"},
-				"signal_dbm":  -35,
+				"node_id":      "mesh-controller-001",
+				"node_type":    "gateway",
+				"level":        0,
+				"children":     []string{"mesh-node-002", "mesh-node-003"},
+				"signal_dbm":   -35,
 				"load_percent": 45,
 			},
 			{
-				"node_id":     "mesh-node-002",
-				"node_type":   "repeater",
-				"level":       1,
-				"parent":      "mesh-controller-001",
-				"children":    []string{"mesh-node-004", "mesh-node-005"},
-				"signal_dbm":  -52,
+				"node_id":      "mesh-node-002",
+				"node_type":    "repeater",
+				"level":        1,
+				"parent":       "mesh-controller-001",
+				"children":     []string{"mesh-node-004", "mesh-node-005"},
+				"signal_dbm":   -52,
 				"load_percent": 62,
 			},
 			{
-				"node_id":     "mesh-node-003",
-				"node_type":   "access_point",
-				"level":       1,
-				"parent":      "mesh-controller-001",
-				"children":    []string{"mesh-node-006"},
-				"signal_dbm":  -48,
+				"node_id":      "mesh-node-003",
+				"node_type":    "access_point",
+				"level":        1,
+				"parent":       "mesh-controller-001",
+				"children":     []string{"mesh-node-006"},
+				"signal_dbm":   -48,
 				"load_percent": 38,
 			},
 		},
@@ -150,7 +150,7 @@ func (t *MeshNodeRelationshipTool) Validate(params map[string]interface{}) error
 			return fmt.Errorf("node_id parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -187,10 +187,10 @@ func (t *MeshNodeRelationshipTool) Execute(ctx context.Context, params map[strin
 			"critical_nodes": []string{"mesh-controller-001", "mesh-node-002"},
 			"single_points_of_failure": []map[string]interface{}{
 				{
-					"node_id":      "mesh-controller-001",
+					"node_id":        "mesh-controller-001",
 					"affected_nodes": 8,
-					"impact_level": "critical",
-					"mitigation":   "add_backup_gateway",
+					"impact_level":   "critical",
+					"mitigation":     "add_backup_gateway",
 				},
 			},
 			"redundancy_paths": []map[string]interface{}{
@@ -266,7 +266,7 @@ func (t *MeshPathOptimizationTool) Validate(params map[string]interface{}) error
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -282,28 +282,28 @@ func (t *MeshPathOptimizationTool) Execute(ctx context.Context, params map[strin
 	result := map[string]interface{}{
 		"optimization_mode": optimizationMode,
 		"path_analysis": map[string]interface{}{
-			"total_paths_analyzed": 24,
-			"suboptimal_paths":     7,
+			"total_paths_analyzed":   24,
+			"suboptimal_paths":       7,
 			"optimization_potential": "medium-high",
-			"current_efficiency":   73.2,
-			"target_efficiency":    87.5,
+			"current_efficiency":     73.2,
+			"target_efficiency":      87.5,
 		},
 		"optimized_routes": []map[string]interface{}{
 			{
-				"destination":      "mesh-node-006",
-				"current_path":     []string{"gateway", "mesh-node-002", "mesh-node-004", "mesh-node-006"},
-				"optimized_path":   []string{"gateway", "mesh-node-003", "mesh-node-006"},
-				"improvement":      "35% latency reduction, 20% throughput increase",
-				"hop_reduction":    1,
-				"quality_score":    9.2,
+				"destination":    "mesh-node-006",
+				"current_path":   []string{"gateway", "mesh-node-002", "mesh-node-004", "mesh-node-006"},
+				"optimized_path": []string{"gateway", "mesh-node-003", "mesh-node-006"},
+				"improvement":    "35% latency reduction, 20% throughput increase",
+				"hop_reduction":  1,
+				"quality_score":  9.2,
 			},
 			{
-				"destination":      "mesh-node-005",
-				"current_path":     []string{"gateway", "mesh-node-002", "mesh-node-005"},
-				"optimized_path":   []string{"gateway", "mesh-node-002", "mesh-node-005"},
-				"improvement":      "no change - already optimal",
-				"hop_reduction":    0,
-				"quality_score":    8.7,
+				"destination":    "mesh-node-005",
+				"current_path":   []string{"gateway", "mesh-node-002", "mesh-node-005"},
+				"optimized_path": []string{"gateway", "mesh-node-002", "mesh-node-005"},
+				"improvement":    "no change - already optimal",
+				"hop_reduction":  0,
+				"quality_score":  8.7,
 			},
 		},
 		"load_distribution": map[string]interface{}{
@@ -321,18 +321,18 @@ func (t *MeshPathOptimizationTool) Execute(ctx context.Context, params map[strin
 		},
 		"implementation_plan": []map[string]interface{}{
 			{
-				"step":         1,
-				"action":       "update_routing_table",
-				"target_nodes": []string{"gateway", "mesh-node-003"},
+				"step":               1,
+				"action":             "update_routing_table",
+				"target_nodes":       []string{"gateway", "mesh-node-003"},
 				"estimated_downtime": "0 seconds",
-				"rollback_time": "< 5 seconds",
+				"rollback_time":      "< 5 seconds",
 			},
 			{
-				"step":         2,
-				"action":       "redistribute_client_associations",
-				"target_nodes": []string{"mesh-node-002", "mesh-node-003"},
+				"step":               2,
+				"action":             "redistribute_client_associations",
+				"target_nodes":       []string{"mesh-node-002", "mesh-node-003"},
 				"estimated_downtime": "< 2 seconds per client",
-				"rollback_time": "< 10 seconds",
+				"rollback_time":      "< 10 seconds",
 			},
 		},
 	}
@@ -377,7 +377,7 @@ func (t *MeshBackhaulTestTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("test_duration parameter must be a number")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -396,68 +396,68 @@ func (t *MeshBackhaulTestTool) Execute(ctx context.Context, params map[string]in
 	result := map[string]interface{}{
 		"test_configuration": map[string]interface{}{
 			"test_duration_seconds": testDuration,
-			"test_type":            "comprehensive",
-			"nodes_tested":         8,
-			"test_timestamp":       time.Now().Format(time.RFC3339),
+			"test_type":             "comprehensive",
+			"nodes_tested":          8,
+			"test_timestamp":        time.Now().Format(time.RFC3339),
 		},
 		"backhaul_performance": []map[string]interface{}{
 			{
-				"connection":       "gateway -> mesh-node-002",
-				"connection_type":  "wireless_5ghz",
-				"throughput_mbps":  485.3,
-				"latency_ms":       3.2,
-				"jitter_ms":        0.8,
-				"packet_loss":      0.1,
-				"signal_strength":  -45,
-				"quality_score":    9.1,
-				"status":           "excellent",
+				"connection":      "gateway -> mesh-node-002",
+				"connection_type": "wireless_5ghz",
+				"throughput_mbps": 485.3,
+				"latency_ms":      3.2,
+				"jitter_ms":       0.8,
+				"packet_loss":     0.1,
+				"signal_strength": -45,
+				"quality_score":   9.1,
+				"status":          "excellent",
 			},
 			{
-				"connection":       "mesh-node-002 -> mesh-node-004",
-				"connection_type":  "wireless_2_4ghz",
-				"throughput_mbps":  156.7,
-				"latency_ms":       8.5,
-				"jitter_ms":        2.3,
-				"packet_loss":      0.4,
-				"signal_strength":  -62,
-				"quality_score":    6.8,
-				"status":           "good",
+				"connection":      "mesh-node-002 -> mesh-node-004",
+				"connection_type": "wireless_2_4ghz",
+				"throughput_mbps": 156.7,
+				"latency_ms":      8.5,
+				"jitter_ms":       2.3,
+				"packet_loss":     0.4,
+				"signal_strength": -62,
+				"quality_score":   6.8,
+				"status":          "good",
 			},
 			{
-				"connection":       "gateway -> mesh-node-003",
-				"connection_type":  "ethernet",
-				"throughput_mbps":  967.2,
-				"latency_ms":       0.8,
-				"jitter_ms":        0.1,
-				"packet_loss":      0.0,
-				"signal_strength":  "N/A",
-				"quality_score":    9.8,
-				"status":           "excellent",
+				"connection":      "gateway -> mesh-node-003",
+				"connection_type": "ethernet",
+				"throughput_mbps": 967.2,
+				"latency_ms":      0.8,
+				"jitter_ms":       0.1,
+				"packet_loss":     0.0,
+				"signal_strength": "N/A",
+				"quality_score":   9.8,
+				"status":          "excellent",
 			},
 		},
 		"bottleneck_analysis": []map[string]interface{}{
 			{
-				"location":     "mesh-node-002 -> mesh-node-004",
-				"bottleneck_type": "wireless_congestion",
-				"impact_level": "medium",
+				"location":         "mesh-node-002 -> mesh-node-004",
+				"bottleneck_type":  "wireless_congestion",
+				"impact_level":     "medium",
 				"affected_traffic": "25% of total mesh traffic",
-				"recommendation": "upgrade to 5GHz or add ethernet backhaul",
+				"recommendation":   "upgrade to 5GHz or add ethernet backhaul",
 			},
 		},
 		"optimization_suggestions": []map[string]interface{}{
 			{
-				"type":              "backhaul_upgrade",
-				"target_connection": "mesh-node-002 -> mesh-node-004",
-				"suggestion":        "Add 5GHz dedicated backhaul channel",
+				"type":                 "backhaul_upgrade",
+				"target_connection":    "mesh-node-002 -> mesh-node-004",
+				"suggestion":           "Add 5GHz dedicated backhaul channel",
 				"expected_improvement": "3x throughput increase",
-				"implementation_cost": "low",
+				"implementation_cost":  "low",
 			},
 			{
-				"type":              "channel_optimization",
-				"target_connection": "multiple wireless links",
-				"suggestion":        "Implement dynamic channel selection",
+				"type":                 "channel_optimization",
+				"target_connection":    "multiple wireless links",
+				"suggestion":           "Implement dynamic channel selection",
 				"expected_improvement": "15-25% throughput improvement",
-				"implementation_cost": "software_only",
+				"implementation_cost":  "software_only",
 			},
 		},
 	}
@@ -499,7 +499,7 @@ func (t *MeshLoadBalancingTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("rebalance_strategy parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -517,80 +517,80 @@ func (t *MeshLoadBalancingTool) Execute(ctx context.Context, params map[string]i
 		"current_load_distribution": map[string]interface{}{
 			"mesh-controller-001": map[string]interface{}{
 				"connected_clients": 8,
-				"cpu_usage":        35,
-				"memory_usage":     42,
-				"bandwidth_usage":  67,
-				"load_score":       6.2,
-				"status":           "optimal",
+				"cpu_usage":         35,
+				"memory_usage":      42,
+				"bandwidth_usage":   67,
+				"load_score":        6.2,
+				"status":            "optimal",
 			},
 			"mesh-node-002": map[string]interface{}{
 				"connected_clients": 15,
-				"cpu_usage":        78,
-				"memory_usage":     65,
-				"bandwidth_usage":  89,
-				"load_score":       8.9,
-				"status":           "overloaded",
+				"cpu_usage":         78,
+				"memory_usage":      65,
+				"bandwidth_usage":   89,
+				"load_score":        8.9,
+				"status":            "overloaded",
 			},
 			"mesh-node-003": map[string]interface{}{
 				"connected_clients": 5,
-				"cpu_usage":        23,
-				"memory_usage":     31,
-				"bandwidth_usage":  34,
-				"load_score":       3.1,
-				"status":           "underutilized",
+				"cpu_usage":         23,
+				"memory_usage":      31,
+				"bandwidth_usage":   34,
+				"load_score":        3.1,
+				"status":            "underutilized",
 			},
 		},
 		"load_imbalance_analysis": map[string]interface{}{
-			"variance_score":     7.8,
-			"imbalance_level":    "high",
-			"hotspot_nodes":      []string{"mesh-node-002"},
-			"underused_nodes":    []string{"mesh-node-003", "mesh-node-005"},
+			"variance_score":         7.8,
+			"imbalance_level":        "high",
+			"hotspot_nodes":          []string{"mesh-node-002"},
+			"underused_nodes":        []string{"mesh-node-003", "mesh-node-005"},
 			"optimization_potential": 85.2,
 		},
 		"rebalancing_plan": []map[string]interface{}{
 			{
-				"action":           "client_migration",
-				"from_node":        "mesh-node-002",
-				"to_node":          "mesh-node-003",
-				"clients_to_move":  4,
+				"action":               "client_migration",
+				"from_node":            "mesh-node-002",
+				"to_node":              "mesh-node-003",
+				"clients_to_move":      4,
 				"expected_improvement": "reduce mesh-node-002 load by 35%",
-				"migration_method": "band_steering",
+				"migration_method":     "band_steering",
 			},
 			{
-				"action":           "traffic_redistribution",
-				"from_node":        "mesh-node-002",
-				"to_node":          "mesh-node-005",
-				"traffic_type":     "bulk_downloads",
+				"action":               "traffic_redistribution",
+				"from_node":            "mesh-node-002",
+				"to_node":              "mesh-node-005",
+				"traffic_type":         "bulk_downloads",
 				"expected_improvement": "reduce bandwidth utilization by 25%",
-				"migration_method": "qos_routing",
+				"migration_method":     "qos_routing",
 			},
 		},
 		"predicted_outcome": map[string]interface{}{
 			"mesh-node-002": map[string]interface{}{
-				"load_reduction":   45,
-				"new_load_score":   4.8,
-				"status_change":    "overloaded -> optimal",
+				"load_reduction": 45,
+				"new_load_score": 4.8,
+				"status_change":  "overloaded -> optimal",
 			},
 			"mesh-node-003": map[string]interface{}{
-				"load_increase":    35,
-				"new_load_score":   6.2,
-				"status_change":    "underutilized -> optimal",
+				"load_increase":  35,
+				"new_load_score": 6.2,
+				"status_change":  "underutilized -> optimal",
 			},
 			"overall_variance": 2.1,
 			"efficiency_gain":  42.3,
 		},
 		"implementation_timeline": []map[string]interface{}{
 			{
-				"phase":        1,
-				"duration":     "2-5 minutes",
-				"description":  "Enable band steering for target clients",
-				"impact":       "minimal",
+				"phase":       1,
+				"duration":    "2-5 minutes",
+				"description": "Enable band steering for target clients",
+				"impact":      "minimal",
 			},
 			{
-				"phase":        2,
-				"duration":     "5-10 minutes",
-				"description":  "Gradual client migration using signal optimization",
-				"impact":       "transparent to users",
+				"phase":       2,
+				"duration":    "5-10 minutes",
+				"description": "Gradual client migration using signal optimization",
+				"impact":      "transparent to users",
 			},
 		},
 	}
@@ -632,7 +632,7 @@ func (t *MeshFailoverSimulationTool) Validate(params map[string]interface{}) err
 			return fmt.Errorf("failure_scenario parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -687,41 +687,41 @@ func (t *MeshFailoverSimulationTool) Execute(ctx context.Context, params map[str
 		"resilience_metrics": map[string]interface{}{
 			"average_detection_time": 2.4,
 			"average_recovery_time":  10.1,
-			"success_rate":          100.0,
-			"max_service_downtime":  12.1,
-			"redundancy_score":      7.8,
-			"fault_tolerance":       "high",
+			"success_rate":           100.0,
+			"max_service_downtime":   12.1,
+			"redundancy_score":       7.8,
+			"fault_tolerance":        "high",
 		},
 		"vulnerability_analysis": []map[string]interface{}{
 			{
 				"vulnerability_type": "single_point_of_failure",
-				"location":          "mesh-controller-001",
-				"risk_level":        "medium",
-				"mitigation":        "deploy_secondary_gateway",
-				"estimated_cost":    "medium",
+				"location":           "mesh-controller-001",
+				"risk_level":         "medium",
+				"mitigation":         "deploy_secondary_gateway",
+				"estimated_cost":     "medium",
 			},
 			{
 				"vulnerability_type": "insufficient_redundancy",
-				"location":          "mesh-node-004 -> mesh-node-006",
-				"risk_level":        "low",
-				"mitigation":        "add_backup_wireless_link",
-				"estimated_cost":    "low",
+				"location":           "mesh-node-004 -> mesh-node-006",
+				"risk_level":         "low",
+				"mitigation":         "add_backup_wireless_link",
+				"estimated_cost":     "low",
 			},
 		},
 		"recommendations": []map[string]interface{}{
 			{
-				"priority":     "high",
-				"type":         "infrastructure",
-				"description":  "Deploy secondary gateway for improved redundancy",
-				"benefit":      "Reduce gateway failure downtime from 15s to 3s",
-				"effort":       "medium",
+				"priority":    "high",
+				"type":        "infrastructure",
+				"description": "Deploy secondary gateway for improved redundancy",
+				"benefit":     "Reduce gateway failure downtime from 15s to 3s",
+				"effort":      "medium",
 			},
 			{
-				"priority":     "medium",
-				"type":         "configuration",
-				"description":  "Optimize failover detection algorithms",
-				"benefit":      "Reduce average detection time by 40%",
-				"effort":       "low",
+				"priority":    "medium",
+				"type":        "configuration",
+				"description": "Optimize failover detection algorithms",
+				"benefit":     "Reduce average detection time by 40%",
+				"effort":      "low",
 			},
 		},
 	}

@@ -14,10 +14,10 @@ import (
 
 // TopologyProcessor handles topology-related MQTT messages
 type TopologyProcessor struct {
-	schemaManager    *schema.Manager
-	topologyStorage  *storage.TopologyStorage
-	identityStorage  *storage.IdentityStorage
-	
+	schemaManager   *schema.Manager
+	topologyStorage *storage.TopologyStorage
+	identityStorage *storage.IdentityStorage
+
 	// Message handlers
 	handlers map[string]func(string, []byte) error
 }
@@ -34,10 +34,10 @@ func NewTopologyProcessor(
 		identityStorage: identityStorage,
 		handlers:        make(map[string]func(string, []byte) error),
 	}
-	
+
 	// Register message handlers
 	processor.registerHandlers()
-	
+
 	return processor
 }
 
@@ -48,17 +48,17 @@ func (tp *TopologyProcessor) ProcessMessage(topic string, payload []byte) error 
 	if err != nil {
 		return fmt.Errorf("failed to validate message: %w", err)
 	}
-	
+
 	if !result.Valid {
 		return fmt.Errorf("invalid message format: %v", result.Errors)
 	}
-	
+
 	// Determine message type and route to appropriate handler
 	messageType := tp.getMessageType(topic, result.Schema)
 	if handler, exists := tp.handlers[messageType]; exists {
 		return handler(topic, payload)
 	}
-	
+
 	return fmt.Errorf("no handler for message type: %s", messageType)
 }
 
@@ -66,19 +66,19 @@ func (tp *TopologyProcessor) ProcessMessage(topic string, payload []byte) error 
 func (tp *TopologyProcessor) IsTopologyMessage(topic string) bool {
 	topologyTopics := []string{
 		"/topology/discovery",
-		"/topology/connections", 
+		"/topology/connections",
 		"/telemetry/wifi_clients",
 		"/device/identity",
 		"/diagnostics/network",
 		"/telemetry/qos",
 	}
-	
+
 	for _, topologyTopic := range topologyTopics {
 		if strings.Contains(topic, topologyTopic) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -98,7 +98,7 @@ func (tp *TopologyProcessor) getMessageType(topic string, schema string) string 
 	if schema != "unknown" && schema != "no_schema" {
 		return schema
 	}
-	
+
 	// Fallback: extract from topic
 	if strings.Contains(topic, "/topology/discovery") {
 		return "topology.discovery"
@@ -113,40 +113,40 @@ func (tp *TopologyProcessor) getMessageType(topic string, schema string) string 
 	} else if strings.Contains(topic, "/telemetry/qos") {
 		return "telemetry.qos"
 	}
-	
+
 	return "unknown"
 }
 
 func (tp *TopologyProcessor) handleTopologyDiscovery(topic string, payload []byte) error {
 	var message struct {
-		Schema      string                 `json:"schema"`
-		Timestamp   int64                  `json:"timestamp"`
-		DeviceID    string                 `json:"device_id"`
-		DeviceInfo  map[string]interface{} `json:"device_info"`
+		Schema      string                   `json:"schema"`
+		Timestamp   int64                    `json:"timestamp"`
+		DeviceID    string                   `json:"device_id"`
+		DeviceInfo  map[string]interface{}   `json:"device_info"`
 		Interfaces  []map[string]interface{} `json:"interfaces,omitempty"`
-		RoutingInfo map[string]interface{} `json:"routing_info,omitempty"`
-		BridgeInfo  map[string]interface{} `json:"bridge_info,omitempty"`
+		RoutingInfo map[string]interface{}   `json:"routing_info,omitempty"`
+		BridgeInfo  map[string]interface{}   `json:"bridge_info,omitempty"`
 	}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal topology discovery message: %w", err)
 	}
-	
+
 	// Convert to NetworkDevice structure
 	networkDevice, err := tp.convertToNetworkDevice(message.DeviceID, message.DeviceInfo, message.Interfaces, message.RoutingInfo, message.BridgeInfo)
 	if err != nil {
 		return fmt.Errorf("failed to convert to network device: %w", err)
 	}
-	
+
 	// Update last seen timestamp
 	networkDevice.LastSeen = message.Timestamp
 	networkDevice.Online = true
-	
+
 	// Save the network device
 	if err := tp.topologyStorage.SaveNetworkDevice(networkDevice); err != nil {
 		return fmt.Errorf("failed to save network device: %w", err)
 	}
-	
+
 	log.Printf("Processed topology discovery for device %s", message.DeviceID)
 	return nil
 }
@@ -159,11 +159,11 @@ func (tp *TopologyProcessor) handleTopologyConnections(topic string, payload []b
 		Connections []map[string]interface{} `json:"connections"`
 		GatewayInfo map[string]interface{}   `json:"gateway_info,omitempty"`
 	}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal topology connections message: %w", err)
 	}
-	
+
 	// Process each connection
 	for _, connData := range message.Connections {
 		connection, err := tp.convertToDeviceConnection(message.DeviceID, connData, message.Timestamp)
@@ -171,12 +171,12 @@ func (tp *TopologyProcessor) handleTopologyConnections(topic string, payload []b
 			log.Printf("Failed to convert connection: %v", err)
 			continue
 		}
-		
+
 		if err := tp.topologyStorage.SaveDeviceConnection(connection); err != nil {
 			log.Printf("Failed to save device connection: %v", err)
 		}
 	}
-	
+
 	// Process gateway info if present
 	if message.GatewayInfo != nil {
 		gatewayInfo, err := tp.convertToGatewayInfo(message.DeviceID, message.GatewayInfo, message.Timestamp)
@@ -186,7 +186,7 @@ func (tp *TopologyProcessor) handleTopologyConnections(topic string, payload []b
 			}
 		}
 	}
-	
+
 	log.Printf("Processed topology connections for device %s", message.DeviceID)
 	return nil
 }
@@ -200,27 +200,27 @@ func (tp *TopologyProcessor) handleWiFiClients(topic string, payload []byte) err
 		APInfo    map[string]interface{}   `json:"ap_info,omitempty"`
 		Clients   []map[string]interface{} `json:"clients"`
 	}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal wifi clients message: %w", err)
 	}
-	
+
 	// Process WiFi clients to detect device connections
 	for _, clientData := range message.Clients {
 		if macAddr, ok := clientData["mac_address"].(string); ok {
 			// Create a device connection for this WiFi client
 			connection := &types.DeviceConnection{
 				ID:             fmt.Sprintf("%s-%s-%d", message.DeviceID, macAddr, message.Timestamp),
-				FromDeviceID:   macAddr, // Client MAC as device ID
-				ToDeviceID:     message.DeviceID, // AP device ID
-				FromInterface:  "wifi", // Client interface (generic)
+				FromDeviceID:   macAddr,           // Client MAC as device ID
+				ToDeviceID:     message.DeviceID,  // AP device ID
+				FromInterface:  "wifi",            // Client interface (generic)
 				ToInterface:    message.Interface, // AP interface
 				ConnectionType: "wifi",
 				IsDirectLink:   true,
 				LastSeen:       message.Timestamp,
 				Discovered:     message.Timestamp,
 			}
-			
+
 			// Set connection metrics if available
 			if rssi, ok := clientData["rssi"].(float64); ok {
 				connection.Metrics.RSSI = int(rssi)
@@ -234,16 +234,16 @@ func (tp *TopologyProcessor) handleWiFiClients(topic string, payload []byte) err
 			if rxBytes, ok := clientData["rx_bytes"].(float64); ok {
 				connection.Metrics.RxBytes = int64(rxBytes)
 			}
-			
+
 			connection.Metrics.LastUpdate = message.Timestamp
-			
+
 			// Save the connection
 			if err := tp.topologyStorage.SaveDeviceConnection(connection); err != nil {
 				log.Printf("Failed to save WiFi client connection: %v", err)
 			}
 		}
 	}
-	
+
 	log.Printf("Processed WiFi clients for AP %s: %d clients", message.DeviceID, len(message.Clients))
 	return nil
 }
@@ -268,11 +268,11 @@ func (tp *TopologyProcessor) handleDeviceIdentity(topic string, payload []byte) 
 		LastSeen       int64                    `json:"last_seen"`
 		Notes          string                   `json:"notes,omitempty"`
 	}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal device identity message: %w", err)
 	}
-	
+
 	// Convert detection rules
 	var detectionRules []types.DetectionRuleMatch
 	for _, ruleData := range message.DetectionRules {
@@ -297,7 +297,7 @@ func (tp *TopologyProcessor) handleDeviceIdentity(topic string, payload []byte) 
 		}
 		detectionRules = append(detectionRules, rule)
 	}
-	
+
 	// Create device identity
 	identity := &types.DeviceIdentity{
 		MacAddress:     message.MacAddress,
@@ -318,28 +318,28 @@ func (tp *TopologyProcessor) handleDeviceIdentity(topic string, payload []byte) 
 		UpdatedBy:      "mqtt_message",
 		Notes:          message.Notes,
 	}
-	
+
 	// Save the device identity
 	if err := tp.identityStorage.SaveDeviceIdentity(identity); err != nil {
 		return fmt.Errorf("failed to save device identity: %w", err)
 	}
-	
+
 	log.Printf("Processed device identity for MAC %s", message.MacAddress)
 	return nil
 }
 
 func (tp *TopologyProcessor) handleNetworkDiagnostics(topic string, payload []byte) error {
 	var message map[string]interface{}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal network diagnostics message: %w", err)
 	}
-	
+
 	// For now, just log the diagnostics message
 	// In a full implementation, this would be stored and processed for network health analysis
 	if deviceID, ok := message["device_id"].(string); ok {
 		log.Printf("Received network diagnostics from device %s", deviceID)
-		
+
 		// Log specific diagnostic results
 		if speedTest, ok := message["speed_test"].(map[string]interface{}); ok {
 			if download, ok := speedTest["download_mbps"].(float64); ok {
@@ -349,29 +349,29 @@ func (tp *TopologyProcessor) handleNetworkDiagnostics(topic string, payload []by
 				log.Printf("Speed test - Upload: %.2f Mbps", upload)
 			}
 		}
-		
+
 		if wanTest, ok := message["wan_test"].(map[string]interface{}); ok {
 			if connected, ok := wanTest["wan_connected"].(bool); ok {
 				log.Printf("WAN connectivity: %t", connected)
 			}
 		}
 	}
-	
+
 	return nil
 }
 
 func (tp *TopologyProcessor) handleQoSInfo(topic string, payload []byte) error {
 	var message map[string]interface{}
-	
+
 	if err := json.Unmarshal(payload, &message); err != nil {
 		return fmt.Errorf("failed to unmarshal QoS info message: %w", err)
 	}
-	
+
 	// For now, just log the QoS information
 	// In a full implementation, this would be stored and analyzed for traffic patterns
 	if deviceID, ok := message["device_id"].(string); ok {
 		log.Printf("Received QoS information from device %s", deviceID)
-		
+
 		if trafficStats, ok := message["traffic_stats"].(map[string]interface{}); ok {
 			if totalBandwidth, ok := trafficStats["total_bandwidth"].(float64); ok {
 				log.Printf("Total bandwidth: %.2f Mbps", totalBandwidth)
@@ -381,7 +381,7 @@ func (tp *TopologyProcessor) handleQoSInfo(topic string, payload []byte) error {
 			}
 		}
 	}
-	
+
 	return nil
 }
 
@@ -393,7 +393,7 @@ func (tp *TopologyProcessor) convertToNetworkDevice(deviceID string, deviceInfo 
 		Interfaces:   make(map[string]types.NetworkIface),
 		Capabilities: []string{},
 	}
-	
+
 	// Extract device info
 	if deviceType, ok := deviceInfo["device_type"].(string); ok {
 		device.DeviceType = deviceType
@@ -423,7 +423,7 @@ func (tp *TopologyProcessor) convertToNetworkDevice(deviceID string, deviceInfo 
 			}
 		}
 	}
-	
+
 	// Convert interfaces
 	for _, ifaceData := range interfaces {
 		iface := tp.convertToNetworkIface(ifaceData)
@@ -431,17 +431,17 @@ func (tp *TopologyProcessor) convertToNetworkDevice(deviceID string, deviceInfo 
 			device.Interfaces[name] = iface
 		}
 	}
-	
+
 	// Convert routing info
 	if routingInfo != nil {
 		device.RoutingInfo = tp.convertToRoutingInfo(routingInfo)
 	}
-	
+
 	// Convert bridge info
 	if bridgeInfo != nil {
 		device.BridgeInfo = tp.convertToBridgeInfo(bridgeInfo)
 	}
-	
+
 	return device, nil
 }
 
@@ -449,7 +449,7 @@ func (tp *TopologyProcessor) convertToNetworkIface(ifaceData map[string]interfac
 	iface := types.NetworkIface{
 		IPAddresses: []types.IPAddressInfo{},
 	}
-	
+
 	if name, ok := ifaceData["name"].(string); ok {
 		iface.Name = name
 	}
@@ -492,7 +492,7 @@ func (tp *TopologyProcessor) convertToNetworkIface(ifaceData map[string]interfac
 	if security, ok := ifaceData["security"].(string); ok {
 		iface.Security = security
 	}
-	
+
 	// Convert IP addresses
 	if ipAddresses, ok := ifaceData["ip_addresses"].([]interface{}); ok {
 		for _, ipData := range ipAddresses {
@@ -521,7 +521,7 @@ func (tp *TopologyProcessor) convertToNetworkIface(ifaceData map[string]interfac
 			}
 		}
 	}
-	
+
 	// Convert statistics
 	if stats, ok := ifaceData["statistics"].(map[string]interface{}); ok {
 		if txBytes, ok := stats["tx_bytes"].(float64); ok {
@@ -543,9 +543,9 @@ func (tp *TopologyProcessor) convertToNetworkIface(ifaceData map[string]interfac
 			iface.RxErrors = int64(rxErrors)
 		}
 	}
-	
+
 	iface.LastUpdate = time.Now().UnixMilli()
-	
+
 	return iface
 }
 
@@ -554,11 +554,11 @@ func (tp *TopologyProcessor) convertToRoutingInfo(routingData map[string]interfa
 		RoutingTable: []types.RouteEntry{},
 		NATRules:     []types.NATRule{},
 	}
-	
+
 	if forwardingEnabled, ok := routingData["forwarding_enabled"].(bool); ok {
 		routingInfo.ForwardingEnabled = forwardingEnabled
 	}
-	
+
 	// Convert routing table
 	if routingTable, ok := routingData["routing_table"].([]interface{}); ok {
 		for _, routeData := range routingTable {
@@ -583,7 +583,7 @@ func (tp *TopologyProcessor) convertToRoutingInfo(routingData map[string]interfa
 			}
 		}
 	}
-	
+
 	// Convert NAT rules
 	if natRules, ok := routingData["nat_rules"].([]interface{}); ok {
 		for _, natData := range natRules {
@@ -608,13 +608,13 @@ func (tp *TopologyProcessor) convertToRoutingInfo(routingData map[string]interfa
 			}
 		}
 	}
-	
+
 	// Convert DHCP server info
 	if dhcpServer, ok := routingData["dhcp_server"].(map[string]interface{}); ok {
 		dhcpInfo := &types.DHCPServerInfo{
 			ActiveLeases: []types.DHCPLease{},
 		}
-		
+
 		if enabled, ok := dhcpServer["enabled"].(bool); ok {
 			dhcpInfo.Enabled = enabled
 		}
@@ -637,7 +637,7 @@ func (tp *TopologyProcessor) convertToRoutingInfo(routingData map[string]interfa
 				}
 			}
 		}
-		
+
 		// Convert active leases
 		if activeLeases, ok := dhcpServer["active_leases"].([]interface{}); ok {
 			for _, leaseData := range activeLeases {
@@ -662,10 +662,10 @@ func (tp *TopologyProcessor) convertToRoutingInfo(routingData map[string]interfa
 				}
 			}
 		}
-		
+
 		routingInfo.DHCPServer = dhcpInfo
 	}
-	
+
 	return routingInfo
 }
 
@@ -673,7 +673,7 @@ func (tp *TopologyProcessor) convertToBridgeInfo(bridgeData map[string]interface
 	bridgeInfo := &types.BridgeInfo{
 		BridgeTable: []types.BridgeTableEntry{},
 	}
-	
+
 	if stpEnabled, ok := bridgeData["stp_enabled"].(bool); ok {
 		bridgeInfo.STPEnabled = stpEnabled
 	}
@@ -683,7 +683,7 @@ func (tp *TopologyProcessor) convertToBridgeInfo(bridgeData map[string]interface
 	if rootBridge, ok := bridgeData["root_bridge"].(bool); ok {
 		bridgeInfo.RootBridge = rootBridge
 	}
-	
+
 	// Convert bridge table
 	if bridgeTable, ok := bridgeData["bridge_table"].([]interface{}); ok {
 		for _, entryData := range bridgeTable {
@@ -708,7 +708,7 @@ func (tp *TopologyProcessor) convertToBridgeInfo(bridgeData map[string]interface
 			}
 		}
 	}
-	
+
 	return bridgeInfo
 }
 
@@ -718,14 +718,14 @@ func (tp *TopologyProcessor) convertToDeviceConnection(fromDeviceID string, conn
 		LastSeen:     timestamp,
 		Discovered:   timestamp,
 	}
-	
+
 	// Extract connected device info
 	if connectedDevice, ok := connData["connected_device"].(map[string]interface{}); ok {
 		if deviceID, ok := connectedDevice["device_id"].(string); ok {
 			connection.ToDeviceID = deviceID
 		}
 	}
-	
+
 	if connectionType, ok := connData["connection_type"].(string); ok {
 		connection.ConnectionType = connectionType
 	}
@@ -738,10 +738,10 @@ func (tp *TopologyProcessor) convertToDeviceConnection(fromDeviceID string, conn
 	if isDirectLink, ok := connData["is_direct_link"].(bool); ok {
 		connection.IsDirectLink = isDirectLink
 	}
-	
+
 	// Generate connection ID
 	connection.ID = fmt.Sprintf("%s-%s-%d", connection.FromDeviceID, connection.ToDeviceID, timestamp)
-	
+
 	// Convert metrics
 	if metrics, ok := connData["metrics"].(map[string]interface{}); ok {
 		if rssi, ok := metrics["rssi"].(float64); ok {
@@ -764,7 +764,7 @@ func (tp *TopologyProcessor) convertToDeviceConnection(fromDeviceID string, conn
 		}
 		connection.Metrics.LastUpdate = timestamp
 	}
-	
+
 	return connection, nil
 }
 
@@ -774,7 +774,7 @@ func (tp *TopologyProcessor) convertToGatewayInfo(deviceID string, gatewayData m
 		LastCheck:  timestamp,
 		DNSServers: []string{},
 	}
-	
+
 	if ipAddress, ok := gatewayData["ip_address"].(string); ok {
 		gatewayInfo.IPAddress = ipAddress
 	}
@@ -794,6 +794,6 @@ func (tp *TopologyProcessor) convertToGatewayInfo(deviceID string, gatewayData m
 			}
 		}
 	}
-	
+
 	return gatewayInfo, nil
 }

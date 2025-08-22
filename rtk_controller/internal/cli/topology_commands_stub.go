@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"rtk_controller/internal/topology"
 )
 
@@ -25,18 +25,18 @@ func (tc *TopologyCommands) ShowTopology(args []string) (string, error) {
 	if tc.topologyManager == nil {
 		return "", fmt.Errorf("topology manager not available")
 	}
-	
+
 	topology, err := tc.topologyManager.GetCurrentTopology()
 	if err != nil {
 		return "", fmt.Errorf("failed to get topology: %w", err)
 	}
-	
+
 	// Return JSON representation
 	data, err := json.MarshalIndent(topology, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal topology: %w", err)
 	}
-	
+
 	return string(data), nil
 }
 
@@ -45,12 +45,12 @@ func (tc *TopologyCommands) ShowDevices(args []string) (string, error) {
 	if tc.topologyManager == nil {
 		return "", fmt.Errorf("topology manager not available")
 	}
-	
+
 	topology, err := tc.topologyManager.GetCurrentTopology()
 	if err != nil {
 		return "", fmt.Errorf("failed to get topology: %w", err)
 	}
-	
+
 	result := "Device List:\n"
 	result += "============\n"
 	for id, device := range topology.Devices {
@@ -58,10 +58,10 @@ func (tc *TopologyCommands) ShowDevices(args []string) (string, error) {
 		if device.Online {
 			status = "online"
 		}
-		result += fmt.Sprintf("- %s: %s (%s) - %s\n", 
+		result += fmt.Sprintf("- %s: %s (%s) - %s\n",
 			id, device.Hostname, device.DeviceType, status)
 	}
-	
+
 	return result, nil
 }
 
@@ -70,19 +70,19 @@ func (tc *TopologyCommands) ShowConnections(args []string) (string, error) {
 	if tc.topologyManager == nil {
 		return "", fmt.Errorf("topology manager not available")
 	}
-	
+
 	topology, err := tc.topologyManager.GetCurrentTopology()
 	if err != nil {
 		return "", fmt.Errorf("failed to get topology: %w", err)
 	}
-	
+
 	result := "Connection List:\n"
 	result += "===============\n"
 	for _, conn := range topology.Connections {
 		result += fmt.Sprintf("- %s: %s -> %s (%s)\n",
 			conn.ID, conn.FromDeviceID, conn.ToDeviceID, conn.ConnectionType)
 	}
-	
+
 	return result, nil
 }
 
@@ -91,18 +91,18 @@ func (tc *TopologyCommands) ExportTopology(args []string) (string, error) {
 	if tc.topologyManager == nil {
 		return "", fmt.Errorf("topology manager not available")
 	}
-	
+
 	topology, err := tc.topologyManager.GetCurrentTopology()
 	if err != nil {
 		return "", fmt.Errorf("failed to get topology: %w", err)
 	}
-	
+
 	// Default to JSON format
 	data, err := json.MarshalIndent(topology, "", "  ")
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal topology: %w", err)
 	}
-	
+
 	return string(data), nil
 }
 
@@ -175,12 +175,12 @@ func (tc *TopologyCommands) ListDevices(args []string) (string, error) {
 	if tc.topologyManager == nil {
 		return "", fmt.Errorf("topology manager not available")
 	}
-	
+
 	topology, err := tc.topologyManager.GetCurrentTopology()
 	if err != nil {
 		return "", fmt.Errorf("failed to get topology: %w", err)
 	}
-	
+
 	result := fmt.Sprintf("Found %d devices\n", len(topology.Devices))
 	for id, device := range topology.Devices {
 		status := "offline"
@@ -189,7 +189,7 @@ func (tc *TopologyCommands) ListDevices(args []string) (string, error) {
 		}
 		result += fmt.Sprintf("- %s: %s (%s)\n", id, device.PrimaryMAC, status)
 	}
-	
+
 	return result, nil
 }
 

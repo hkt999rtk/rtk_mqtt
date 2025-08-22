@@ -49,14 +49,14 @@ func (q *QoSGetStatusTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("device_id must be a string")
 		}
 	}
-	
+
 	// Optional include_recommendations parameter
 	if includeRecs, exists := params["include_recommendations"]; exists {
 		if _, ok := includeRecs.(bool); !ok {
 			return fmt.Errorf("include_recommendations must be a boolean")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -67,7 +67,7 @@ func (q *QoSGetStatusTool) Execute(ctx context.Context, params map[string]interf
 		Success:   false,
 		Timestamp: getCurrentTime(),
 	}
-	
+
 	// Parse optional parameters
 	var deviceID string
 	if val, exists := params["device_id"]; exists {
@@ -75,17 +75,17 @@ func (q *QoSGetStatusTool) Execute(ctx context.Context, params map[string]interf
 			deviceID = s
 		}
 	}
-	
+
 	includeRecommendations := true // default to true
 	if val, exists := params["include_recommendations"]; exists {
 		if b, ok := val.(bool); ok {
 			includeRecommendations = b
 		}
 	}
-	
+
 	// Get QoS information from the manager
 	qosInfo := q.qosManager.GetQoSInfo()
-	
+
 	// Build response data
 	statusData := map[string]interface{}{
 		"device_id": deviceID,
@@ -95,16 +95,16 @@ func (q *QoSGetStatusTool) Execute(ctx context.Context, params map[string]interf
 			"source":       "qos_manager",
 		},
 	}
-	
+
 	// Add recommendations if requested
 	if includeRecommendations {
 		recommendations := q.qosManager.GetRecommendations()
 		statusData["recommendations"] = recommendations
 	}
-	
+
 	result.Success = true
 	result.Data = statusData
-	
+
 	return result, nil
 }
 
@@ -148,7 +148,7 @@ func (t *TrafficGetStatsTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("device_id must be a string")
 		}
 	}
-	
+
 	// Optional time_range parameter (in hours)
 	if timeRange, exists := params["time_range_hours"]; exists {
 		if hours, ok := timeRange.(float64); ok {
@@ -159,14 +159,14 @@ func (t *TrafficGetStatsTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("time_range_hours must be a number")
 		}
 	}
-	
+
 	// Optional include_top_talkers parameter
 	if includeTopTalkers, exists := params["include_top_talkers"]; exists {
 		if _, ok := includeTopTalkers.(bool); !ok {
 			return fmt.Errorf("include_top_talkers must be a boolean")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -177,7 +177,7 @@ func (t *TrafficGetStatsTool) Execute(ctx context.Context, params map[string]int
 		Success:   false,
 		Timestamp: getCurrentTime(),
 	}
-	
+
 	// Parse optional parameters
 	var deviceID string
 	if val, exists := params["device_id"]; exists {
@@ -185,35 +185,35 @@ func (t *TrafficGetStatsTool) Execute(ctx context.Context, params map[string]int
 			deviceID = s
 		}
 	}
-	
+
 	timeRangeHours := 24.0 // default to last 24 hours
 	if val, exists := params["time_range_hours"]; exists {
 		if hours, ok := val.(float64); ok {
 			timeRangeHours = hours
 		}
 	}
-	
+
 	includeTopTalkers := true // default to true
 	if val, exists := params["include_top_talkers"]; exists {
 		if b, ok := val.(bool); ok {
 			includeTopTalkers = b
 		}
 	}
-	
+
 	// Get traffic statistics from QoS manager via traffic analyzer
 	stats := t.qosManager.GetQoSInfo().TrafficStats
-	
+
 	// Build response data
 	statsData := map[string]interface{}{
-		"device_id":   deviceID,
-		"time_range":  fmt.Sprintf("%.1f hours", timeRangeHours),
-		"statistics":  stats,
+		"device_id":  deviceID,
+		"time_range": fmt.Sprintf("%.1f hours", timeRangeHours),
+		"statistics": stats,
 		"metadata": map[string]interface{}{
 			"retrieved_at": getCurrentTime(),
 			"source":       "qos_manager",
 		},
 	}
-	
+
 	// Add top talkers if requested
 	if includeTopTalkers {
 		// Get top talkers from traffic stats
@@ -223,10 +223,10 @@ func (t *TrafficGetStatsTool) Execute(ctx context.Context, params map[string]int
 			statsData["top_talkers"] = []interface{}{}
 		}
 	}
-	
+
 	result.Success = true
 	result.Data = statsData
-	
+
 	return result, nil
 }
 

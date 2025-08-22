@@ -71,12 +71,12 @@ func (pw *PurgeWorker) Start(ctx context.Context) error {
 // Stop stops the purge worker
 func (pw *PurgeWorker) Stop() {
 	log.Info("Stopping MQTT message purge worker")
-	
+
 	pw.cancel()
-	
+
 	// Wait for routine to finish
 	<-pw.done
-	
+
 	log.Info("MQTT message purge worker stopped")
 }
 
@@ -103,7 +103,7 @@ func (pw *PurgeWorker) purgeRoutine(interval time.Duration) {
 // runPurge performs the actual purge operation
 func (pw *PurgeWorker) runPurge() {
 	start := time.Now()
-	
+
 	log.Debug("Starting MQTT message log purge")
 
 	// Calculate cutoff time
@@ -175,12 +175,12 @@ func (pw *PurgeWorker) deleteMessageBatch(tx storage.Transaction, startKey, endK
 	// Collect keys to delete (limited by batch size)
 	err := tx.IterateRange(startKey, endKey, func(key, value string) error {
 		keysToDelete = append(keysToDelete, key)
-		
+
 		// Stop when we reach batch size
 		if len(keysToDelete) >= batchSize {
 			return storage.ErrStopIteration
 		}
-		
+
 		return nil
 	})
 
@@ -202,14 +202,14 @@ func (pw *PurgeWorker) deleteMessageBatch(tx storage.Transaction, startKey, endK
 func (pw *PurgeWorker) GetStats() (lastPurgeTime time.Time, totalPurged, lastPurgedCount int64) {
 	pw.mu.Lock()
 	defer pw.mu.Unlock()
-	
+
 	return pw.lastPurgeTime, pw.totalPurged, pw.lastPurgedCount
 }
 
 // ForcePurge manually triggers a purge operation
 func (pw *PurgeWorker) ForcePurge() (int, error) {
 	log.Info("Manual purge triggered")
-	
+
 	// Calculate cutoff time
 	cutoffTime := time.Now().Add(-time.Duration(pw.config.RetentionSeconds) * time.Second)
 	cutoffTimestamp := cutoffTime.UnixMilli()

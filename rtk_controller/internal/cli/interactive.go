@@ -9,14 +9,14 @@ import (
 
 	"github.com/chzyer/readline"
 
+	"rtk_controller/internal/command"
 	"rtk_controller/internal/config"
 	"rtk_controller/internal/device"
-	"rtk_controller/internal/command"
 	"rtk_controller/internal/diagnosis"
+	"rtk_controller/internal/identity"
 	"rtk_controller/internal/mqtt"
 	"rtk_controller/internal/storage"
 	"rtk_controller/internal/topology"
-	"rtk_controller/internal/identity"
 )
 
 // InteractiveCLI provides an interactive command line interface
@@ -31,7 +31,7 @@ type InteractiveCLI struct {
 	identityManager  *identity.Manager
 	changesetManager interface{} // Using interface{} to avoid import cycle
 	topologyCommands *TopologyCommands
-	
+
 	// Command history and state
 	history []string
 	running bool
@@ -61,12 +61,12 @@ func NewInteractiveCLI(
 // Start starts the interactive CLI
 func (cli *InteractiveCLI) Start() {
 	cli.running = true
-	
+
 	fmt.Println("RTK Controller Interactive CLI")
 	fmt.Println("==============================")
 	fmt.Printf("Version: 1.0.0\n")
 	fmt.Printf("Type 'help' for available commands, 'exit' to quit\n\n")
-	
+
 	// Setup readline with auto-completion
 	completer := cli.createCompleter()
 	l, err := readline.NewEx(&readline.Config{
@@ -81,7 +81,7 @@ func (cli *InteractiveCLI) Start() {
 		return
 	}
 	defer l.Close()
-	
+
 	for {
 		line, err := l.Readline()
 		if err == readline.ErrInterrupt {
@@ -95,7 +95,7 @@ func (cli *InteractiveCLI) Start() {
 			fmt.Println("\nBye!")
 			break
 		}
-		
+
 		cli.executor(strings.TrimSpace(line))
 	}
 }
@@ -141,18 +141,18 @@ func (cli *InteractiveCLI) handleChangesetCommandWrapper(args []string) {
 		fmt.Println("Changeset manager not initialized")
 		return
 	}
-	
+
 	// Since we can't import changeset package directly (circular import),
 	// we use interface{} and perform reflection-like operations
 	// This is a temporary solution - in production we'd use proper interfaces
-	
+
 	// For now, provide basic changeset functionality
 	if len(args) == 0 {
 		fmt.Println("Changeset commands: create, list, show, execute, rollback")
 		fmt.Println("(Full changeset functionality requires proper type integration)")
 		return
 	}
-	
+
 	switch args[0] {
 	case "help":
 		fmt.Println("Changeset Management Commands:")
@@ -174,19 +174,19 @@ func (cli *InteractiveCLI) executor(input string) {
 	if input == "" {
 		return
 	}
-	
+
 	// Add to history
 	cli.history = append(cli.history, input)
-	
+
 	// Parse command
 	parts := strings.Fields(input)
 	if len(parts) == 0 {
 		return
 	}
-	
+
 	command := parts[0]
 	args := parts[1:]
-	
+
 	switch command {
 	case "help", "h":
 		cli.showHelp(args)
@@ -360,7 +360,7 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("Use 'help <command>' for detailed help on a specific command")
 		return
 	}
-	
+
 	switch args[0] {
 	case "device":
 		fmt.Println("Device management commands:")
@@ -406,7 +406,7 @@ func (cli *InteractiveCLI) showHelp(args []string) {
 		fmt.Println("")
 		fmt.Println("Available Tools:")
 		fmt.Println("  topology.get_full                  - Get complete network topology")
-		fmt.Println("  clients.list                       - List all network clients") 
+		fmt.Println("  clients.list                       - List all network clients")
 		fmt.Println("  qos.get_status                     - Get QoS status")
 		fmt.Println("  traffic.get_stats                  - Get traffic statistics")
 		fmt.Println("  network.speedtest_full             - Run comprehensive speed test")
@@ -452,7 +452,7 @@ func (cli *InteractiveCLI) showVersion() {
 func (cli *InteractiveCLI) showStatus(args []string) {
 	fmt.Println("RTK Controller System Status")
 	fmt.Println("============================")
-	
+
 	// MQTT Status
 	mqttStatus := "disconnected"
 	if cli.mqttClient != nil && cli.mqttClient.IsConnected() {
@@ -462,21 +462,21 @@ func (cli *InteractiveCLI) showStatus(args []string) {
 	if cli.config != nil {
 		fmt.Printf("MQTT Broker:   %s:%d\n", cli.config.MQTT.Broker, cli.config.MQTT.Port)
 	}
-	
+
 	// Device Manager Status
 	if cli.deviceManager != nil {
 		deviceStats := cli.deviceManager.GetStats()
-		fmt.Printf("Devices:       %d total, %d online, %d offline\n", 
+		fmt.Printf("Devices:       %d total, %d online, %d offline\n",
 			deviceStats.TotalDevices, deviceStats.OnlineDevices, deviceStats.OfflineDevices)
 	}
-	
+
 	// Command Manager Status
 	if cli.commandManager != nil {
 		cmdStats := cli.commandManager.GetStats()
 		fmt.Printf("Commands:      %d total, %d pending, %d completed\n",
 			cmdStats.TotalCommands, cmdStats.PendingCommands, cmdStats.CompletedCommands)
 	}
-	
+
 	fmt.Println()
 	fmt.Printf("Uptime:        %s\n", "Runtime information would go here")
 	fmt.Printf("Last Updated:  %s\n", time.Now().Format("2006-01-02 15:04:05"))
@@ -487,7 +487,7 @@ func (cli *InteractiveCLI) handleDeviceCommand(args []string) {
 		fmt.Println("Device subcommands: list, show, status, history, stats")
 		return
 	}
-	
+
 	switch args[0] {
 	case "list":
 		cli.listDevices(args[1:])
@@ -507,36 +507,36 @@ func (cli *InteractiveCLI) handleDeviceCommand(args []string) {
 func (cli *InteractiveCLI) listDevices(args []string) {
 	fmt.Println("Device List")
 	fmt.Println("-----------")
-	
+
 	if cli.deviceManager == nil {
 		fmt.Println("Device manager not available")
 		return
 	}
-	
+
 	devices, total, err := cli.deviceManager.ListDevices(nil, 50, 0)
 	if err != nil {
 		fmt.Printf("Error listing devices: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Total devices: %d\n\n", total)
-	
+
 	if len(devices) == 0 {
 		fmt.Println("No devices found")
 		return
 	}
-	
+
 	fmt.Printf("%-20s %-15s %-10s %-10s %-20s\n", "DEVICE ID", "TYPE", "HEALTH", "STATUS", "LAST SEEN")
 	fmt.Println(strings.Repeat("-", 80))
-	
+
 	for _, device := range devices {
 		status := "offline"
 		if device.Online {
 			status = "online"
 		}
-		
+
 		lastSeen := time.UnixMilli(device.LastSeen).Format("2006-01-02 15:04:05")
-		fmt.Printf("%-20s %-15s %-10s %-10s %-20s\n", 
+		fmt.Printf("%-20s %-15s %-10s %-10s %-20s\n",
 			device.ID, device.DeviceType, device.Health, status, lastSeen)
 	}
 }
@@ -546,14 +546,14 @@ func (cli *InteractiveCLI) showDevice(args []string) {
 		fmt.Println("Usage: device show <device_id>")
 		return
 	}
-	
+
 	deviceID := args[0]
 	device, err := cli.deviceManager.GetDevice("", "", deviceID)
 	if err != nil {
 		fmt.Printf("Error getting device: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Device Details: %s\n", deviceID)
 	fmt.Println(strings.Repeat("=", 30))
 	fmt.Printf("ID:           %s\n", device.ID)
@@ -566,14 +566,14 @@ func (cli *InteractiveCLI) showDevice(args []string) {
 	fmt.Printf("Uptime:       %d seconds\n", device.UptimeS)
 	fmt.Printf("Last Seen:    %s\n", time.UnixMilli(device.LastSeen).Format("2006-01-02 15:04:05"))
 	fmt.Printf("Updated At:   %s\n", device.UpdatedAt.Format("2006-01-02 15:04:05"))
-	
+
 	if len(device.Components) > 0 {
 		fmt.Println("\nComponents:")
 		for key, value := range device.Components {
 			fmt.Printf("  %s: %v\n", key, value)
 		}
 	}
-	
+
 	if len(device.Attributes) > 0 {
 		fmt.Println("\nAttributes:")
 		for key, value := range device.Attributes {
@@ -587,22 +587,22 @@ func (cli *InteractiveCLI) showDeviceStatus(args []string) {
 		fmt.Println("Usage: device status <device_id>")
 		return
 	}
-	
+
 	deviceID := args[0]
 	device, err := cli.deviceManager.GetDevice("", "", deviceID)
 	if err != nil {
 		fmt.Printf("Error getting device: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Device Status: %s\n", deviceID)
 	fmt.Println(strings.Repeat("=", 25))
-	
+
 	status := "🔴 OFFLINE"
 	if device.Online {
 		status = "🟢 ONLINE"
 	}
-	
+
 	fmt.Printf("Status:   %s\n", status)
 	fmt.Printf("Health:   %s\n", device.Health)
 	fmt.Printf("Uptime:   %d seconds\n", device.UptimeS)
@@ -615,7 +615,7 @@ func (cli *InteractiveCLI) showDeviceHistory(args []string) {
 		fmt.Println("Usage: device history <device_id>")
 		return
 	}
-	
+
 	deviceID := args[0]
 	fmt.Printf("Device History: %s\n", deviceID)
 	fmt.Println(strings.Repeat("=", 25))
@@ -627,23 +627,23 @@ func (cli *InteractiveCLI) showDeviceStats() {
 		fmt.Println("Device manager not available")
 		return
 	}
-	
+
 	stats := cli.deviceManager.GetStats()
-	
+
 	fmt.Println("Device Statistics")
 	fmt.Println("=================")
 	fmt.Printf("Total Devices:    %d\n", stats.TotalDevices)
 	fmt.Printf("Online Devices:   %d\n", stats.OnlineDevices)
 	fmt.Printf("Offline Devices:  %d\n", stats.OfflineDevices)
 	fmt.Printf("Last Updated:     %s\n", stats.LastUpdated.Format("2006-01-02 15:04:05"))
-	
+
 	if len(stats.HealthStats) > 0 {
 		fmt.Println("\nHealth Distribution:")
 		for health, count := range stats.HealthStats {
 			fmt.Printf("  %s: %d\n", health, count)
 		}
 	}
-	
+
 	if len(stats.DeviceTypeStats) > 0 {
 		fmt.Println("\nDevice Type Distribution:")
 		for deviceType, count := range stats.DeviceTypeStats {
@@ -657,7 +657,7 @@ func (cli *InteractiveCLI) handleCommandCommand(args []string) {
 		fmt.Println("Command subcommands: send, list, show, cancel, stats")
 		return
 	}
-	
+
 	switch args[0] {
 	case "send":
 		cli.sendCommand(args[1:])
@@ -680,23 +680,23 @@ func (cli *InteractiveCLI) sendCommand(args []string) {
 		fmt.Println("Example: command send device1 reboot 30")
 		return
 	}
-	
+
 	deviceID := args[0]
 	operation := args[1]
 	timeout := 30 // default timeout
-	
+
 	if len(args) > 2 {
 		fmt.Sscanf(args[2], "%d", &timeout)
 	}
-	
+
 	fmt.Printf("Sending command '%s' to device '%s' (timeout: %ds)...\n", operation, deviceID, timeout)
-	
+
 	cmd, err := cli.commandManager.SendCommand("", "", deviceID, operation, map[string]interface{}{}, timeout)
 	if err != nil {
 		fmt.Printf("Error sending command: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Command sent successfully!\n")
 	fmt.Printf("Command ID: %s\n", cmd.ID)
 	fmt.Printf("Status: %s\n", cmd.Status)
@@ -705,26 +705,26 @@ func (cli *InteractiveCLI) sendCommand(args []string) {
 func (cli *InteractiveCLI) listCommands(args []string) {
 	fmt.Println("Command List")
 	fmt.Println("------------")
-	
+
 	commands, total, err := cli.commandManager.ListCommands("", "", 20, 0)
 	if err != nil {
 		fmt.Printf("Error listing commands: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Total commands: %d\n\n", total)
-	
+
 	if len(commands) == 0 {
 		fmt.Println("No commands found")
 		return
 	}
-	
+
 	fmt.Printf("%-25s %-15s %-12s %-10s %-20s\n", "COMMAND ID", "DEVICE ID", "OPERATION", "STATUS", "CREATED AT")
 	fmt.Println(strings.Repeat("-", 85))
-	
+
 	for _, cmd := range commands {
 		createdAt := cmd.CreatedAt.Format("2006-01-02 15:04:05")
-		fmt.Printf("%-25s %-15s %-12s %-10s %-20s\n", 
+		fmt.Printf("%-25s %-15s %-12s %-10s %-20s\n",
 			cmd.ID, cmd.DeviceID, cmd.Operation, cmd.Status, createdAt)
 	}
 }
@@ -734,14 +734,14 @@ func (cli *InteractiveCLI) showCommand(args []string) {
 		fmt.Println("Usage: command show <command_id>")
 		return
 	}
-	
+
 	commandID := args[0]
 	cmd, err := cli.commandManager.GetCommand(commandID)
 	if err != nil {
 		fmt.Printf("Error getting command: %v\n", err)
 		return
 	}
-	
+
 	fmt.Printf("Command Details: %s\n", commandID)
 	fmt.Println(strings.Repeat("=", 30))
 	fmt.Printf("ID:           %s\n", cmd.ID)
@@ -750,26 +750,26 @@ func (cli *InteractiveCLI) showCommand(args []string) {
 	fmt.Printf("Status:       %s\n", cmd.Status)
 	fmt.Printf("Timeout:      %d ms\n", cmd.TimeoutMS)
 	fmt.Printf("Created At:   %s\n", cmd.CreatedAt.Format("2006-01-02 15:04:05"))
-	
+
 	if cmd.SentAt != nil {
 		fmt.Printf("Sent At:      %s\n", cmd.SentAt.Format("2006-01-02 15:04:05"))
 	}
-	
+
 	if cmd.CompletedAt != nil {
 		fmt.Printf("Completed At: %s\n", cmd.CompletedAt.Format("2006-01-02 15:04:05"))
 	}
-	
+
 	if cmd.Error != "" {
 		fmt.Printf("Error:        %s\n", cmd.Error)
 	}
-	
+
 	if len(cmd.Args) > 0 {
 		fmt.Println("\nArguments:")
 		for key, value := range cmd.Args {
 			fmt.Printf("  %s: %v\n", key, value)
 		}
 	}
-	
+
 	if len(cmd.Result) > 0 {
 		fmt.Println("\nResult:")
 		for key, value := range cmd.Result {
@@ -783,7 +783,7 @@ func (cli *InteractiveCLI) cancelCommand(args []string) {
 		fmt.Println("Usage: command cancel <command_id>")
 		return
 	}
-	
+
 	commandID := args[0]
 	fmt.Printf("Cancelling command: %s\n", commandID)
 	fmt.Println("Command cancellation is not yet implemented")
@@ -794,9 +794,9 @@ func (cli *InteractiveCLI) showCommandStats() {
 		fmt.Println("Command manager not available")
 		return
 	}
-	
+
 	stats := cli.commandManager.GetStats()
-	
+
 	fmt.Println("Command Statistics")
 	fmt.Println("==================")
 	fmt.Printf("Total Commands:     %d\n", stats.TotalCommands)
@@ -805,7 +805,7 @@ func (cli *InteractiveCLI) showCommandStats() {
 	fmt.Printf("Failed Commands:    %d\n", stats.FailedCommands)
 	fmt.Printf("Timeout Commands:   %d\n", stats.TimeoutCommands)
 	fmt.Printf("Last Updated:       %s\n", stats.LastUpdated.Format("2006-01-02 15:04:05"))
-	
+
 	if len(stats.StatusStats) > 0 {
 		fmt.Println("\nStatus Distribution:")
 		for status, count := range stats.StatusStats {
@@ -819,7 +819,7 @@ func (cli *InteractiveCLI) handleEventCommand(args []string) {
 		fmt.Println("Event subcommands: list, show, stats, watch")
 		return
 	}
-	
+
 	switch args[0] {
 	case "list":
 		fmt.Println("Event listing is not yet implemented")
@@ -839,7 +839,7 @@ func (cli *InteractiveCLI) handleDiagnosisCommand(args []string) {
 		fmt.Println("Diagnosis subcommands: run, list, show, analyzers")
 		return
 	}
-	
+
 	switch args[0] {
 	case "run":
 		fmt.Println("Running diagnosis is not yet implemented")
@@ -859,7 +859,7 @@ func (cli *InteractiveCLI) handleConfigCommand(args []string) {
 		fmt.Println("Config subcommands: show, reload, set")
 		return
 	}
-	
+
 	switch args[0] {
 	case "show":
 		fmt.Println("Configuration display is not yet implemented")
@@ -877,7 +877,7 @@ func (cli *InteractiveCLI) handleLogCommand(args []string) {
 		fmt.Println("Log subcommands: show, tail, search, download")
 		return
 	}
-	
+
 	switch args[0] {
 	case "show":
 		fmt.Println("Log display is not yet implemented")
@@ -897,7 +897,7 @@ func (cli *InteractiveCLI) handleTestCommand(args []string) {
 		fmt.Println("Test subcommands: mqtt, storage, ping")
 		return
 	}
-	
+
 	switch args[0] {
 	case "mqtt":
 		cli.testMQTT()
@@ -912,12 +912,12 @@ func (cli *InteractiveCLI) handleTestCommand(args []string) {
 
 func (cli *InteractiveCLI) testMQTT() {
 	fmt.Println("Testing MQTT connection...")
-	
+
 	if cli.mqttClient == nil {
 		fmt.Println("❌ MQTT client not initialized")
 		return
 	}
-	
+
 	if cli.mqttClient.IsConnected() {
 		fmt.Println("✅ MQTT connection is active")
 		fmt.Printf("   Broker: %s:%d\n", cli.config.MQTT.Broker, cli.config.MQTT.Port)
@@ -928,18 +928,18 @@ func (cli *InteractiveCLI) testMQTT() {
 
 func (cli *InteractiveCLI) testStorage() {
 	fmt.Println("Testing storage connection...")
-	
+
 	if cli.storage == nil {
 		fmt.Println("❌ Storage not initialized")
 		return
 	}
-	
+
 	// Try a simple operation
 	err := cli.storage.View(func(tx storage.Transaction) error {
 		_, _ = tx.Get("test_key")
 		return nil // Ignore key not found error
 	})
-	
+
 	if err != nil && !strings.Contains(err.Error(), "not found") {
 		fmt.Printf("❌ Storage test failed: %v\n", err)
 	} else {
@@ -952,7 +952,7 @@ func (cli *InteractiveCLI) handleSystemCommand(args []string) {
 		fmt.Println("System subcommands: info, health, stats")
 		return
 	}
-	
+
 	switch args[0] {
 	case "info":
 		cli.showSystemInfo()
@@ -977,10 +977,10 @@ func (cli *InteractiveCLI) showSystemInfo() {
 func (cli *InteractiveCLI) showSystemHealth() {
 	fmt.Println("System Health Check")
 	fmt.Println("===================")
-	
+
 	overall := "✅ Healthy"
 	issues := []string{}
-	
+
 	// Check MQTT
 	if cli.mqttClient == nil || !cli.mqttClient.IsConnected() {
 		overall = "❌ Unhealthy"
@@ -988,7 +988,7 @@ func (cli *InteractiveCLI) showSystemHealth() {
 	} else {
 		fmt.Println("✅ MQTT: Connected")
 	}
-	
+
 	// Check storage
 	if cli.storage == nil {
 		overall = "❌ Unhealthy"
@@ -996,7 +996,7 @@ func (cli *InteractiveCLI) showSystemHealth() {
 	} else {
 		fmt.Println("✅ Storage: Available")
 	}
-	
+
 	// Check managers
 	if cli.deviceManager == nil {
 		overall = "❌ Unhealthy"
@@ -1004,16 +1004,16 @@ func (cli *InteractiveCLI) showSystemHealth() {
 	} else {
 		fmt.Println("✅ Device Manager: Running")
 	}
-	
+
 	if cli.commandManager == nil {
 		overall = "❌ Unhealthy"
 		issues = append(issues, "Command manager is not available")
 	} else {
 		fmt.Println("✅ Command Manager: Running")
 	}
-	
+
 	fmt.Printf("\nOverall Status: %s\n", overall)
-	
+
 	if len(issues) > 0 {
 		fmt.Println("\nIssues:")
 		for _, issue := range issues {
@@ -1025,20 +1025,20 @@ func (cli *InteractiveCLI) showSystemHealth() {
 func (cli *InteractiveCLI) showSystemStats() {
 	fmt.Println("System Statistics")
 	fmt.Println("=================")
-	
+
 	// Device stats
 	if cli.deviceManager != nil {
 		deviceStats := cli.deviceManager.GetStats()
-		fmt.Printf("Devices:       %d total, %d online, %d offline\n", 
+		fmt.Printf("Devices:       %d total, %d online, %d offline\n",
 			deviceStats.TotalDevices, deviceStats.OnlineDevices, deviceStats.OfflineDevices)
 	}
-	
+
 	// Command stats
 	if cli.commandManager != nil {
 		cmdStats := cli.commandManager.GetStats()
 		fmt.Printf("Commands:      %d total, %d pending, %d completed\n",
 			cmdStats.TotalCommands, cmdStats.PendingCommands, cmdStats.CompletedCommands)
 	}
-	
+
 	fmt.Printf("Last Updated:  %s\n", time.Now().Format("2006-01-02 15:04:05"))
 }

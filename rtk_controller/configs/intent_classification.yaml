@@ -1,0 +1,173 @@
+# Intent Classification Configuration
+# Based on MIDDLE_LAYER_PLAN.md Section 5.4
+
+intent_categories:
+  primary_categories:
+    - connectivity_issues      # 連線問題
+    - performance_problems     # 效能問題  
+    - coverage_issues          # 覆蓋問題
+    - security_concerns        # 安全問題
+    - configuration_requests   # 設定要求
+    - device_issues            # 設備問題
+
+  secondary_categories:
+    connectivity_issues:
+      - wan_connectivity       # WAN 連線問題
+      - wifi_disconnection     # WiFi 斷線問題
+      - device_offline         # 設備離線
+      - intermittent_connection # 間歇性連線問題
+    
+    performance_problems:
+      - slow_internet          # 網路速度慢
+      - high_latency           # 高延遲
+      - bandwidth_bottleneck   # 頻寬瓶頸
+      - packet_loss            # 封包丟失
+    
+    coverage_issues:
+      - weak_signal_coverage   # 弱信號覆蓋 (來自 PUML)
+      - dead_zones             # 死角區域
+      - roaming_issues         # 漫遊問題
+      - range_limitations      # 覆蓋範圍限制
+    
+    security_concerns:
+      - unauthorized_access    # 未授權存取
+      - suspicious_traffic     # 可疑流量
+      - network_intrusion      # 網路入侵
+    
+    configuration_requests:
+      - qos_adjustment         # QoS 調整
+      - channel_optimization   # 頻道優化
+      - device_management      # 設備管理
+      - network_setup          # 網路設置
+    
+    device_issues:
+      - device_malfunction     # 設備故障
+      - firmware_problems      # 韌體問題
+      - hardware_failure       # 硬體故障
+
+# Intent Classification Prompt Templates
+classification_prompt: |
+  You are a network diagnostic intent classifier. Analyze user input and return standardized intent classification.
+
+  User Input: "{user_input}"
+  
+  Available Intent Categories:
+  Primary Categories: {primary_categories}
+  
+  Secondary Categories:
+  {secondary_categories}
+  
+  Context (if provided): {context}
+  
+  Instructions:
+  1. Analyze the user's description to identify the main network issue category
+  2. Determine the specific subcategory that best matches the problem
+  3. Extract relevant parameters from the user input (locations, device types, severity, etc.)
+  4. Provide a confidence score between 0.0 and 1.0
+  
+  Return JSON format:
+  {{
+    "primary_intent": "main_category_of_the_issue",
+    "secondary_intent": "specific_subcategory", 
+    "confidence": 0.95,
+    "parameters": {{
+      "location1": "extracted_location_1_from_user_input",
+      "location2": "extracted_location_2_from_user_input",
+      "severity": "extracted_severity_level",
+      "device_type": "extracted_device_type",
+      "frequency": "how_often_issue_occurs",
+      "affected_services": "services_impacted_by_issue"
+    }},
+    "reasoning": "brief_explanation_of_classification_logic"
+  }}
+
+fallback_prompt: |
+  The user's input could not be clearly classified into our standard network diagnostic categories.
+  
+  User Input: "{user_input}"
+  
+  Please provide a general classification and suggest the most appropriate diagnostic workflow:
+  
+  Return JSON format:
+  {{
+    "primary_intent": "general_network_diagnosis",
+    "secondary_intent": "unspecified",
+    "confidence": 0.5,
+    "parameters": {{
+      "user_description": "{user_input}",
+      "suggested_workflow": "general_network_diagnosis"
+    }},
+    "reasoning": "Unable to classify into specific category, using general diagnosis"
+  }}
+
+# Parameter Extraction Patterns
+parameter_patterns:
+  locations:
+    - pattern: "in (the )?(?P<location>\\w+(\\s+\\w+)*)"
+      examples: ["in the bedroom", "in living room", "in kitchen"]
+    - pattern: "(?P<location>\\w+(\\s+\\w+)*) (area|room|zone)"
+      examples: ["bedroom area", "living room", "garage zone"]
+  
+  devices:
+    - pattern: "(my |the )?(?P<device>phone|laptop|computer|tablet|smart\\s*tv|gaming\\s*console)"
+      examples: ["my phone", "the laptop", "smart tv"]
+    - pattern: "(?P<device>\\w+(-\\w+)*) device"
+      examples: ["IoT device", "smart-home device"]
+  
+  severity:
+    - pattern: "(?P<severity>very slow|extremely slow|unusable|terrible|awful)"
+      level: "critical"
+    - pattern: "(?P<severity>slow|poor|bad|weak)"
+      level: "moderate" 
+    - pattern: "(?P<severity>sometimes|occasionally|intermittent)"
+      level: "minor"
+
+# Confidence Thresholds
+confidence_thresholds:
+  high: 0.9      # Direct match with clear indicators
+  medium: 0.7    # Good match with some ambiguity
+  low: 0.5       # Uncertain match, may need clarification
+  fallback: 0.3  # Use fallback workflow
+
+# Intent-to-Workflow Mapping
+intent_workflow_mapping:
+  connectivity_issues:
+    wan_connectivity: "wan_connectivity_diagnosis"
+    wifi_disconnection: "wifi_connectivity_diagnosis" 
+    device_offline: "device_offline_diagnosis"
+    intermittent_connection: "intermittent_connection_diagnosis"
+  
+  performance_problems:
+    slow_internet: "performance_bottleneck_analysis"
+    high_latency: "latency_analysis_diagnosis"
+    bandwidth_bottleneck: "bandwidth_analysis_diagnosis" 
+    packet_loss: "packet_loss_diagnosis"
+  
+  coverage_issues:
+    weak_signal_coverage: "weak_signal_coverage_diagnosis"
+    dead_zones: "coverage_optimization_diagnosis"
+    roaming_issues: "roaming_diagnosis"
+    range_limitations: "range_extension_diagnosis"
+  
+  security_concerns:
+    unauthorized_access: "security_audit_diagnosis"
+    suspicious_traffic: "traffic_analysis_diagnosis"
+    network_intrusion: "intrusion_detection_diagnosis"
+  
+  configuration_requests:
+    qos_adjustment: "qos_optimization_diagnosis"
+    channel_optimization: "channel_optimization_diagnosis"
+    device_management: "device_management_workflow"
+    network_setup: "network_setup_workflow"
+  
+  device_issues:
+    device_malfunction: "device_diagnostic_workflow"
+    firmware_problems: "firmware_diagnosis"
+    hardware_failure: "hardware_diagnosis"
+
+# Fallback Configuration
+fallback:
+  default_workflow: "general_network_diagnosis"
+  min_confidence: 0.3
+  max_retries: 2
+  enable_manual_override: true

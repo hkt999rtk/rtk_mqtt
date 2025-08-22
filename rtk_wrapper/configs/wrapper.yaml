@@ -1,0 +1,92 @@
+# RTK MQTT Wrapper 配置文件
+wrapper:
+  # 基本資訊
+  name: "RTK MQTT Wrapper"
+  version: "1.0.0"
+  
+  # MQTT 連接設定
+  mqtt:
+    broker: "tcp://localhost:1883"
+    client_id: "rtk_wrapper"
+    username: ""
+    password: ""
+    keep_alive: 60
+    clean_session: true
+    
+    # TLS 設定
+    tls:
+      enabled: false
+      cert_file: ""
+      key_file: ""
+      ca_file: ""
+      insecure_skip_verify: false
+    
+    # 連接重試設定
+    reconnect:
+      enabled: true
+      initial_delay: "1s"
+      max_delay: "30s"
+      multiplier: 2
+      max_attempts: 10
+  
+  # 日志設定
+  logging:
+    level: "info"
+    format: "text"
+    output: "stdout"
+    rotation:
+      enabled: false
+      max_size: "100MB"
+      max_age: "7d"
+      max_backups: 3
+  
+  # 監控和統計
+  monitoring:
+    enabled: true
+    metrics_port: 8080
+    health_check_port: 8081
+    collect_interval: "30s"
+  
+  # Wrapper 註冊表
+  registry:
+    auto_discovery: true
+    discovery_timeout: "5s"
+    
+    # 註冊的 wrapper 列表（目前為空，階段2會添加）
+    wrappers: []
+      # - name: "example"
+      #   enabled: true
+      #   config_file: "wrappers/example.yaml"
+      #   priority: 100
+
+  # 性能調優
+  performance:
+    worker_pool_size: 10
+    message_buffer_size: 1000
+    batch_processing:
+      enabled: false
+      batch_size: 50
+      flush_interval: "100ms"
+    
+  # RTK 設定
+  rtk:
+    # 預設租戶和站點
+    default_tenant: "home"
+    default_site: "main"
+    
+    # Topic 前綴
+    topic_prefix: "rtk/v1"
+    
+    # QoS 設定  
+    qos:
+      state_messages: 1
+      telemetry_messages: 0
+      event_messages: 1
+      command_messages: 2
+    
+    # Retained 設定
+    retained:
+      state_messages: true
+      attr_messages: true
+      lwt_messages: true
+      others: false

@@ -1,0 +1,146 @@
+# Example Wrapper 配置
+name: "Example Device Wrapper"
+description: "A sample wrapper demonstrating message transformation between example devices and RTK format"
+
+# 支援的設備類型
+supported_devices:
+  - "sensor"
+  - "switch" 
+  - "light"
+  - "climate"
+
+# Topic 前綴
+topic_prefix: "example"
+
+# 設備 ID 提取模式
+device_id_extract: "{device_id}"
+
+# 訊息類型映射
+message_mapping:
+  state_message: "state"
+  telemetry_message: "telemetry" 
+  event_message: "event"
+  command_message: "command"
+
+# 欄位映射（設備格式 → RTK 格式）
+field_mapping:
+  device_id: "device_id"
+  status: "status"
+  temperature: "temperature"
+  humidity: "humidity"
+  power: "power_state"
+  
+  # 自定義欄位映射
+  custom:
+    "brightness": "brightness"
+    "color": "rgb_color"
+    "battery": "battery_level"
+    "signal": "signal_strength"
+    "uptime": "uptime_seconds"
+
+# Topic 模式規則
+topic_patterns:
+  uplink:
+    - pattern: "example/{device_id}/state"
+      priority: 100
+      message_type: "state"
+    - pattern: "example/{device_id}/telemetry"
+      priority: 95
+      message_type: "telemetry/sensor"
+    - pattern: "example/{device_id}/event"
+      priority: 90
+      message_type: "evt/alert"
+  
+  downlink:
+    - pattern: "rtk/v1/{tenant}/{site}/{device_id}/cmd/req"
+      priority: 100
+      target_pattern: "example/{device_id}/set"
+
+# 訊息轉換規則
+transform_rules:
+  uplink:
+    # 狀態正規化
+    status_normalization:
+      "online": "ok"
+      "offline": "error"
+      "connected": "ok"
+      "disconnected": "error"
+      "active": "ok"
+      "inactive": "warning"
+    
+    # 電源狀態正規化
+    power_normalization:
+      "on": "on"
+      "off": "off"
+      "true": "on"
+      "false": "off"
+      "1": "on"
+      "0": "off"
+    
+    # 數值轉換
+    value_conversions:
+      temperature:
+        # 支援華氏溫度轉攝氏溫度
+        fahrenheit_to_celsius: true
+      brightness:
+        # 0-255 轉 0-100
+        scale_255_to_100: true
+  
+  downlink:
+    # RTK 命令 → 設備命令映射
+    command_mapping:
+      "turn_on": 
+        field: "power"
+        value: "on"
+      "turn_off":
+        field: "power" 
+        value: "off"
+      "set_brightness":
+        field: "brightness"
+        value_from: "payload.brightness"
+      "set_temperature":
+        field: "temperature"
+        value_from: "payload.temperature"
+
+# 驗證規則
+validation:
+  uplink:
+    required_fields: []  # 沒有必填欄位，支援各種格式
+    optional_fields:
+      - "status"
+      - "temperature"
+      - "humidity"
+      - "power_state"
+  
+  downlink:
+    required_fields:
+      - "command"
+    optional_fields:
+      - "parameters"
+      - "timeout"
+
+# 錯誤處理
+error_handling:
+  invalid_json:
+    action: "log_and_drop"
+    log_level: "warn"
+  
+  missing_device_id:
+    action: "use_default"
+    default_device_id: "unknown_example_device"
+  
+  transformation_error:
+    action: "log_and_forward_raw"
+    log_level: "error"
+
+# 性能設定
+performance:
+  cache_transformed_messages: true
+  cache_ttl: "5m"
+  max_message_size: "10KB"
+
+# 除錯設定
+debug:
+  log_all_messages: false
+  log_transformations: true
+  log_errors: true

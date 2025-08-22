@@ -21,51 +21,51 @@ type VisualizationConfig struct {
 	// Display options
 	ShowOfflineDevices    bool
 	ShowConnectionQuality bool
-	ShowBandwidth        bool
-	ShowSSIDs            bool
-	ShowInterfaceDetails bool
-	ShowTimestamps       bool
-	
+	ShowBandwidth         bool
+	ShowSSIDs             bool
+	ShowInterfaceDetails  bool
+	ShowTimestamps        bool
+
 	// Filtering options
 	MinConnectionQuality float64
 	DeviceTypeFilter     []string
-	SSIDFilter          []string
-	TimeWindow          time.Duration
-	
+	SSIDFilter           []string
+	TimeWindow           time.Duration
+
 	// Layout options
-	MaxWidth            int
-	CompactMode         bool
-	ColorEnabled        bool
-	
+	MaxWidth     int
+	CompactMode  bool
+	ColorEnabled bool
+
 	// Advanced options
-	GroupBySSID         bool
-	GroupByLocation     bool
-	ShowMetrics         bool
-	ShowAnomalies       bool
+	GroupBySSID     bool
+	GroupByLocation bool
+	ShowMetrics     bool
+	ShowAnomalies   bool
 }
 
 // VisualizationFormat defines output format for topology display
 type VisualizationFormat string
 
 const (
-	FormatASCII     VisualizationFormat = "ascii"
-	FormatTree      VisualizationFormat = "tree"
-	FormatDOT       VisualizationFormat = "dot"
+	FormatASCII VisualizationFormat = "ascii"
+	FormatTree  VisualizationFormat = "tree"
+	FormatDOT   VisualizationFormat = "dot"
 	// FormatJSON already defined in network_diagnostics_renderer.go
-	FormatTable     VisualizationFormat = "table"
-	FormatSummary   VisualizationFormat = "summary"
-	FormatGraphViz  VisualizationFormat = "graphviz"
-	FormatPlantUML  VisualizationFormat = "plantuml"
+	FormatTable    VisualizationFormat = "table"
+	FormatSummary  VisualizationFormat = "summary"
+	FormatGraphViz VisualizationFormat = "graphviz"
+	FormatPlantUML VisualizationFormat = "plantuml"
 )
 
 // TopologyGraph represents the complete topology for visualization
 type TopologyGraph struct {
-	Nodes       []TopologyNode       `json:"nodes"`
-	Edges       []TopologyEdge       `json:"edges"`
-	Groups      []TopologyGroup      `json:"groups"`
-	Metadata    TopologyMetadata     `json:"metadata"`
-	Stats       TopologyStats        `json:"stats"`
-	Anomalies   []TopologyAnomaly    `json:"anomalies"`
+	Nodes     []TopologyNode    `json:"nodes"`
+	Edges     []TopologyEdge    `json:"edges"`
+	Groups    []TopologyGroup   `json:"groups"`
+	Metadata  TopologyMetadata  `json:"metadata"`
+	Stats     TopologyStats     `json:"stats"`
+	Anomalies []TopologyAnomaly `json:"anomalies"`
 }
 
 // TopologyNode - Already defined in graph_builder.go
@@ -74,36 +74,36 @@ type TopologyGraph struct {
 
 // TopologyGroup represents grouped nodes (e.g., by SSID or location)
 type TopologyGroup struct {
-	ID          string   `json:"id"`
-	Label       string   `json:"label"`
-	Type        string   `json:"type"`
-	NodeIDs     []string `json:"node_ids"`
-	Color       string   `json:"color,omitempty"`
-	Collapsed   bool     `json:"collapsed"`
+	ID        string   `json:"id"`
+	Label     string   `json:"label"`
+	Type      string   `json:"type"`
+	NodeIDs   []string `json:"node_ids"`
+	Color     string   `json:"color,omitempty"`
+	Collapsed bool     `json:"collapsed"`
 }
 
 // TopologyMetadata provides context about the topology
 type TopologyMetadata struct {
-	GeneratedAt     time.Time             `json:"generated_at"`
-	TimeWindow      time.Duration         `json:"time_window"`
-	TotalDevices    int                   `json:"total_devices"`
-	OnlineDevices   int                   `json:"online_devices"`
-	OfflineDevices  int                   `json:"offline_devices"`
-	TotalConnections int                  `json:"total_connections"`
-	Filters         map[string]interface{} `json:"filters,omitempty"`
-	Version         string                `json:"version"`
+	GeneratedAt      time.Time              `json:"generated_at"`
+	TimeWindow       time.Duration          `json:"time_window"`
+	TotalDevices     int                    `json:"total_devices"`
+	OnlineDevices    int                    `json:"online_devices"`
+	OfflineDevices   int                    `json:"offline_devices"`
+	TotalConnections int                    `json:"total_connections"`
+	Filters          map[string]interface{} `json:"filters,omitempty"`
+	Version          string                 `json:"version"`
 }
 
 // TopologyStats provides statistical information
 type TopologyStats struct {
-	DevicesByType       map[string]int `json:"devices_by_type"`
-	DevicesByStatus     map[string]int `json:"devices_by_status"`
-	DevicesBySSID       map[string]int `json:"devices_by_ssid"`
-	AverageQuality      float64        `json:"average_quality"`
-	TotalBandwidth      float64        `json:"total_bandwidth"`
-	AverageLatency      float64        `json:"average_latency"`
-	PacketLossRate      float64        `json:"packet_loss_rate"`
-	TopologyComplexity  float64        `json:"topology_complexity"`
+	DevicesByType      map[string]int `json:"devices_by_type"`
+	DevicesByStatus    map[string]int `json:"devices_by_status"`
+	DevicesBySSID      map[string]int `json:"devices_by_ssid"`
+	AverageQuality     float64        `json:"average_quality"`
+	TotalBandwidth     float64        `json:"total_bandwidth"`
+	AverageLatency     float64        `json:"average_latency"`
+	PacketLossRate     float64        `json:"packet_loss_rate"`
+	TopologyComplexity float64        `json:"topology_complexity"`
 }
 
 // TopologyAnomaly represents detected anomalies in the topology
@@ -229,7 +229,7 @@ func (tv *TopologyVisualizer) buildNodes(topology *types.NetworkTopology, graph 
 
 		// Get device identity
 		identity, _ := tv.identityStorage.GetDeviceIdentity(device.PrimaryMAC)
-		
+
 		label := device.PrimaryMAC
 		if identity != nil && identity.FriendlyName != "" {
 			label = identity.FriendlyName
@@ -239,7 +239,7 @@ func (tv *TopologyVisualizer) buildNodes(topology *types.NetworkTopology, graph 
 		if device.Online {
 			status = "online"
 		}
-		
+
 		node := TopologyNode{
 			ID:     deviceID,
 			Device: device,
@@ -260,30 +260,30 @@ func (tv *TopologyVisualizer) buildNodes(topology *types.NetworkTopology, graph 
 		// Add bandwidth information
 		// TODO: Add bandwidth info to node properties
 		/*
-		if tv.config.ShowBandwidth && device.NetworkMetrics != nil {
-			node.Bandwidth = BandwidthInfo{
-				Upload:   device.NetworkMetrics.UploadMbps,
-				Download: device.NetworkMetrics.DownloadMbps,
-				Total:    device.NetworkMetrics.UploadMbps + device.NetworkMetrics.DownloadMbps,
+			if tv.config.ShowBandwidth && device.NetworkMetrics != nil {
+				node.Bandwidth = BandwidthInfo{
+					Upload:   device.NetworkMetrics.UploadMbps,
+					Download: device.NetworkMetrics.DownloadMbps,
+					Total:    device.NetworkMetrics.UploadMbps + device.NetworkMetrics.DownloadMbps,
+				}
 			}
-		}
 
-		// Add location if available
-		if identity != nil {
-			node.Location = identity.Location
-		}
+			// Add location if available
+			if identity != nil {
+				node.Location = identity.Location
+			}
 		*/
 
 		// Add metadata
 		/*
-		if tv.config.ShowTimestamps {
-			node.Metadata["first_seen"] = device.FirstSeen
-			node.Metadata["last_updated"] = device.LastUpdated
-		}
+			if tv.config.ShowTimestamps {
+				node.Metadata["first_seen"] = device.FirstSeen
+				node.Metadata["last_updated"] = device.LastUpdated
+			}
 
-		if tv.config.ShowInterfaceDetails && len(device.Interfaces) > 0 {
-			node.Metadata["interfaces"] = device.Interfaces
-		}
+			if tv.config.ShowInterfaceDetails && len(device.Interfaces) > 0 {
+				node.Metadata["interfaces"] = device.Interfaces
+			}
 		*/
 
 		graph.Nodes = append(graph.Nodes, node)
@@ -295,7 +295,7 @@ func (tv *TopologyVisualizer) buildNodes(topology *types.NetworkTopology, graph 
 // buildEdges creates topology edges from connections
 func (tv *TopologyVisualizer) buildEdges(topology *types.NetworkTopology, graph *TopologyGraph) error {
 	edgeID := 0
-	
+
 	for _, connection := range topology.Connections {
 		// Apply quality filter
 		// TODO: Add quality field to connection
@@ -306,7 +306,7 @@ func (tv *TopologyVisualizer) buildEdges(topology *types.NetworkTopology, graph 
 		// Verify both nodes exist
 		sourceExists := tv.nodeExists(graph, connection.FromDeviceID)
 		targetExists := tv.nodeExists(graph, connection.ToDeviceID)
-		
+
 		if !sourceExists || !targetExists {
 			continue
 		}
@@ -321,7 +321,7 @@ func (tv *TopologyVisualizer) buildEdges(topology *types.NetworkTopology, graph 
 				toNode = &graph.Nodes[i]
 			}
 		}
-		
+
 		if fromNode == nil || toNode == nil {
 			continue
 		}
@@ -342,19 +342,19 @@ func (tv *TopologyVisualizer) buildEdges(topology *types.NetworkTopology, graph 
 		// Add performance metrics
 		// TODO: Add these fields to TopologyEdge
 		/*
-		if connection.Metrics != nil {
-			edge.Bandwidth = connection.Metrics.BandwidthMbps
-			edge.Latency = connection.Metrics.LatencyMs
-			edge.PacketLoss = connection.Metrics.PacketLoss
-		}
+			if connection.Metrics != nil {
+				edge.Bandwidth = connection.Metrics.BandwidthMbps
+				edge.Latency = connection.Metrics.LatencyMs
+				edge.PacketLoss = connection.Metrics.PacketLoss
+			}
 
-		// Add protocol and interface information
-		if connection.Protocol != "" {
-			edge.Protocol = connection.Protocol
-		}
-		if connection.Interface != "" {
-			edge.Interface = connection.Interface
-		}
+			// Add protocol and interface information
+			if connection.Protocol != "" {
+				edge.Protocol = connection.Protocol
+			}
+			if connection.Interface != "" {
+				edge.Interface = connection.Interface
+			}
 		*/
 
 		graph.Edges = append(graph.Edges, edge)
@@ -383,11 +383,11 @@ func (tv *TopologyVisualizer) buildSSIDGroups(graph *TopologyGraph) {
 
 	// TODO: Add SSID field to node
 	/*
-	for _, node := range graph.Nodes {
-		if node.SSID != "" {
-			ssidGroups[node.SSID] = append(ssidGroups[node.SSID], node.ID)
+		for _, node := range graph.Nodes {
+			if node.SSID != "" {
+				ssidGroups[node.SSID] = append(ssidGroups[node.SSID], node.ID)
+			}
 		}
-	}
 	*/
 
 	groupID := 0
@@ -412,11 +412,11 @@ func (tv *TopologyVisualizer) buildLocationGroups(graph *TopologyGraph) {
 
 	// TODO: Add Location field to node
 	/*
-	for _, node := range graph.Nodes {
-		if node.Location != "" {
-			locationGroups[node.Location] = append(locationGroups[node.Location], node.ID)
+		for _, node := range graph.Nodes {
+			if node.Location != "" {
+				locationGroups[node.Location] = append(locationGroups[node.Location], node.ID)
+			}
 		}
-	}
 	*/
 
 	groupID := 0
@@ -454,7 +454,7 @@ func (tv *TopologyVisualizer) calculateStats(graph *TopologyGraph) {
 		}
 		stats.DevicesByType[deviceType]++
 		stats.DevicesByStatus[node.Properties.Status]++
-		
+
 		// TODO: Add SSID field to node
 		// if node.SSID != "" {
 		//	stats.DevicesBySSID[node.SSID]++
@@ -467,27 +467,27 @@ func (tv *TopologyVisualizer) calculateStats(graph *TopologyGraph) {
 
 		// TODO: Add Bandwidth field to node
 		/*
-		if node.Bandwidth.Total > 0 {
-			totalBandwidth += node.Bandwidth.Total
-			bandwidthCount++
-		}
+			if node.Bandwidth.Total > 0 {
+				totalBandwidth += node.Bandwidth.Total
+				bandwidthCount++
+			}
 		*/
 	}
 
 	// Calculate edge statistics
 	// TODO: Add Latency and PacketLoss fields to TopologyEdge
 	/*
-	for _, edge := range graph.Edges {
-		if edge.Latency > 0 {
-			totalLatency += edge.Latency
-			latencyCount++
-		}
+		for _, edge := range graph.Edges {
+			if edge.Latency > 0 {
+				totalLatency += edge.Latency
+				latencyCount++
+			}
 
-		if edge.PacketLoss > 0 {
-			totalPacketLoss += edge.PacketLoss
-			packetLossCount++
+			if edge.PacketLoss > 0 {
+				totalPacketLoss += edge.PacketLoss
+				packetLossCount++
+			}
 		}
-	}
 	*/
 
 	// Calculate averages
@@ -508,7 +508,7 @@ func (tv *TopologyVisualizer) calculateStats(graph *TopologyGraph) {
 	nodeCount := len(graph.Nodes)
 	edgeCount := len(graph.Edges)
 	maxPossibleEdges := nodeCount * (nodeCount - 1) / 2
-	
+
 	if maxPossibleEdges > 0 {
 		stats.TopologyComplexity = float64(edgeCount) / float64(maxPossibleEdges)
 	}
@@ -537,39 +537,39 @@ func (tv *TopologyVisualizer) detectAnomalies(graph *TopologyGraph) {
 	// Detect poor quality connections
 	// TODO: Add numerical quality field to TopologyEdge
 	/*
-	for _, edge := range graph.Edges {
-		if edge.Quality < 0.3 {
-			anomaly := TopologyAnomaly{
-				ID:          fmt.Sprintf("anomaly_%d", anomalyID),
-				Type:        "poor_quality_connection",
-				Severity:    "error",
-				Description: fmt.Sprintf("Poor connection quality (%.2f) between devices", edge.Quality),
-				EdgeID:      edge.ID,
-				DetectedAt:  time.Now(),
+		for _, edge := range graph.Edges {
+			if edge.Quality < 0.3 {
+				anomaly := TopologyAnomaly{
+					ID:          fmt.Sprintf("anomaly_%d", anomalyID),
+					Type:        "poor_quality_connection",
+					Severity:    "error",
+					Description: fmt.Sprintf("Poor connection quality (%.2f) between devices", edge.Quality),
+					EdgeID:      edge.ID,
+					DetectedAt:  time.Now(),
+				}
+				graph.Anomalies = append(graph.Anomalies, anomaly)
+				anomalyID++
 			}
-			graph.Anomalies = append(graph.Anomalies, anomaly)
-			anomalyID++
 		}
-	}
 	*/
 
 	// Detect high latency connections
 	// TODO: Add Latency field to TopologyEdge
 	/*
-	for _, edge := range graph.Edges {
-		if edge.Latency > 100 {
-			anomaly := TopologyAnomaly{
-				ID:          fmt.Sprintf("anomaly_%d", anomalyID),
-				Type:        "high_latency",
-				Severity:    "warning",
-				Description: fmt.Sprintf("High latency (%.2fms) detected", edge.Latency),
-				EdgeID:      edge.ID,
-				DetectedAt:  time.Now(),
+		for _, edge := range graph.Edges {
+			if edge.Latency > 100 {
+				anomaly := TopologyAnomaly{
+					ID:          fmt.Sprintf("anomaly_%d", anomalyID),
+					Type:        "high_latency",
+					Severity:    "warning",
+					Description: fmt.Sprintf("High latency (%.2fms) detected", edge.Latency),
+					EdgeID:      edge.ID,
+					DetectedAt:  time.Now(),
+				}
+				graph.Anomalies = append(graph.Anomalies, anomaly)
+				anomalyID++
 			}
-			graph.Anomalies = append(graph.Anomalies, anomaly)
-			anomalyID++
 		}
-	}
 	*/
 }
 
@@ -585,7 +585,7 @@ func (tv *TopologyVisualizer) applyLayout(graph *TopologyGraph) {
 	for i := range graph.Nodes {
 		angle := 2 * 3.14159 * float64(i) / float64(nodeCount)
 		radius := 100.0
-		
+
 		graph.Nodes[i].Position = NodePosition{
 			X: radius * float64(angle),
 			Y: radius * float64(angle),
@@ -621,18 +621,18 @@ func (tv *TopologyVisualizer) shouldIncludeDevice(device *types.NetworkDevice) b
 	// Filter by SSID
 	// TODO: Add WiFiInfo field to NetworkDevice
 	/*
-	if len(tv.config.SSIDFilter) > 0 && device.WiFiInfo != nil {
-		found := false
-		for _, filterSSID := range tv.config.SSIDFilter {
-			if device.WiFiInfo.SSID == filterSSID {
-				found = true
-				break
+		if len(tv.config.SSIDFilter) > 0 && device.WiFiInfo != nil {
+			found := false
+			for _, filterSSID := range tv.config.SSIDFilter {
+				if device.WiFiInfo.SSID == filterSSID {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return false
 			}
 		}
-		if !found {
-			return false
-		}
-	}
 	*/
 
 	// Filter by time window
@@ -676,7 +676,7 @@ func (tv *TopologyVisualizer) getGroupColor(groupType string, index int) string 
 func (tv *TopologyVisualizer) buildMetadata(topology *types.NetworkTopology) TopologyMetadata {
 	onlineCount := 0
 	offlineCount := 0
-	
+
 	for _, device := range topology.Devices {
 		if device.Online {
 			onlineCount++
@@ -695,4 +695,3 @@ func (tv *TopologyVisualizer) buildMetadata(topology *types.NetworkTopology) Top
 		Version:          "1.0",
 	}
 }
-

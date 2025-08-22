@@ -15,13 +15,13 @@ type NetworkDiagnosticsRenderer struct {
 
 // RendererConfig holds configuration for report rendering
 type RendererConfig struct {
-	ColorEnabled      bool
-	MaxWidth         int
-	CompactMode      bool
-	ShowTimestamps   bool
-	ShowDetails      bool
-	IncludeCharts    bool
-	IncludeTrends    bool
+	ColorEnabled   bool
+	MaxWidth       int
+	CompactMode    bool
+	ShowTimestamps bool
+	ShowDetails    bool
+	IncludeCharts  bool
+	IncludeTrends  bool
 }
 
 // ReportFormat defines the output format for diagnostic reports
@@ -73,13 +73,13 @@ func (ndr *NetworkDiagnosticsRenderer) renderText(report *NetworkDiagnosticRepor
 	// Header
 	fmt.Fprintf(writer, "NETWORK DIAGNOSTIC REPORT\n")
 	fmt.Fprintf(writer, "=========================\n\n")
-	
+
 	// Report metadata
 	fmt.Fprintf(writer, "Report ID:      %s\n", report.ID)
 	fmt.Fprintf(writer, "Generated:      %s\n", report.GeneratedAt.Format(time.RFC3339))
 	fmt.Fprintf(writer, "Report Type:    %s\n", report.ReportType)
 	fmt.Fprintf(writer, "Detail Level:   %s\n", report.DetailLevel)
-	fmt.Fprintf(writer, "Time Window:    %s to %s (%v)\n", 
+	fmt.Fprintf(writer, "Time Window:    %s to %s (%v)\n",
 		report.TimeWindow.StartTime.Format("2006-01-02 15:04:05"),
 		report.TimeWindow.EndTime.Format("2006-01-02 15:04:05"),
 		report.TimeWindow.Duration)
@@ -94,27 +94,27 @@ func (ndr *NetworkDiagnosticsRenderer) renderText(report *NetworkDiagnosticRepor
 
 	// Network overview
 	ndr.renderNetworkOverview(report, writer)
-	
+
 	// Quality analysis
 	ndr.renderQualityAnalysis(report, writer)
-	
+
 	// Performance analysis
 	ndr.renderPerformanceAnalysis(report, writer)
-	
+
 	// Connectivity analysis
 	ndr.renderConnectivityAnalysis(report, writer)
-	
+
 	// Issues
 	ndr.renderIssues(report, writer)
-	
+
 	// Recommendations
 	ndr.renderRecommendations(report, writer)
-	
+
 	// Predictions (if enabled)
 	if len(report.Predictions) > 0 {
 		ndr.renderPredictions(report, writer)
 	}
-	
+
 	// Report statistics
 	ndr.renderReportStats(report, writer)
 
@@ -127,14 +127,14 @@ func (ndr *NetworkDiagnosticsRenderer) renderNetworkOverview(report *NetworkDiag
 	fmt.Fprintf(writer, "Total Devices:    %d\n", report.NetworkOverview.TotalDevices)
 	fmt.Fprintf(writer, "Online Devices:   %d\n", report.NetworkOverview.OnlineDevices)
 	fmt.Fprintf(writer, "Offline Devices:  %d\n", report.NetworkOverview.OfflineDevices)
-	
+
 	if len(report.NetworkOverview.DevicesByType) > 0 {
 		fmt.Fprintf(writer, "\nDevices by Type:\n")
 		for deviceType, count := range report.NetworkOverview.DevicesByType {
 			fmt.Fprintf(writer, "  %-15s %d\n", deviceType+":", count)
 		}
 	}
-	
+
 	fmt.Fprintf(writer, "\nBandwidth Utilization:\n")
 	bw := report.NetworkOverview.BandwidthUtilization
 	fmt.Fprintf(writer, "  Total Capacity: %.1f Mbps\n", bw.TotalCapacity)
@@ -148,7 +148,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderQualityAnalysis(report *NetworkDiag
 	fmt.Fprintf(writer, "CONNECTION QUALITY ANALYSIS\n")
 	fmt.Fprintf(writer, "===========================\n")
 	fmt.Fprintf(writer, "Average Quality:  %.2f\n", report.QualityAnalysis.AverageQuality)
-	
+
 	if len(report.QualityAnalysis.QualityDistribution) > 0 {
 		fmt.Fprintf(writer, "\nQuality Distribution:\n")
 		for quality, count := range report.QualityAnalysis.QualityDistribution {
@@ -156,7 +156,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderQualityAnalysis(report *NetworkDiag
 			fmt.Fprintf(writer, "  %-10s %s %d\n", quality+":", bar, count)
 		}
 	}
-	
+
 	if len(report.QualityAnalysis.PoorQualityDevices) > 0 {
 		fmt.Fprintf(writer, "\nPoor Quality Devices:\n")
 		for _, device := range report.QualityAnalysis.PoorQualityDevices {
@@ -172,35 +172,35 @@ func (ndr *NetworkDiagnosticsRenderer) renderQualityAnalysis(report *NetworkDiag
 func (ndr *NetworkDiagnosticsRenderer) renderPerformanceAnalysis(report *NetworkDiagnosticReport, writer io.Writer) {
 	fmt.Fprintf(writer, "PERFORMANCE ANALYSIS\n")
 	fmt.Fprintf(writer, "====================\n")
-	
+
 	latency := report.Performance.LatencyAnalysis
 	fmt.Fprintf(writer, "Latency Analysis:\n")
 	fmt.Fprintf(writer, "  Average:        %.1f ms\n", latency.AverageLatency)
 	fmt.Fprintf(writer, "  95th Percentile: %.1f ms\n", latency.P95Latency)
 	fmt.Fprintf(writer, "  99th Percentile: %.1f ms\n", latency.P99Latency)
-	
+
 	throughput := report.Performance.ThroughputAnalysis
 	fmt.Fprintf(writer, "\nThroughput Analysis:\n")
 	fmt.Fprintf(writer, "  Average:        %.1f Mbps\n", throughput.AverageThroughput)
 	fmt.Fprintf(writer, "  Peak:           %.1f Mbps\n", throughput.PeakThroughput)
-	
+
 	if len(throughput.BottleneckDevices) > 0 {
 		fmt.Fprintf(writer, "  Bottlenecks:    %s\n", strings.Join(throughput.BottleneckDevices, ", "))
 	}
-	
+
 	packetLoss := report.Performance.PacketLossAnalysis
 	fmt.Fprintf(writer, "\nPacket Loss Analysis:\n")
 	fmt.Fprintf(writer, "  Average:        %.2f%%\n", packetLoss.AveragePacketLoss*100)
 	fmt.Fprintf(writer, "  Maximum:        %.2f%%\n", packetLoss.MaxPacketLoss*100)
-	
+
 	if len(report.Performance.Bottlenecks) > 0 {
 		fmt.Fprintf(writer, "\nPerformance Bottlenecks:\n")
 		for _, bottleneck := range report.Performance.Bottlenecks {
-			fmt.Fprintf(writer, "  %s (%s): %s (Severity: %.1f)\n", 
+			fmt.Fprintf(writer, "  %s (%s): %s (Severity: %.1f)\n",
 				bottleneck.DeviceID, bottleneck.Type, bottleneck.Impact, bottleneck.Severity)
 		}
 	}
-	
+
 	fmt.Fprintf(writer, "\n")
 }
 
@@ -209,7 +209,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderConnectivityAnalysis(report *Networ
 	fmt.Fprintf(writer, "=====================\n")
 	fmt.Fprintf(writer, "Connection Success:   %.1f%%\n", report.Connectivity.ConnectionSuccess*100)
 	fmt.Fprintf(writer, "Session Stability:    %.1f%%\n", report.Connectivity.SessionStability*100)
-	
+
 	if len(report.Connectivity.ConnectivityIssues) > 0 {
 		fmt.Fprintf(writer, "\nConnectivity Issues:\n")
 		for _, issue := range report.Connectivity.ConnectivityIssues {
@@ -220,15 +220,15 @@ func (ndr *NetworkDiagnosticsRenderer) renderConnectivityAnalysis(report *Networ
 			}
 		}
 	}
-	
+
 	if len(report.Connectivity.DeviceReliability) > 0 {
 		fmt.Fprintf(writer, "\nDevice Reliability:\n")
 		for _, device := range report.Connectivity.DeviceReliability {
-			fmt.Fprintf(writer, "  %s: %.1f%% uptime (Score: %.2f)\n", 
+			fmt.Fprintf(writer, "  %s: %.1f%% uptime (Score: %.2f)\n",
 				device.DeviceID, device.UptimePercentage, device.ConnectionScore)
 		}
 	}
-	
+
 	fmt.Fprintf(writer, "\n")
 }
 
@@ -236,25 +236,25 @@ func (ndr *NetworkDiagnosticsRenderer) renderIssues(report *NetworkDiagnosticRep
 	if len(report.Issues) == 0 {
 		return
 	}
-	
+
 	fmt.Fprintf(writer, "IDENTIFIED ISSUES\n")
 	fmt.Fprintf(writer, "=================\n")
-	
+
 	// Group issues by severity
 	issuesBySeverity := make(map[IssueSeverity][]DiagnosticIssue)
 	for _, issue := range report.Issues {
 		issuesBySeverity[issue.Severity] = append(issuesBySeverity[issue.Severity], issue)
 	}
-	
+
 	// Render issues in severity order
 	severityOrder := []IssueSeverity{SeverityCritical, SeverityHigh, SeverityMedium, SeverityLow, SeverityInfo}
-	
+
 	for _, severity := range severityOrder {
 		issues := issuesBySeverity[severity]
 		if len(issues) == 0 {
 			continue
 		}
-		
+
 		fmt.Fprintf(writer, "\n%s Issues:\n", strings.ToUpper(string(severity)))
 		for _, issue := range issues {
 			fmt.Fprintf(writer, "  [%s] %s\n", issue.Type, issue.Title)
@@ -277,32 +277,32 @@ func (ndr *NetworkDiagnosticsRenderer) renderRecommendations(report *NetworkDiag
 	if len(report.Recommendations) == 0 {
 		return
 	}
-	
+
 	fmt.Fprintf(writer, "RECOMMENDATIONS\n")
 	fmt.Fprintf(writer, "===============\n")
-	
+
 	// Group recommendations by priority
 	recsByPriority := make(map[RecommendationPriority][]DiagnosticRecommendation)
 	for _, rec := range report.Recommendations {
 		recsByPriority[rec.Priority] = append(recsByPriority[rec.Priority], rec)
 	}
-	
+
 	// Render recommendations in priority order
 	priorityOrder := []RecommendationPriority{PriorityUrgent, PriorityHigh, PriorityMedium, PriorityLow}
-	
+
 	for _, priority := range priorityOrder {
 		recommendations := recsByPriority[priority]
 		if len(recommendations) == 0 {
 			continue
 		}
-		
+
 		fmt.Fprintf(writer, "\n%s Priority:\n", strings.ToUpper(string(priority)))
 		for i, rec := range recommendations {
 			fmt.Fprintf(writer, "  %d. [%s] %s\n", i+1, rec.Category, rec.Title)
 			fmt.Fprintf(writer, "     %s\n", rec.Description)
 			fmt.Fprintf(writer, "     Expected Impact: %s\n", rec.ExpectedImpact)
 			fmt.Fprintf(writer, "     Confidence: %.0f%%\n", rec.Confidence*100)
-			
+
 			if len(rec.Actions) > 0 {
 				fmt.Fprintf(writer, "     Actions:\n")
 				for _, action := range rec.Actions {
@@ -322,17 +322,17 @@ func (ndr *NetworkDiagnosticsRenderer) renderRecommendations(report *NetworkDiag
 func (ndr *NetworkDiagnosticsRenderer) renderPredictions(report *NetworkDiagnosticReport, writer io.Writer) {
 	fmt.Fprintf(writer, "PREDICTIVE INSIGHTS\n")
 	fmt.Fprintf(writer, "===================\n")
-	
+
 	for _, prediction := range report.Predictions {
 		fmt.Fprintf(writer, "[%s] %s\n", strings.ToUpper(string(prediction.Type)), prediction.Prediction)
 		fmt.Fprintf(writer, "  Confidence: %.0f%%\n", prediction.Confidence*100)
 		fmt.Fprintf(writer, "  Time Horizon: %v\n", prediction.TimeHorizon)
 		fmt.Fprintf(writer, "  Likelihood: %.0f%%\n", prediction.Likelihood*100)
-		
+
 		if len(prediction.Evidence) > 0 && ndr.config.ShowDetails {
 			fmt.Fprintf(writer, "  Evidence:\n")
 			for _, evidence := range prediction.Evidence {
-				fmt.Fprintf(writer, "    - %s (Weight: %.2f, Reliability: %.2f)\n", 
+				fmt.Fprintf(writer, "    - %s (Weight: %.2f, Reliability: %.2f)\n",
 					evidence.Source, evidence.Weight, evidence.Reliability)
 			}
 		}
@@ -359,13 +359,13 @@ func (ndr *NetworkDiagnosticsRenderer) renderJSON(report *NetworkDiagnosticRepor
 // renderMarkdown renders the report in Markdown format
 func (ndr *NetworkDiagnosticsRenderer) renderMarkdown(report *NetworkDiagnosticReport, writer io.Writer) error {
 	fmt.Fprintf(writer, "# Network Diagnostic Report\n\n")
-	
+
 	// Report metadata
 	fmt.Fprintf(writer, "**Report ID:** %s  \n", report.ID)
 	fmt.Fprintf(writer, "**Generated:** %s  \n", report.GeneratedAt.Format(time.RFC3339))
 	fmt.Fprintf(writer, "**Report Type:** %s  \n", report.ReportType)
 	fmt.Fprintf(writer, "**Detail Level:** %s  \n", report.DetailLevel)
-	fmt.Fprintf(writer, "**Time Window:** %s to %s (%v)  \n\n", 
+	fmt.Fprintf(writer, "**Time Window:** %s to %s (%v)  \n\n",
 		report.TimeWindow.StartTime.Format("2006-01-02 15:04:05"),
 		report.TimeWindow.EndTime.Format("2006-01-02 15:04:05"),
 		report.TimeWindow.Duration)
@@ -420,16 +420,16 @@ func (ndr *NetworkDiagnosticsRenderer) renderMarkdown(report *NetworkDiagnosticR
 	// Issues
 	if len(report.Issues) > 0 {
 		fmt.Fprintf(writer, "## Identified Issues\n\n")
-		
+
 		for _, issue := range report.Issues {
 			fmt.Fprintf(writer, "### %s - %s\n\n", strings.ToUpper(string(issue.Severity)), issue.Title)
 			fmt.Fprintf(writer, "**Type:** %s  \n", issue.Type)
 			fmt.Fprintf(writer, "**Description:** %s  \n", issue.Description)
-			
+
 			if len(issue.AffectedDevices) > 0 {
 				fmt.Fprintf(writer, "**Affected Devices:** %s  \n", strings.Join(issue.AffectedDevices, ", "))
 			}
-			
+
 			if !issue.FirstDetected.IsZero() {
 				fmt.Fprintf(writer, "**First Detected:** %s  \n", issue.FirstDetected.Format("2006-01-02 15:04:05"))
 			}
@@ -440,7 +440,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderMarkdown(report *NetworkDiagnosticR
 	// Recommendations
 	if len(report.Recommendations) > 0 {
 		fmt.Fprintf(writer, "## Recommendations\n\n")
-		
+
 		for i, rec := range report.Recommendations {
 			fmt.Fprintf(writer, "### %d. %s\n\n", i+1, rec.Title)
 			fmt.Fprintf(writer, "**Category:** %s  \n", rec.Category)
@@ -482,7 +482,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderHTML(report *NetworkDiagnosticRepor
 </head>
 <body>
 `)
-	
+
 	// Header
 	fmt.Fprintf(writer, `<div class="header">
         <h1>Network Diagnostic Report</h1>
@@ -490,11 +490,11 @@ func (ndr *NetworkDiagnosticsRenderer) renderHTML(report *NetworkDiagnosticRepor
         <p><strong>Generated:</strong> %s</p>
         <p><strong>Time Window:</strong> %s to %s (%v)</p>
     </div>
-`, report.ID, 
-   report.GeneratedAt.Format(time.RFC3339),
-   report.TimeWindow.StartTime.Format("2006-01-02 15:04:05"),
-   report.TimeWindow.EndTime.Format("2006-01-02 15:04:05"),
-   report.TimeWindow.Duration)
+`, report.ID,
+		report.GeneratedAt.Format(time.RFC3339),
+		report.TimeWindow.StartTime.Format("2006-01-02 15:04:05"),
+		report.TimeWindow.EndTime.Format("2006-01-02 15:04:05"),
+		report.TimeWindow.Duration)
 
 	// Overall health
 	healthClass := fmt.Sprintf("health-%s", report.OverallHealth)
@@ -536,7 +536,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderHTML(report *NetworkDiagnosticRepor
 func (ndr *NetworkDiagnosticsRenderer) renderCSV(report *NetworkDiagnosticReport, writer io.Writer) error {
 	// CSV header for issues
 	fmt.Fprintf(writer, "Section,Type,Severity,Title,Description,AffectedDevices,FirstDetected\n")
-	
+
 	// Issues
 	for _, issue := range report.Issues {
 		fmt.Fprintf(writer, "Issue,%s,%s,\"%s\",\"%s\",\"%s\",%s\n",
@@ -547,7 +547,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderCSV(report *NetworkDiagnosticReport
 			strings.Join(issue.AffectedDevices, ";"),
 			issue.FirstDetected.Format("2006-01-02 15:04:05"))
 	}
-	
+
 	// Recommendations
 	for _, rec := range report.Recommendations {
 		fmt.Fprintf(writer, "Recommendation,%s,%s,\"%s\",\"%s\",,\n",
@@ -556,7 +556,7 @@ func (ndr *NetworkDiagnosticsRenderer) renderCSV(report *NetworkDiagnosticReport
 			strings.ReplaceAll(rec.Title, "\"", "\"\""),
 			strings.ReplaceAll(rec.Description, "\"", "\"\""))
 	}
-	
+
 	return nil
 }
 
@@ -615,16 +615,16 @@ func (ndr *NetworkDiagnosticsRenderer) renderBar(value int, maxWidth int) string
 	if value <= 0 {
 		return strings.Repeat("░", maxWidth)
 	}
-	
+
 	// Normalize to max width
 	normalized := value
 	if value > maxWidth {
 		normalized = maxWidth
 	}
-	
+
 	filled := strings.Repeat("█", normalized)
 	empty := strings.Repeat("░", maxWidth-normalized)
-	
+
 	return filled + empty
 }
 
@@ -660,16 +660,16 @@ func (ndr *NetworkDiagnosticsRenderer) RenderReportSummary(
 func (ndr *NetworkDiagnosticsRenderer) renderSummaryText(summaries []ReportSummary, writer io.Writer) error {
 	fmt.Fprintf(writer, "DIAGNOSTIC REPORTS SUMMARY\n")
 	fmt.Fprintf(writer, "==========================\n\n")
-	
+
 	if len(summaries) == 0 {
 		fmt.Fprintf(writer, "No reports available.\n")
 		return nil
 	}
-	
-	fmt.Fprintf(writer, "%-20s %-15s %-12s %-10s %-6s\n", 
+
+	fmt.Fprintf(writer, "%-20s %-15s %-12s %-10s %-6s\n",
 		"Generated", "Report Type", "Detail Level", "Health", "Issues")
 	fmt.Fprintf(writer, "%s\n", strings.Repeat("-", 70))
-	
+
 	for _, summary := range summaries {
 		fmt.Fprintf(writer, "%-20s %-15s %-12s %-10.1f %-6d\n",
 			summary.GeneratedAt.Format("2006-01-02 15:04"),
@@ -678,21 +678,21 @@ func (ndr *NetworkDiagnosticsRenderer) renderSummaryText(summaries []ReportSumma
 			summary.HealthScore,
 			summary.IssueCount)
 	}
-	
+
 	return nil
 }
 
 func (ndr *NetworkDiagnosticsRenderer) renderSummaryMarkdown(summaries []ReportSummary, writer io.Writer) error {
 	fmt.Fprintf(writer, "# Diagnostic Reports Summary\n\n")
-	
+
 	if len(summaries) == 0 {
 		fmt.Fprintf(writer, "No reports available.\n")
 		return nil
 	}
-	
+
 	fmt.Fprintf(writer, "| Generated | Report Type | Detail Level | Health Score | Issues |\n")
 	fmt.Fprintf(writer, "|-----------|-------------|--------------|--------------|--------|\n")
-	
+
 	for _, summary := range summaries {
 		fmt.Fprintf(writer, "| %s | %s | %s | %.1f | %d |\n",
 			summary.GeneratedAt.Format("2006-01-02 15:04"),
@@ -701,6 +701,6 @@ func (ndr *NetworkDiagnosticsRenderer) renderSummaryMarkdown(summaries []ReportS
 			summary.HealthScore,
 			summary.IssueCount)
 	}
-	
+
 	return nil
 }

@@ -1,0 +1,46 @@
+@startuml HA_UI_Control_Flow
+!theme plain
+
+title 通過 HA UI 控制燈光流程
+
+actor "用戶" as user #lightblue
+participant "HA Web UI" as ha_ui #orange
+participant "Home Assistant" as ha #orange  
+participant "MQTT Broker" as mqtt #yellow
+participant "IoT 燈泡設備" as light #lightcoral
+
+user -> ha_ui : 點擊開關
+activate ha_ui
+
+ha_ui -> ha : 觸發開燈命令
+activate ha
+
+ha -> mqtt : 發送 MQTT 消息\nTopic: "home/livingroom/light1/set"\nPayload: "ON"
+activate mqtt
+
+mqtt -> light : 轉發消息
+activate light
+
+light -> light : 執行開燈操作
+note right : 物理燈泡亮起
+
+light -> mqtt : 回報狀態\nTopic: "home/livingroom/light1/state"\nPayload: "ON"
+deactivate light
+
+mqtt -> ha : 狀態更新
+deactivate mqtt
+
+ha -> ha_ui : 更新UI狀態
+deactivate ha
+
+ha_ui -> user : 顯示燈已開啟
+deactivate ha_ui
+
+note over user, light
+  <b>MQTT 主題結構:</b>
+  • 命令主題: home/livingroom/light1/set
+  • 狀態主題: home/livingroom/light1/state
+  • 負載格式: ON/OFF
+end note
+
+@enduml

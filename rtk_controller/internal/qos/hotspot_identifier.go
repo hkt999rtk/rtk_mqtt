@@ -15,7 +15,7 @@ type HotspotIdentifier struct {
 // NewHotspotIdentifier creates a new hotspot identifier
 func NewHotspotIdentifier() *HotspotIdentifier {
 	return &HotspotIdentifier{
-		hotspotThreshold: 0.2,  // 20% of total bandwidth
+		hotspotThreshold: 0.2, // 20% of total bandwidth
 		minDuration:      5 * time.Minute,
 		maxHotspots:      5,
 	}
@@ -38,7 +38,7 @@ func (hi *HotspotIdentifier) Identify(trafficHistory map[string]*DeviceTrafficHi
 		// Check if device qualifies as hotspot
 		if percentageUsage >= hi.hotspotThreshold*100 {
 			duration := hi.calculateHighUsageDuration(history, capacity)
-			
+
 			if duration >= hi.minDuration {
 				hotspots = append(hotspots, HotspotDevice{
 					DeviceID:        deviceID,
@@ -134,7 +134,7 @@ func (hi *HotspotIdentifier) calculateHotspotScore(percentageUsage float64, dura
 	// Score based on both bandwidth usage and duration
 	bandwidthScore := percentageUsage / 100.0
 	durationScore := duration.Minutes() / 60.0 // Normalize to hours
-	
+
 	// Weight bandwidth more heavily than duration
 	return bandwidthScore*0.7 + durationScore*0.3
 }
@@ -151,14 +151,14 @@ func (hi *HotspotIdentifier) GetHotspotDetails(trafficHistory map[string]*Device
 		}
 
 		detail := HotspotDetail{
-			DeviceID:        deviceID,
-			CurrentUsage:    hi.calculateRecentUsage(history, time.Now()),
-			AverageUsage:    history.AverageUpload + history.AverageDownload,
-			PeakUsage:       history.PeakUpload + history.PeakDownload,
-			Duration:        hi.calculateHighUsageDuration(history, capacity),
-			TrafficType:     hi.identifyTrafficType(history),
-			Impact:          hi.assessImpact(history, capacity),
-			Recommendation:  hi.generateRecommendation(history, capacity),
+			DeviceID:       deviceID,
+			CurrentUsage:   hi.calculateRecentUsage(history, time.Now()),
+			AverageUsage:   history.AverageUpload + history.AverageDownload,
+			PeakUsage:      history.PeakUpload + history.PeakDownload,
+			Duration:       hi.calculateHighUsageDuration(history, capacity),
+			TrafficType:    hi.identifyTrafficType(history),
+			Impact:         hi.assessImpact(history, capacity),
+			Recommendation: hi.generateRecommendation(history, capacity),
 		}
 
 		details = append(details, detail)

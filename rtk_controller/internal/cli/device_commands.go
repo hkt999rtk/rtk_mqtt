@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/spf13/cobra"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 )
 
 // deviceList lists all devices
@@ -18,7 +18,7 @@ func (c *CLI) deviceList(cmd *cobra.Command, args []string) error {
 	status, _ := cmd.Flags().GetString("status")
 	format, _ := cmd.Flags().GetString("format")
 
-	fmt.Printf("Device listing (tenant=%s, site=%s, status=%s, format=%s)\n", 
+	fmt.Printf("Device listing (tenant=%s, site=%s, status=%s, format=%s)\n",
 		tenant, site, status, format)
 	fmt.Println("Device listing functionality requires integration with device storage")
 	return nil
@@ -40,14 +40,14 @@ func (c *CLI) deviceStatus(cmd *cobra.Command, args []string) error {
 	refresh, _ := cmd.Flags().GetBool("refresh")
 
 	fmt.Printf("Device status for %s (refresh=%t)\n", deviceID, refresh)
-	
+
 	if refresh {
 		fmt.Println("Requesting device status refresh...")
 		if err := c.requestDeviceStatus(deviceID); err != nil {
 			log.WithError(err).Warn("Failed to request device status refresh")
 		}
 	}
-	
+
 	fmt.Println("Device status functionality requires integration with device storage")
 	return nil
 }
@@ -92,7 +92,7 @@ func (c *CLI) requestDeviceStatus(deviceID string) error {
 	// Create command to request device status
 	commandID := fmt.Sprintf("status-%d", time.Now().UnixMilli())
 	topic := fmt.Sprintf("rtk/v1/%s/%s/%s/cmd/req", "default", "default", deviceID)
-	
+
 	payload := map[string]interface{}{
 		"id":         commandID,
 		"op":         "device.status",

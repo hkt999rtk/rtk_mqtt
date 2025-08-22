@@ -9,9 +9,9 @@ import (
 
 // Subscriber handles MQTT topic subscriptions
 type Subscriber struct {
-	client      *Client
-	mu          sync.RWMutex
-	subscribed  map[string]byte // topic -> qos
+	client     *Client
+	mu         sync.RWMutex
+	subscribed map[string]byte // topic -> qos
 }
 
 // NewSubscriber creates a new subscriber
@@ -112,7 +112,7 @@ func (s *Subscriber) Unsubscribe(topics []string) error {
 func (s *Subscriber) GetSubscribedTopics() map[string]byte {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	result := make(map[string]byte)
 	for topic, qos := range s.subscribed {
 		result[topic] = qos
@@ -124,7 +124,7 @@ func (s *Subscriber) GetSubscribedTopics() map[string]byte {
 func (s *Subscriber) IsSubscribed(topic string) bool {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
-	
+
 	_, exists := s.subscribed[topic]
 	return exists
 }

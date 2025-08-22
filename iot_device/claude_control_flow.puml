@@ -1,0 +1,63 @@
+@startuml Claude_Control_Flow
+!theme plain
+
+title 通過 Claude Desktop 控制燈光流程
+
+actor "用戶" as user #lightblue
+participant "Claude Desktop" as claude #lightblue
+participant "MCP Server\n(安裝於 HA 環境)" as mcp #lightgreen
+participant "Home Assistant" as ha #orange
+participant "MQTT Broker" as mqtt #yellow
+participant "IoT 燈泡設備" as light #lightcoral
+
+user -> claude : "請打開客廳的燈"
+activate claude
+
+claude -> claude : 理解自然語言指令
+note right : AI 語義解析\n設備識別
+
+claude -> mcp : 調用控制 API\ncontrol_light(device_id="livingroom_light1", action="on")
+activate mcp
+
+mcp -> ha : 通知 HA 開燈請求\n調用 HA 服務
+activate ha
+
+ha -> mqtt : 發送 MQTT 消息\nTopic: "home/livingroom/light1/set"\nPayload: "ON"
+activate mqtt
+
+mqtt -> light : 轉發消息
+activate light
+
+light -> light : 執行開燈操作
+note right : 物理燈泡亮起
+
+light -> mqtt : 回報狀態\nTopic: "home/livingroom/light1/state"\nPayload: "ON"
+
+mqtt -> ha : 狀態更新
+deactivate mqtt
+
+ha -> mcp : 確認執行結果
+deactivate ha
+deactivate light
+
+mcp -> claude : 回傳執行結果
+deactivate mcp
+
+claude -> user : "客廳燈已開啟"
+deactivate claude
+
+note over user, light
+  <b>正確的流程:</b>
+  1. Claude Desktop 理解用戶指令
+  2. MCP Server (部署於 HA 環境) 接收 API 調用
+  3. MCP Server 通知 Home Assistant
+  4. Home Assistant 調用 MQTT light 服務
+  5. 通過 MQTT Broker 控制 IoT 設備
+  6. 狀態回報逐層返回
+  
+  <b>MCP 工具接口:</b>
+  • control_light(device_id, action, brightness)
+  • get_device_status(device_id)
+end note
+
+@enduml

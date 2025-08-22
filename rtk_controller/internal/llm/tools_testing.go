@@ -51,7 +51,7 @@ func (n *NetworkSpeedTestTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("test_server must be a string")
 		}
 	}
-	
+
 	// Optional test_duration parameter
 	if duration, exists := params["test_duration_seconds"]; exists {
 		if d, ok := duration.(float64); ok {
@@ -62,7 +62,7 @@ func (n *NetworkSpeedTestTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("test_duration_seconds must be a number")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -73,7 +73,7 @@ func (n *NetworkSpeedTestTool) Execute(ctx context.Context, params map[string]in
 		Success:   false,
 		Timestamp: time.Now(),
 	}
-	
+
 	// Parse parameters
 	testServer := "http://speedtest.tele2.net/1MB.zip" // default
 	if val, exists := params["test_server"]; exists {
@@ -81,37 +81,37 @@ func (n *NetworkSpeedTestTool) Execute(ctx context.Context, params map[string]in
 			testServer = s
 		}
 	}
-	
+
 	testDuration := 10.0 // default 10 seconds
 	if val, exists := params["test_duration_seconds"]; exists {
 		if d, ok := val.(float64); ok {
 			testDuration = d
 		}
 	}
-	
+
 	// Run speed test with timeout
 	testCtx, cancel := context.WithTimeout(ctx, time.Duration(testDuration+10)*time.Second)
 	defer cancel()
-	
+
 	speedTestResult, err := n.runSpeedTest(testCtx, testServer)
 	if err != nil {
 		result.Error = fmt.Sprintf("Speed test failed: %v", err)
 		return result, nil
 	}
-	
+
 	// Run additional network quality tests
 	latencyResult := n.measureLatency(testCtx)
 	connectivityResult := n.testConnectivity(testCtx)
-	
+
 	// Build comprehensive result
 	testData := map[string]interface{}{
-		"speed_test": speedTestResult,
-		"latency":    latencyResult,
+		"speed_test":   speedTestResult,
+		"latency":      latencyResult,
 		"connectivity": connectivityResult,
 		"test_parameters": map[string]interface{}{
-			"test_server":         testServer,
-			"test_duration":       testDuration,
-			"executed_at":         time.Now(),
+			"test_server":   testServer,
+			"test_duration": testDuration,
+			"executed_at":   time.Now(),
 		},
 		"summary": map[string]interface{}{
 			"download_mbps":       speedTestResult["download_mbps"],
@@ -120,43 +120,43 @@ func (n *NetworkSpeedTestTool) Execute(ctx context.Context, params map[string]in
 			"connectivity_status": connectivityResult["status"],
 		},
 	}
-	
+
 	result.Success = true
 	result.Data = testData
-	
+
 	return result, nil
 }
 
 // runSpeedTest performs the actual speed test
 func (n *NetworkSpeedTestTool) runSpeedTest(ctx context.Context, testServer string) (map[string]interface{}, error) {
 	start := time.Now()
-	
+
 	// Download test using curl
 	cmd := exec.CommandContext(ctx, "curl", "-o", "/dev/null", "-s", "-w", "%{speed_download}", testServer)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, fmt.Errorf("download test failed: %w", err)
 	}
-	
+
 	elapsed := time.Since(start).Seconds()
-	
+
 	// Parse download speed (bytes/sec to Mbps)
 	var downloadSpeed float64
 	if _, err := fmt.Sscanf(string(output), "%f", &downloadSpeed); err != nil {
 		return nil, fmt.Errorf("failed to parse download speed: %w", err)
 	}
-	
+
 	downloadMbps := (downloadSpeed * 8) / 1e6
-	
+
 	// Simple upload test (POST small data)
 	uploadMbps := n.measureUploadSpeed(ctx)
-	
+
 	return map[string]interface{}{
-		"download_mbps":  downloadMbps,
-		"upload_mbps":    uploadMbps,
-		"test_duration":  elapsed,
-		"test_server":    testServer,
-		"status":         "completed",
+		"download_mbps": downloadMbps,
+		"upload_mbps":   uploadMbps,
+		"test_duration": elapsed,
+		"test_server":   testServer,
+		"status":        "completed",
 	}, nil
 }
 
@@ -165,26 +165,26 @@ func (n *NetworkSpeedTestTool) measureUploadSpeed(ctx context.Context) float64 {
 	// Simple upload test - this is a basic implementation
 	// In a real implementation, you'd want to use a proper speed test server
 	testData := strings.Repeat("test", 1024) // 4KB test data
-	
+
 	start := time.Now()
-	
+
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequestWithContext(ctx, "POST", "http://httpbin.org/post", strings.NewReader(testData))
 	if err != nil {
 		return 0
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return 0
 	}
 	defer resp.Body.Close()
-	
+
 	elapsed := time.Since(start).Seconds()
 	if elapsed > 0 {
 		return (float64(len(testData)) * 8) / (elapsed * 1e6) // Convert to Mbps
 	}
-	
+
 	return 0
 }
 
@@ -194,7 +194,7 @@ func (n *NetworkSpeedTestTool) measureLatency(ctx context.Context) map[string]in
 	latencies := make(map[string]float64)
 	var totalLatency float64
 	var successCount int
-	
+
 	for _, target := range targets {
 		latency, success := n.pingTarget(ctx, target)
 		if success {
@@ -203,12 +203,12 @@ func (n *NetworkSpeedTestTool) measureLatency(ctx context.Context) map[string]in
 			successCount++
 		}
 	}
-	
+
 	avgLatency := 0.0
 	if successCount > 0 {
 		avgLatency = totalLatency / float64(successCount)
 	}
-	
+
 	return map[string]interface{}{
 		"targets":    latencies,
 		"average_ms": avgLatency,
@@ -223,7 +223,7 @@ func (n *NetworkSpeedTestTool) pingTarget(ctx context.Context, target string) (f
 	if err != nil {
 		return 0, false
 	}
-	
+
 	// Parse average latency from ping output
 	lines := strings.Split(string(output), "\n")
 	for _, line := range lines {
@@ -240,7 +240,7 @@ func (n *NetworkSpeedTestTool) pingTarget(ctx context.Context, target string) (f
 			}
 		}
 	}
-	
+
 	return 0, false
 }
 
@@ -249,7 +249,7 @@ func (n *NetworkSpeedTestTool) testConnectivity(ctx context.Context) map[string]
 	// Test DNS resolution
 	_, dnsErr := net.LookupHost("google.com")
 	dnsWorking := dnsErr == nil
-	
+
 	// Test HTTP connectivity
 	client := &http.Client{Timeout: 5 * time.Second}
 	req, _ := http.NewRequestWithContext(ctx, "GET", "http://httpbin.org/get", nil)
@@ -258,7 +258,7 @@ func (n *NetworkSpeedTestTool) testConnectivity(ctx context.Context) map[string]
 	if resp != nil {
 		resp.Body.Close()
 	}
-	
+
 	// Test HTTPS connectivity
 	req, _ = http.NewRequestWithContext(ctx, "GET", "https://httpbin.org/get", nil)
 	resp, httpsErr := client.Do(req)
@@ -266,7 +266,7 @@ func (n *NetworkSpeedTestTool) testConnectivity(ctx context.Context) map[string]
 	if resp != nil {
 		resp.Body.Close()
 	}
-	
+
 	// Overall status
 	status := "good"
 	if !dnsWorking || !httpWorking {
@@ -274,7 +274,7 @@ func (n *NetworkSpeedTestTool) testConnectivity(ctx context.Context) map[string]
 	} else if !httpsWorking {
 		status = "limited"
 	}
-	
+
 	return map[string]interface{}{
 		"dns_resolution": dnsWorking,
 		"http_access":    httpWorking,
@@ -328,14 +328,14 @@ func (w *WANConnectivityTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("dns_servers must be an array of strings")
 		}
 	}
-	
+
 	// Optional include_traceroute parameter
 	if includeTrace, exists := params["include_traceroute"]; exists {
 		if _, ok := includeTrace.(bool); !ok {
 			return fmt.Errorf("include_traceroute must be a boolean")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -346,7 +346,7 @@ func (w *WANConnectivityTool) Execute(ctx context.Context, params map[string]int
 		Success:   false,
 		Timestamp: time.Now(),
 	}
-	
+
 	// Parse parameters
 	dnsServers := []string{"8.8.8.8", "1.1.1.1", "208.67.222.222"} // default DNS servers
 	if val, exists := params["dns_servers"]; exists {
@@ -357,36 +357,36 @@ func (w *WANConnectivityTool) Execute(ctx context.Context, params map[string]int
 			}
 		}
 	}
-	
+
 	includeTraceroute := false // default to false for faster execution
 	if val, exists := params["include_traceroute"]; exists {
 		if b, ok := val.(bool); ok {
 			includeTraceroute = b
 		}
 	}
-	
+
 	// Run WAN connectivity tests with timeout
 	testCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	
+
 	// Basic connectivity test
 	connectivityTest := w.testBasicConnectivity(testCtx)
-	
+
 	// DNS test
 	dnsTest := w.testDNSServers(testCtx, dnsServers)
-	
+
 	// Public IP detection
 	publicIP := w.getPublicIP(testCtx)
-	
+
 	// Gateway test
 	gatewayTest := w.testGateway(testCtx)
-	
+
 	// Optional traceroute
 	var tracerouteTest map[string]interface{}
 	if includeTraceroute {
 		tracerouteTest = w.runTraceroute(testCtx, "8.8.8.8")
 	}
-	
+
 	// Overall status determination
 	overallStatus := "healthy"
 	if !connectivityTest["internet_reachable"].(bool) {
@@ -398,7 +398,7 @@ func (w *WANConnectivityTool) Execute(ctx context.Context, params map[string]int
 	} else if !gatewayTest["gateway_reachable"].(bool) {
 		overallStatus = "gateway_issues"
 	}
-	
+
 	// Build comprehensive result
 	wanData := map[string]interface{}{
 		"overall_status": overallStatus,
@@ -412,14 +412,14 @@ func (w *WANConnectivityTool) Execute(ctx context.Context, params map[string]int
 			"executed_at":        time.Now(),
 		},
 	}
-	
+
 	if tracerouteTest != nil {
 		wanData["traceroute"] = tracerouteTest
 	}
-	
+
 	result.Success = true
 	result.Data = wanData
-	
+
 	return result, nil
 }
 
@@ -427,16 +427,16 @@ func (w *WANConnectivityTool) Execute(ctx context.Context, params map[string]int
 func (w *WANConnectivityTool) testBasicConnectivity(ctx context.Context) map[string]interface{} {
 	// Test DNS resolution
 	_, dnsErr := net.LookupHost("google.com")
-	
+
 	// Test HTTP connectivity
 	client := &http.Client{Timeout: 5 * time.Second}
 	req, _ := http.NewRequestWithContext(ctx, "GET", "http://httpbin.org/get", nil)
 	_, httpErr := client.Do(req)
-	
+
 	return map[string]interface{}{
 		"internet_reachable": dnsErr == nil,
 		"http_working":       httpErr == nil,
-		"tested_at":         time.Now(),
+		"tested_at":          time.Now(),
 	}
 }
 
@@ -444,71 +444,71 @@ func (w *WANConnectivityTool) testBasicConnectivity(ctx context.Context) map[str
 func (w *WANConnectivityTool) testDNSServers(ctx context.Context, servers []string) map[string]interface{} {
 	results := make(map[string]interface{})
 	var workingServers []string
-	
+
 	for i, server := range servers {
 		latency, working := w.testDNSServer(ctx, server)
 		serverKey := fmt.Sprintf("server_%d_%s", i, server)
 		results[serverKey] = map[string]interface{}{
-			"server":    server,
-			"working":   working,
-			"latency":   latency,
+			"server":  server,
+			"working": working,
+			"latency": latency,
 		}
-		
+
 		if working {
 			workingServers = append(workingServers, server)
 		}
 	}
-	
+
 	results["primary_dns_working"] = len(workingServers) > 0
 	results["working_servers"] = workingServers
 	results["total_tested"] = len(servers)
-	
+
 	return results
 }
 
 // testDNSServer tests a specific DNS server
 func (w *WANConnectivityTool) testDNSServer(ctx context.Context, server string) (float64, bool) {
 	start := time.Now()
-	
+
 	// Try to ping the DNS server
 	cmd := exec.CommandContext(ctx, "ping", "-c", "1", "-W", "2", server)
 	err := cmd.Run()
-	
+
 	if err == nil {
 		return float64(time.Since(start).Nanoseconds()) / 1e6, true // Convert to milliseconds
 	}
-	
+
 	return 0, false
 }
 
 // getPublicIP attempts to get the public IP address
 func (w *WANConnectivityTool) getPublicIP(ctx context.Context) string {
 	client := &http.Client{Timeout: 5 * time.Second}
-	
+
 	// Try multiple services
 	services := []string{
 		"http://httpbin.org/ip",
 		"http://icanhazip.com",
 		"http://ipinfo.io/ip",
 	}
-	
+
 	for _, service := range services {
 		req, err := http.NewRequestWithContext(ctx, "GET", service, nil)
 		if err != nil {
 			continue
 		}
-		
+
 		resp, err := client.Do(req)
 		if err != nil {
 			continue
 		}
 		defer resp.Body.Close()
-		
+
 		// Try to extract IP from response
 		// This is a simplified implementation
 		return "detected" // Placeholder - would implement IP extraction
 	}
-	
+
 	return ""
 }
 
@@ -517,14 +517,14 @@ func (w *WANConnectivityTool) testGateway(ctx context.Context) map[string]interf
 	// Get default gateway (simplified)
 	cmd := exec.CommandContext(ctx, "route", "-n", "get", "default")
 	output, err := cmd.Output()
-	
+
 	gatewayReachable := false
 	if err == nil && strings.Contains(string(output), "gateway:") {
 		// Extract gateway IP and test it
 		// This is simplified - would parse the actual gateway IP
 		gatewayReachable = true
 	}
-	
+
 	return map[string]interface{}{
 		"gateway_reachable": gatewayReachable,
 		"tested_at":         time.Now(),
@@ -535,14 +535,14 @@ func (w *WANConnectivityTool) testGateway(ctx context.Context) map[string]interf
 func (w *WANConnectivityTool) runTraceroute(ctx context.Context, target string) map[string]interface{} {
 	cmd := exec.CommandContext(ctx, "traceroute", "-m", "15", target)
 	output, err := cmd.Output()
-	
+
 	if err != nil {
 		return map[string]interface{}{
 			"success": false,
 			"error":   err.Error(),
 		}
 	}
-	
+
 	hops := strings.Split(string(output), "\n")
 	return map[string]interface{}{
 		"success":  true,

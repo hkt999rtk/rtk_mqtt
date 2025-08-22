@@ -181,9 +181,9 @@ func TestClient_NewClient(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockStorage := &MockStorage{}
-			
+
 			client, err := NewClient(tt.config, mockStorage)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, client)
@@ -201,7 +201,7 @@ func TestClient_NewClient(t *testing.T) {
 func TestClient_Connect(t *testing.T) {
 	mockStorage := &MockStorage{}
 	mockToken := &MockToken{}
-	
+
 	config := config.MQTTConfig{
 		Broker:   "localhost",
 		Port:     1883,
@@ -226,7 +226,7 @@ func TestClient_Connect(t *testing.T) {
 
 	ctx := context.Background()
 	err = client.Connect(ctx)
-	
+
 	assert.NoError(t, err)
 	mockMQTTClient.AssertExpectations(t)
 	mockToken.AssertExpectations(t)
@@ -235,7 +235,7 @@ func TestClient_Connect(t *testing.T) {
 func TestClient_Publish(t *testing.T) {
 	mockStorage := &MockStorage{}
 	mockToken := &MockToken{}
-	
+
 	config := config.MQTTConfig{
 		Broker:   "localhost",
 		Port:     1883,
@@ -259,7 +259,7 @@ func TestClient_Publish(t *testing.T) {
 	mockMQTTClient.On("Publish", "test/topic", byte(0), false, string(expectedPayload)).Return(mockToken)
 
 	err = client.Publish("test/topic", testPayload, 0, false)
-	
+
 	assert.NoError(t, err)
 	mockMQTTClient.AssertExpectations(t)
 	mockToken.AssertExpectations(t)
@@ -267,7 +267,7 @@ func TestClient_Publish(t *testing.T) {
 
 func TestClient_IsConnected(t *testing.T) {
 	mockStorage := &MockStorage{}
-	
+
 	config := config.MQTTConfig{
 		Broker:   "localhost",
 		Port:     1883,
@@ -298,9 +298,9 @@ func TestClient_IsConnected(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockMQTTClient.On("IsConnected").Return(tt.expected).Once()
-			
+
 			result := client.IsConnected()
-			
+
 			assert.Equal(t, tt.expected, result)
 		})
 	}
@@ -310,7 +310,7 @@ func TestClient_IsConnected(t *testing.T) {
 
 func TestClient_MessageLogging(t *testing.T) {
 	mockStorage := &MockStorage{}
-	
+
 	config := config.MQTTConfig{
 		Broker:   "localhost",
 		Port:     1883,
@@ -335,7 +335,7 @@ func TestClient_MessageLogging(t *testing.T) {
 
 func TestClient_Disconnect(t *testing.T) {
 	mockStorage := &MockStorage{}
-	
+
 	config := config.MQTTConfig{
 		Broker:   "localhost",
 		Port:     1883,
@@ -352,7 +352,7 @@ func TestClient_Disconnect(t *testing.T) {
 	mockMQTTClient.On("Disconnect", uint(250)).Return()
 
 	client.Disconnect()
-	
+
 	mockMQTTClient.AssertExpectations(t)
 }
 
@@ -417,9 +417,9 @@ func TestClient_ValidateConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockStorage := &MockStorage{}
-			
+
 			_, err := NewClient(tt.config, mockStorage)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errMsg)

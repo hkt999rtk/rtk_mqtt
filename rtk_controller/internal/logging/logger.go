@@ -152,10 +152,10 @@ func (l *Logger) SetLogLevel(level string) error {
 	if err != nil {
 		return fmt.Errorf("invalid log level: %w", err)
 	}
-	
+
 	l.SetLevel(parsed)
 	l.WithField("new_level", level).Info("Log level updated")
-	
+
 	return nil
 }
 
@@ -236,10 +236,10 @@ func (a *AuditLogger) LogCommandExecution(ctx context.Context, user, deviceID, c
 // LogConfigChange logs configuration changes for audit
 func (a *AuditLogger) LogConfigChange(ctx context.Context, user, key string, oldValue, newValue interface{}) {
 	details := map[string]interface{}{
-		"config_key":   key,
-		"old_value":    oldValue,
-		"new_value":    newValue,
-		"change_time":  time.Now().UTC(),
+		"config_key":  key,
+		"old_value":   oldValue,
+		"new_value":   newValue,
+		"change_time": time.Now().UTC(),
 	}
 
 	a.LogAction(ctx, "config_change", user, "config:"+key, details)
@@ -320,11 +320,11 @@ func (p *PerformanceLogger) LogOperationDuration(operation string, duration time
 // LogMemoryUsage logs memory usage statistics
 func (p *PerformanceLogger) LogMemoryUsage(component string, allocMB, sysMB float64) {
 	p.logger.WithFields(logrus.Fields{
-		"component":  component,
-		"alloc_mb":   allocMB,
-		"sys_mb":     sysMB,
-		"perf_time":  time.Now().UTC(),
-		"perf_type":  "memory",
+		"component": component,
+		"alloc_mb":  allocMB,
+		"sys_mb":    sysMB,
+		"perf_time": time.Now().UTC(),
+		"perf_type": "memory",
 	}).Debug("Memory usage")
 }
 

@@ -144,7 +144,7 @@ func (ts *TopologyStorage) ListDeviceConnections(deviceID string) ([]*types.Devi
 			if err := json.Unmarshal([]byte(value), &connection); err != nil {
 				return fmt.Errorf("failed to unmarshal connection %s: %w", key, err)
 			}
-			
+
 			// Filter connections related to the specified device
 			if connection.FromDeviceID == deviceID || connection.ToDeviceID == deviceID {
 				connections = append(connections, &connection)
@@ -249,7 +249,7 @@ func (ts *TopologyStorage) GetTopologyStats() (map[string]int, error) {
 			if err != nil {
 				return err
 			}
-			
+
 			// Extract the type name from prefix
 			typeName := strings.TrimSuffix(prefix, ":")
 			stats[typeName] = count

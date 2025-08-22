@@ -6,8 +6,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/xeipuuv/gojsonschema"
 	log "github.com/sirupsen/logrus"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 // Validator provides JSON schema validation functionality
@@ -18,10 +18,10 @@ type Validator struct {
 
 // ValidationResult represents the result of schema validation
 type ValidationResult struct {
-	Valid  bool           `json:"valid"`
-	Errors []string       `json:"errors,omitempty"`
-	Schema string         `json:"schema"`
-	Data   interface{}    `json:"data,omitempty"`
+	Valid  bool        `json:"valid"`
+	Errors []string    `json:"errors,omitempty"`
+	Schema string      `json:"schema"`
+	Data   interface{} `json:"data,omitempty"`
 }
 
 // IsValid returns whether the validation passed
@@ -49,19 +49,19 @@ func NewValidator() *Validator {
 // LoadSchemasFromFile loads schemas from a JSON file
 func (v *Validator) LoadSchemasFromFile(filePath string) error {
 	log.WithField("file", filePath).Info("Loading JSON schemas from file")
-	
+
 	// Load schema file
 	schemaLoader := gojsonschema.NewReferenceLoader("file://" + filePath)
 	schema, err := gojsonschema.NewSchema(schemaLoader)
 	if err != nil {
 		return fmt.Errorf("failed to load schema file: %w", err)
 	}
-	
+
 	// For now, store the main schema as "main"
 	v.mu.Lock()
 	v.schemas["main"] = schema
 	v.mu.Unlock()
-	
+
 	log.WithField("schemas_loaded", 1).Info("JSON schemas loaded successfully")
 	return nil
 }
@@ -73,11 +73,11 @@ func (v *Validator) LoadSchemaFromString(name, schemaJSON string) error {
 	if err != nil {
 		return fmt.Errorf("failed to load schema %s: %w", name, err)
 	}
-	
+
 	v.mu.Lock()
 	v.schemas[name] = schema
 	v.mu.Unlock()
-	
+
 	log.WithField("schema", name).Debug("Schema loaded")
 	return nil
 }
@@ -85,31 +85,31 @@ func (v *Validator) LoadSchemaFromString(name, schemaJSON string) error {
 // LoadBuiltinSchemas loads built-in schemas for RTK protocol
 func (v *Validator) LoadBuiltinSchemas() error {
 	log.Info("Loading built-in RTK protocol schemas")
-	
+
 	// Define built-in schemas
 	schemas := map[string]string{
-		"state": stateSchema,
-		"event": eventSchema,
-		"command": commandSchema,
+		"state":     stateSchema,
+		"event":     eventSchema,
+		"command":   commandSchema,
 		"telemetry": telemetrySchema,
-		"lwt": lwtSchema,
-		"attr": attributeSchema,
-		
+		"lwt":       lwtSchema,
+		"attr":      attributeSchema,
+
 		// Topology-related schemas
-		"topology.discovery": topologyDiscoverySchema,
-		"topology.connections": topologyConnectionsSchema,
+		"topology.discovery":     topologyDiscoverySchema,
+		"topology.connections":   topologyConnectionsSchema,
 		"telemetry.wifi_clients": wifiClientsSchema,
-		"device.identity": deviceIdentitySchema,
-		"diagnostics.network": networkDiagnosticsSchema,
-		"telemetry.qos": qosInfoSchema,
+		"device.identity":        deviceIdentitySchema,
+		"diagnostics.network":    networkDiagnosticsSchema,
+		"telemetry.qos":          qosInfoSchema,
 	}
-	
+
 	for name, schemaJSON := range schemas {
 		if err := v.LoadSchemaFromString(name, schemaJSON); err != nil {
 			return fmt.Errorf("failed to load built-in schema %s: %w", name, err)
 		}
 	}
-	
+
 	log.WithField("schemas_loaded", len(schemas)).Info("Built-in schemas loaded successfully")
 	return nil
 }
@@ -119,11 +119,11 @@ func (v *Validator) Validate(schemaName string, data interface{}) (*ValidationRe
 	v.mu.RLock()
 	schema, exists := v.schemas[schemaName]
 	v.mu.RUnlock()
-	
+
 	if !exists {
 		return nil, fmt.Errorf("schema not found: %s", schemaName)
 	}
-	
+
 	// Convert data to JSON if it's not already a string
 	var jsonData interface{}
 	switch d := data.(type) {
@@ -148,29 +148,29 @@ func (v *Validator) Validate(schemaName string, data interface{}) (*ValidationRe
 	default:
 		jsonData = data
 	}
-	
+
 	// Create document loader
 	documentLoader := gojsonschema.NewGoLoader(jsonData)
-	
+
 	// Validate
 	result, err := schema.Validate(documentLoader)
 	if err != nil {
 		return nil, fmt.Errorf("validation failed: %w", err)
 	}
-	
+
 	// Build result
 	validationResult := &ValidationResult{
 		Valid:  result.Valid(),
 		Schema: schemaName,
 		Data:   jsonData,
 	}
-	
+
 	if !result.Valid() {
 		for _, desc := range result.Errors() {
 			validationResult.Errors = append(validationResult.Errors, desc.String())
 		}
 	}
-	
+
 	return validationResult, nil
 }
 
@@ -183,7 +183,7 @@ func (v *Validator) ValidateByTopic(topic string, payload []byte) (*ValidationRe
 			Schema: "unknown",
 		}, nil
 	}
-	
+
 	return v.Validate(schemaName, payload)
 }
 
@@ -198,7 +198,7 @@ func (v *Validator) ValidateBySchemaField(payload []byte) (*ValidationResult, er
 			Schema: "unknown",
 		}, nil
 	}
-	
+
 	// Extract schema field
 	schemaField, ok := data["schema"].(string)
 	if !ok {
@@ -207,7 +207,7 @@ func (v *Validator) ValidateBySchemaField(payload []byte) (*ValidationResult, er
 			Schema: "no_schema",
 		}, nil
 	}
-	
+
 	// Map schema field to schema name
 	schemaName := v.mapSchemaFieldToName(schemaField)
 	if schemaName == "" {
@@ -216,7 +216,7 @@ func (v *Validator) ValidateBySchemaField(payload []byte) (*ValidationResult, er
 			Schema: schemaField,
 		}, nil
 	}
-	
+
 	return v.Validate(schemaName, data)
 }
 
@@ -224,7 +224,7 @@ func (v *Validator) ValidateBySchemaField(payload []byte) (*ValidationResult, er
 func (v *Validator) GetLoadedSchemas() []string {
 	v.mu.RLock()
 	defer v.mu.RUnlock()
-	
+
 	var schemas []string
 	for name := range v.schemas {
 		schemas = append(schemas, name)
@@ -238,14 +238,14 @@ func (v *Validator) inferSchemaFromTopic(topic string) string {
 	if len(parts) < 6 {
 		return ""
 	}
-	
+
 	// Topic format: rtk/v1/{tenant}/{site}/{device_id}/{message_type}/...
 	if parts[0] != "rtk" || parts[1] != "v1" {
 		return ""
 	}
-	
+
 	messageType := parts[5]
-	
+
 	switch messageType {
 	case "state":
 		return "state"
@@ -282,15 +282,15 @@ func (v *Validator) mapSchemaFieldToName(schemaField string) string {
 	if len(parts) < 1 {
 		return ""
 	}
-	
+
 	schemaType := parts[0]
-	
+
 	// Extract base type from dotted schemas
 	if strings.Contains(schemaType, ".") {
 		typeParts := strings.Split(schemaType, ".")
 		schemaType = typeParts[0]
 	}
-	
+
 	switch schemaType {
 	case "state":
 		return "state"

@@ -18,7 +18,7 @@ func (s *SchemaValidatorAdapter) ValidateMessage(topic string, payload []byte) (
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Convert schema.ValidationResult to mqtt.ValidationResult
 	return &ValidationResult{
 		Valid:  result.Valid,

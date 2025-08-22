@@ -1,0 +1,198 @@
+# RTK Controller MCP Server Configuration
+# This configuration is used when running in MCP server mode: ./rtk_controller --mcp
+
+# Server basic information
+name: "RTK Controller Workflow MCP Server"
+version: "1.0.0"
+description: "Home network diagnostic and workflow management tools via MCP"
+
+# HTTP transport configuration
+http:
+  enabled: true
+  host: "localhost"
+  port: 8080
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+
+# Tool execution configuration
+tools:
+  # Tool categories to enable (individual LLM tools)
+  categories:
+    - "topology"      # Network topology tools
+    - "wifi"          # WiFi diagnostic tools
+    - "network"       # Network connectivity tools
+    - "mesh"          # Mesh network tools
+    - "qos"           # QoS analysis tools
+    - "config"        # Configuration management tools
+  
+  # Workflow-based tools (exported from workflow definitions)
+  workflows:
+    enabled: true
+    # Automatically export all workflows as MCP tools
+    auto_export: true
+    
+    # Specific workflow exports (if auto_export is false)
+    exports:
+      - workflow_id: "weak_signal_coverage_diagnosis"
+        mcp_name: "rtk_weak_signal_coverage"
+        description: "Diagnose WiFi weak signal coverage issues"
+        category: "wifi_diagnosis"
+        input_schema:
+          type: "object"
+          properties:
+            location1:
+              type: "string"
+              description: "First location for comparison (e.g., living room)"
+            location2:
+              type: "string" 
+              description: "Second location for comparison (optional)"
+            severity:
+              type: "string"
+              description: "Severity of coverage issue"
+              enum: ["critical", "moderate", "minor"]
+          required: ["location1"]
+      
+      - workflow_id: "wan_connectivity_diagnosis"
+        mcp_name: "rtk_wan_connectivity"
+        description: "Diagnose WAN connectivity issues"
+        category: "network_diagnosis"
+        input_schema:
+          type: "object"
+          properties:
+            device_type:
+              type: "string"
+              description: "Type of device experiencing issues"
+            frequency:
+              type: "string"
+              description: "How often disconnections occur"
+        
+      - workflow_id: "performance_bottleneck_analysis"
+        mcp_name: "rtk_performance_analysis"
+        description: "Analyze network performance bottlenecks"
+        category: "performance_analysis"
+        input_schema:
+          type: "object"
+          properties:
+            speed_type:
+              type: "string"
+              description: "Type of speed issue"
+              enum: ["download", "upload", "both"]
+            device_type:
+              type: "string"
+              description: "Device experiencing slow speeds"
+              
+      - workflow_id: "device_connectivity_diagnosis"
+        mcp_name: "rtk_device_diagnosis"
+        description: "Diagnose connectivity issues for specific devices"
+        category: "device_management"
+        input_schema:
+          type: "object"
+          properties:
+            device_id:
+              type: "string"
+              description: "ID or name of the device"
+          required: ["device_id"]
+  
+  # Execution settings
+  execution:
+    timeout: "60s"        # Tool execution timeout
+    max_concurrent: 5     # Maximum concurrent tool executions
+    retry_attempts: 2     # Number of retry attempts for failed tools
+    
+    # Workflow-specific settings
+    workflow_timeout: "300s"  # Workflow execution timeout (longer than individual tools)
+    workflow_max_concurrent: 3  # Maximum concurrent workflow executions
+
+# Resource provider configuration
+resources:
+  # Network topology resources
+  topology:
+    enabled: true
+    cache_ttl: "5m"       # Cache time-to-live for topology data
+  
+  # Device information resources
+  devices:
+    enabled: true
+    cache_ttl: "5m"       # Cache time-to-live for device data
+  
+  # Diagnostic history resources
+  diagnostics:
+    enabled: true
+    history_limit: 100    # Maximum number of diagnostic records to keep
+  
+  # Workflow-related resources
+  workflows:
+    enabled: true
+    cache_ttl: "10m"      # Cache time-to-live for workflow definitions
+    history_limit: 50     # Maximum number of workflow execution records to keep
+
+# Session management configuration
+sessions:
+  timeout: "30m"          # Session timeout duration
+  max_concurrent: 10      # Maximum concurrent sessions
+  auto_cleanup: true      # Enable automatic cleanup of expired sessions
+  cleanup_interval: "5m"  # Cleanup interval for expired sessions
+
+# Prompt templates for LLM integration
+prompt_templates:
+  # Workflow selection prompt for natural language queries
+  workflow_selection: |
+    Based on the user's network issue description, select the most appropriate diagnostic workflow:
+    
+    Available Workflows:
+    {available_workflows}
+    
+    User Issue: "{user_input}"
+    
+    Return the workflow name and extracted parameters in JSON format:
+    {
+      "workflow": "selected_workflow_name",
+      "parameters": {
+        "param1": "extracted_value1",
+        "param2": "extracted_value2"
+      },
+      "confidence": 0.95,
+      "reasoning": "brief_explanation_of_selection"
+    }
+    
+  # Intent classification prompt (used by workflow engine)
+  intent_classification: |
+    You are a network diagnostic intent classifier. Analyze user input and return standardized intent classification.
+
+    User Input: "{user_input}"
+    
+    Available Intent Categories:
+    {intent_categories}
+    
+    Return JSON format:
+    {
+      "primary_intent": "main_category_of_the_issue",
+      "secondary_intent": "specific_subcategory", 
+      "confidence": 0.95,
+      "parameters": {
+        "location1": "extracted_location_1_from_user_input",
+        "location2": "extracted_location_2_from_user_input",
+        "severity": "extracted_severity_level",
+        "device_type": "extracted_device_type"
+      },
+      "reasoning": "brief_explanation_of_classification"
+    }
+
+# Natural language processing configuration
+nlp:
+  enabled: true
+  # Enable natural language workflow selection
+  workflow_selection: true
+  # LLM service configuration (placeholder - would be configured for production)
+  llm_service:
+    provider: "openai"  # openai, anthropic, local, etc.
+    model: "gpt-4o-mini"
+    api_key: "${LLM_API_KEY}"  # Environment variable
+    temperature: 0.1  # Low temperature for consistent classification
+    max_tokens: 500
+
+# Include base controller configuration for MQTT, storage, etc.
+# The MCP server will inherit these settings from controller.yaml
+include: "controller.yaml"

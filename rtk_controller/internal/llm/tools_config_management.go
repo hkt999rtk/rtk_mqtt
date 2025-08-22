@@ -38,14 +38,14 @@ func (t *ConfigWiFiSettingsTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("device_id parameter must be a string")
 		}
 	}
-	
-	// Optional config_changes parameter  
+
+	// Optional config_changes parameter
 	if changes, exists := params["config_changes"]; exists {
 		if _, ok := changes.(map[string]interface{}); !ok {
 			return fmt.Errorf("config_changes parameter must be an object")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -97,10 +97,10 @@ func (t *ConfigWiFiSettingsTool) Execute(ctx context.Context, params map[string]
 			},
 		},
 		"validation_results": map[string]interface{}{
-			"pre_validation":  "passed",
-			"post_validation": "passed",
-			"safety_checks":   "passed",
-			"compliance_check": "passed",
+			"pre_validation":     "passed",
+			"post_validation":    "passed",
+			"safety_checks":      "passed",
+			"compliance_check":   "passed",
 			"performance_impact": "minimal",
 		},
 		"rollback_plan": map[string]interface{}{
@@ -166,7 +166,7 @@ func (t *ConfigQoSPoliciesTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("policy_type parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -230,10 +230,10 @@ func (t *ConfigQoSPoliciesTool) Execute(ctx context.Context, params map[string]i
 		},
 		"optimization_results": map[string]interface{}{
 			"estimated_improvements": map[string]interface{}{
-				"video_call_quality":    "+25%",
-				"gaming_latency":        "-40%",
-				"overall_fairness":      "+35%",
-				"bandwidth_efficiency":  "+15%",
+				"video_call_quality":   "+25%",
+				"gaming_latency":       "-40%",
+				"overall_fairness":     "+35%",
+				"bandwidth_efficiency": "+15%",
 			},
 			"potential_issues": []map[string]interface{}{
 				{
@@ -282,7 +282,7 @@ func (t *ConfigSecuritySettingsTool) Validate(params map[string]interface{}) err
 			return fmt.Errorf("security_level parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -304,30 +304,30 @@ func (t *ConfigSecuritySettingsTool) Execute(ctx context.Context, params map[str
 		},
 		"encryption_settings": map[string]interface{}{
 			"wifi_encryption": map[string]interface{}{
-				"protocol":          "WPA3-SAE",
-				"pairwise_cipher":   "CCMP-256",
-				"group_cipher":      "CCMP-256",
-				"key_rotation":      3600,
-				"pmf_required":      true,
+				"protocol":        "WPA3-SAE",
+				"pairwise_cipher": "CCMP-256",
+				"group_cipher":    "CCMP-256",
+				"key_rotation":    3600,
+				"pmf_required":    true,
 			},
 			"management_encryption": map[string]interface{}{
-				"protocol":     "TLS_1.3",
-				"cipher_suite": "TLS_AES_256_GCM_SHA384",
+				"protocol":        "TLS_1.3",
+				"cipher_suite":    "TLS_AES_256_GCM_SHA384",
 				"cert_validation": true,
 				"hsts_enabled":    true,
 			},
 		},
 		"access_control": map[string]interface{}{
 			"authentication": map[string]interface{}{
-				"method":           "radius_802.1x",
-				"multi_factor":     true,
-				"cert_based":       true,
-				"timeout_seconds":  300,
+				"method":          "radius_802.1x",
+				"multi_factor":    true,
+				"cert_based":      true,
+				"timeout_seconds": 300,
 			},
 			"authorization": map[string]interface{}{
-				"role_based":       true,
-				"vlan_assignment":  true,
-				"bandwidth_limits": true,
+				"role_based":        true,
+				"vlan_assignment":   true,
+				"bandwidth_limits":  true,
 				"time_restrictions": true,
 			},
 		},
@@ -355,10 +355,10 @@ func (t *ConfigSecuritySettingsTool) Execute(ctx context.Context, params map[str
 		},
 		"compliance_check": map[string]interface{}{
 			"standards_compliance": map[string]interface{}{
-				"iso_27001":      "compliant",
+				"iso_27001":          "compliant",
 				"nist_cybersecurity": "compliant",
-				"gdpr_privacy":   "compliant",
-				"pci_dss":        "compliant",
+				"gdpr_privacy":       "compliant",
+				"pci_dss":            "compliant",
 			},
 			"security_score": 92,
 			"recommendations": []map[string]interface{}{
@@ -409,7 +409,7 @@ func (t *ConfigBandSteeringTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("steering_mode parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -431,38 +431,38 @@ func (t *ConfigBandSteeringTool) Execute(ctx context.Context, params map[string]
 		},
 		"steering_parameters": map[string]interface{}{
 			"rssi_thresholds": map[string]interface{}{
-				"5ghz_prefer_threshold":   -65,
-				"6ghz_prefer_threshold":   -60,
-				"band_switch_hysteresis":  5,
-				"client_age_threshold":    30,
+				"5ghz_prefer_threshold":  -65,
+				"6ghz_prefer_threshold":  -60,
+				"band_switch_hysteresis": 5,
+				"client_age_threshold":   30,
 			},
 			"load_balancing": map[string]interface{}{
-				"max_clients_2_4ghz": 15,
-				"max_clients_5ghz":   25,
-				"max_clients_6ghz":   30,
+				"max_clients_2_4ghz":  15,
+				"max_clients_5ghz":    25,
+				"max_clients_6ghz":    30,
 				"load_balance_factor": 0.8,
 			},
 			"capability_detection": map[string]interface{}{
-				"detect_11ac":       true,
-				"detect_11ax":       true,
-				"detect_11be":       true,
-				"legacy_support":    true,
+				"detect_11ac":    true,
+				"detect_11ax":    true,
+				"detect_11be":    true,
+				"legacy_support": true,
 			},
 		},
 		"steering_algorithms": []map[string]interface{}{
 			{
-				"algorithm":    "rssi_based_steering",
-				"priority":     1,
-				"description":  "Steer clients to higher bands based on signal strength",
-				"conditions":   []string{"client_rssi > threshold", "target_band_available"},
-				"actions":      []string{"send_btm_request", "adjust_beacon_power"},
+				"algorithm":   "rssi_based_steering",
+				"priority":    1,
+				"description": "Steer clients to higher bands based on signal strength",
+				"conditions":  []string{"client_rssi > threshold", "target_band_available"},
+				"actions":     []string{"send_btm_request", "adjust_beacon_power"},
 			},
 			{
-				"algorithm":    "load_aware_steering",
-				"priority":     2,
-				"description":  "Balance client load across available bands",
-				"conditions":   []string{"band_utilization > 70%", "alternative_band_available"},
-				"actions":      []string{"defer_probe_response", "suggest_alternative_band"},
+				"algorithm":   "load_aware_steering",
+				"priority":    2,
+				"description": "Balance client load across available bands",
+				"conditions":  []string{"band_utilization > 70%", "alternative_band_available"},
+				"actions":     []string{"defer_probe_response", "suggest_alternative_band"},
 			},
 		},
 		"performance_metrics": map[string]interface{}{
@@ -478,10 +478,10 @@ func (t *ConfigBandSteeringTool) Execute(ctx context.Context, params map[string]
 		},
 		"optimization_results": map[string]interface{}{
 			"expected_improvements": map[string]interface{}{
-				"overall_throughput":    "+22%",
-				"5ghz_utilization":      "+15%",
-				"6ghz_utilization":      "+45%",
-				"client_experience":     "+18%",
+				"overall_throughput": "+22%",
+				"5ghz_utilization":   "+15%",
+				"6ghz_utilization":   "+45%",
+				"client_experience":  "+18%",
 			},
 			"monitoring_recommendations": []string{
 				"track_steering_success_rate",
@@ -531,7 +531,7 @@ func (t *ConfigAutoOptimizeTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("optimization_scope parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -546,47 +546,47 @@ func (t *ConfigAutoOptimizeTool) Execute(ctx context.Context, params map[string]
 	// Simulate automatic configuration optimization
 	result := map[string]interface{}{
 		"optimization_analysis": map[string]interface{}{
-			"scope":             optimizationScope,
+			"scope":              optimizationScope,
 			"analysis_timestamp": time.Now().Format(time.RFC3339),
-			"data_sources":      []string{"performance_metrics", "client_behavior", "traffic_patterns", "error_logs"},
-			"analysis_period":   "last_7_days",
+			"data_sources":       []string{"performance_metrics", "client_behavior", "traffic_patterns", "error_logs"},
+			"analysis_period":    "last_7_days",
 		},
 		"identified_issues": []map[string]interface{}{
 			{
-				"issue_type":    "channel_congestion",
-				"severity":      "medium",
-				"affected_aps":  []string{"ap-001", "ap-003"},
-				"impact":        "15% throughput reduction",
-				"confidence":    0.92,
+				"issue_type":   "channel_congestion",
+				"severity":     "medium",
+				"affected_aps": []string{"ap-001", "ap-003"},
+				"impact":       "15% throughput reduction",
+				"confidence":   0.92,
 			},
 			{
-				"issue_type":    "suboptimal_power_levels",
-				"severity":      "low",
-				"affected_aps":  []string{"ap-002", "ap-004"},
-				"impact":        "increased interference",
-				"confidence":    0.78,
+				"issue_type":   "suboptimal_power_levels",
+				"severity":     "low",
+				"affected_aps": []string{"ap-002", "ap-004"},
+				"impact":       "increased interference",
+				"confidence":   0.78,
 			},
 		},
 		"optimization_recommendations": []map[string]interface{}{
 			{
-				"category":          "channel_optimization",
+				"category":           "channel_optimization",
 				"recommended_action": "auto_channel_selection",
-				"target_devices":    []string{"ap-001", "ap-003"},
-				"expected_benefit":  "20% throughput improvement",
-				"implementation":    "immediate",
-				"risk_level":       "low",
+				"target_devices":     []string{"ap-001", "ap-003"},
+				"expected_benefit":   "20% throughput improvement",
+				"implementation":     "immediate",
+				"risk_level":         "low",
 				"changes": map[string]interface{}{
 					"ap-001": map[string]interface{}{"channel_2_4ghz": 1, "channel_5ghz": 36},
 					"ap-003": map[string]interface{}{"channel_2_4ghz": 11, "channel_5ghz": 149},
 				},
 			},
 			{
-				"category":          "power_optimization",
+				"category":           "power_optimization",
 				"recommended_action": "adaptive_power_control",
-				"target_devices":    []string{"ap-002", "ap-004"},
-				"expected_benefit":  "reduced interference, better coverage",
-				"implementation":    "gradual",
-				"risk_level":       "minimal",
+				"target_devices":     []string{"ap-002", "ap-004"},
+				"expected_benefit":   "reduced interference, better coverage",
+				"implementation":     "gradual",
+				"risk_level":         "minimal",
 				"changes": map[string]interface{}{
 					"ap-002": map[string]interface{}{"tx_power_2_4ghz": 17, "tx_power_5ghz": 20},
 					"ap-004": map[string]interface{}{"tx_power_2_4ghz": 14, "tx_power_5ghz": 18},
@@ -599,8 +599,8 @@ func (t *ConfigAutoOptimizeTool) Execute(ctx context.Context, params map[string]
 			"predicted_outcomes": map[string]interface{}{
 				"overall_throughput_improvement": "18.5%",
 				"client_satisfaction_score":      "+12 points",
-				"error_rate_reduction":          "25%",
-				"roaming_efficiency":            "+15%",
+				"error_rate_reduction":           "25%",
+				"roaming_efficiency":             "+15%",
 			},
 			"learning_sources": []string{
 				"historical_performance_data",
@@ -611,16 +611,16 @@ func (t *ConfigAutoOptimizeTool) Execute(ctx context.Context, params map[string]
 		},
 		"implementation_plan": map[string]interface{}{
 			"phase_1": map[string]interface{}{
-				"duration":     "immediate",
-				"changes":      "low_risk_optimizations",
+				"duration":      "immediate",
+				"changes":       "low_risk_optimizations",
 				"rollback_time": "< 30 seconds",
-				"monitoring":   "continuous",
+				"monitoring":    "continuous",
 			},
 			"phase_2": map[string]interface{}{
-				"duration":     "15_minutes",
-				"changes":      "medium_impact_optimizations",
+				"duration":      "15_minutes",
+				"changes":       "medium_impact_optimizations",
 				"rollback_time": "< 2 minutes",
-				"monitoring":   "enhanced",
+				"monitoring":    "enhanced",
 			},
 			"validation_criteria": []string{
 				"throughput_improvement > 10%",
@@ -668,7 +668,7 @@ func (t *ConfigValidateChangesTool) Validate(params map[string]interface{}) erro
 			return fmt.Errorf("proposed_changes parameter must be an object")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -693,65 +693,65 @@ func (t *ConfigValidateChangesTool) Execute(ctx context.Context, params map[stri
 		"proposed_changes": proposedChanges,
 		"validation_categories": []map[string]interface{}{
 			{
-				"category":      "syntax_validation",
-				"status":        "passed",
-				"checks_count":  12,
-				"description":   "Configuration syntax and format validation",
-				"issues":        []string{},
+				"category":     "syntax_validation",
+				"status":       "passed",
+				"checks_count": 12,
+				"description":  "Configuration syntax and format validation",
+				"issues":       []string{},
 			},
 			{
-				"category":      "safety_validation",
-				"status":        "passed",
-				"checks_count":  15,
-				"description":   "Safety checks to prevent network disruption",
-				"issues":        []string{},
+				"category":     "safety_validation",
+				"status":       "passed",
+				"checks_count": 15,
+				"description":  "Safety checks to prevent network disruption",
+				"issues":       []string{},
 			},
 			{
-				"category":      "security_validation",
-				"status":        "warning",
-				"checks_count":  10,
-				"description":   "Security policy and compliance validation",
-				"issues":        []string{"weak_password_policy_detected"},
+				"category":     "security_validation",
+				"status":       "warning",
+				"checks_count": 10,
+				"description":  "Security policy and compliance validation",
+				"issues":       []string{"weak_password_policy_detected"},
 			},
 			{
-				"category":      "performance_validation",
-				"status":        "passed",
-				"checks_count":  8,
-				"description":   "Performance impact assessment",
-				"issues":        []string{},
+				"category":     "performance_validation",
+				"status":       "passed",
+				"checks_count": 8,
+				"description":  "Performance impact assessment",
+				"issues":       []string{},
 			},
 			{
-				"category":      "compatibility_validation",
-				"status":        "warning",
-				"checks_count":  2,
-				"description":   "Device and standard compatibility checks",
-				"issues":        []string{"legacy_device_compatibility_concern"},
+				"category":     "compatibility_validation",
+				"status":       "warning",
+				"checks_count": 2,
+				"description":  "Device and standard compatibility checks",
+				"issues":       []string{"legacy_device_compatibility_concern"},
 			},
 		},
 		"detailed_validation_results": []map[string]interface{}{
 			{
-				"check_name":   "channel_conflict_detection",
-				"status":       "passed",
-				"severity":     "high",
-				"description":  "Check for channel conflicts between APs",
-				"result":       "no conflicts detected",
-				"details":      "All proposed channels are non-overlapping and optimal",
+				"check_name":  "channel_conflict_detection",
+				"status":      "passed",
+				"severity":    "high",
+				"description": "Check for channel conflicts between APs",
+				"result":      "no conflicts detected",
+				"details":     "All proposed channels are non-overlapping and optimal",
 			},
 			{
-				"check_name":   "regulatory_compliance",
-				"status":       "passed",
-				"severity":     "critical",
-				"description":  "Verify compliance with local regulations",
-				"result":       "compliant with FCC/CE regulations",
-				"details":      "All power levels and channels within permitted ranges",
+				"check_name":  "regulatory_compliance",
+				"status":      "passed",
+				"severity":    "critical",
+				"description": "Verify compliance with local regulations",
+				"result":      "compliant with FCC/CE regulations",
+				"details":     "All power levels and channels within permitted ranges",
 			},
 			{
-				"check_name":   "password_strength",
-				"status":       "warning",
-				"severity":     "medium",
-				"description":  "Validate password complexity requirements",
-				"result":       "password policy could be stronger",
-				"details":      "Consider requiring special characters and longer length",
+				"check_name":     "password_strength",
+				"status":         "warning",
+				"severity":       "medium",
+				"description":    "Validate password complexity requirements",
+				"result":         "password policy could be stronger",
+				"details":        "Consider requiring special characters and longer length",
 				"recommendation": "update_password_policy",
 			},
 		},
@@ -822,7 +822,7 @@ func (t *ConfigRollbackSafeTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("backup_id parameter must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -852,33 +852,33 @@ func (t *ConfigRollbackSafeTool) Execute(ctx context.Context, params map[string]
 		},
 		"rollback_changes": []map[string]interface{}{
 			{
-				"setting":       "wifi_channel_ap_001",
-				"current_value": 36,
-				"restored_value": 6,
-				"change_status": "applied",
+				"setting":          "wifi_channel_ap_001",
+				"current_value":    36,
+				"restored_value":   6,
+				"change_status":    "applied",
 				"affected_clients": 8,
 			},
 			{
-				"setting":       "qos_policy_gaming",
-				"current_value": "disabled",
-				"restored_value": "enabled",
-				"change_status": "applied",
+				"setting":          "qos_policy_gaming",
+				"current_value":    "disabled",
+				"restored_value":   "enabled",
+				"change_status":    "applied",
 				"affected_clients": 3,
 			},
 			{
-				"setting":       "security_wpa_mode",
-				"current_value": "WPA3-SAE",
-				"restored_value": "WPA2-PSK",
-				"change_status": "applied",
+				"setting":          "security_wpa_mode",
+				"current_value":    "WPA3-SAE",
+				"restored_value":   "WPA2-PSK",
+				"change_status":    "applied",
 				"affected_clients": 15,
 			},
 		},
 		"impact_analysis": map[string]interface{}{
 			"client_impact": map[string]interface{}{
 				"total_affected_clients": 26,
-				"reconnection_required":   15,
-				"transparent_changes":     11,
-				"estimated_downtime":      "30-60 seconds per client",
+				"reconnection_required":  15,
+				"transparent_changes":    11,
+				"estimated_downtime":     "30-60 seconds per client",
 			},
 			"service_impact": map[string]interface{}{
 				"network_availability": "99.8%",
@@ -888,7 +888,7 @@ func (t *ConfigRollbackSafeTool) Execute(ctx context.Context, params map[string]
 			"rollback_success_metrics": map[string]interface{}{
 				"configuration_restore_success": "100%",
 				"client_reconnection_success":   "96.2%",
-				"service_continuity":           "excellent",
+				"service_continuity":            "excellent",
 			},
 		},
 		"post_rollback_monitoring": map[string]interface{}{
@@ -963,7 +963,7 @@ func (t *ConfigImpactAnalysisTool) Validate(params map[string]interface{}) error
 			return fmt.Errorf("proposed_changes parameter must be an object")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -980,26 +980,26 @@ func (t *ConfigImpactAnalysisTool) Execute(ctx context.Context, params map[strin
 		"impact_analysis_summary": map[string]interface{}{
 			"analysis_timestamp": time.Now().Format(time.RFC3339),
 			"overall_impact":     "medium",
-			"risk_level":        "low",
-			"confidence_score":  0.89,
-			"analysis_scope":    "network_wide",
+			"risk_level":         "low",
+			"confidence_score":   0.89,
+			"analysis_scope":     "network_wide",
 		},
 		"proposed_changes": proposedChanges,
 		"affected_components": []map[string]interface{}{
 			{
-				"component_type": "access_points",
-				"component_ids":  []string{"ap-001", "ap-002", "ap-003"},
-				"impact_type":    "configuration_update",
-				"impact_level":   "medium",
-				"downtime":       "0-30 seconds per AP",
+				"component_type":   "access_points",
+				"component_ids":    []string{"ap-001", "ap-002", "ap-003"},
+				"impact_type":      "configuration_update",
+				"impact_level":     "medium",
+				"downtime":         "0-30 seconds per AP",
 				"affected_clients": 45,
 			},
 			{
-				"component_type": "network_controllers",
-				"component_ids":  []string{"controller-main"},
-				"impact_type":    "policy_update",
-				"impact_level":   "low",
-				"downtime":       "none",
+				"component_type":   "network_controllers",
+				"component_ids":    []string{"controller-main"},
+				"impact_type":      "policy_update",
+				"impact_level":     "low",
+				"downtime":         "none",
 				"affected_clients": 0,
 			},
 		},
@@ -1010,27 +1010,27 @@ func (t *ConfigImpactAnalysisTool) Execute(ctx context.Context, params map[strin
 			"transparent_updates":   16,
 			"client_categories": map[string]interface{}{
 				"high_priority_clients": map[string]interface{}{
-					"count": 8,
-					"types": []string{"video_conference_rooms", "critical_iot_devices"},
+					"count":  8,
+					"types":  []string{"video_conference_rooms", "critical_iot_devices"},
 					"impact": "minimal - no interruption expected",
 				},
 				"standard_clients": map[string]interface{}{
-					"count": 30,
-					"types": []string{"laptops", "smartphones", "tablets"},
+					"count":  30,
+					"types":  []string{"laptops", "smartphones", "tablets"},
 					"impact": "brief reconnection for some devices",
 				},
 				"legacy_clients": map[string]interface{}{
-					"count": 7,
-					"types": []string{"older_iot_devices", "legacy_printers"},
+					"count":  7,
+					"types":  []string{"older_iot_devices", "legacy_printers"},
 					"impact": "may require manual reconnection",
 				},
 			},
 		},
 		"performance_impact_prediction": map[string]interface{}{
-			"throughput_change":     "+15% to +20%",
-			"latency_change":        "-10% to -15%",
-			"coverage_change":       "improved by 8%",
-			"stability_change":      "no significant change",
+			"throughput_change": "+15% to +20%",
+			"latency_change":    "-10% to -15%",
+			"coverage_change":   "improved by 8%",
+			"stability_change":  "no significant change",
 			"confidence_intervals": map[string]interface{}{
 				"throughput": "90% confidence: +12% to +23%",
 				"latency":    "90% confidence: -8% to -18%",
@@ -1040,56 +1040,56 @@ func (t *ConfigImpactAnalysisTool) Execute(ctx context.Context, params map[strin
 		"dependency_analysis": []map[string]interface{}{
 			{
 				"dependency_type": "upstream_configuration",
-				"description":    "QoS policies depend on SSID configuration",
-				"impact":         "QoS rules will be updated automatically",
-				"risk_level":     "low",
+				"description":     "QoS policies depend on SSID configuration",
+				"impact":          "QoS rules will be updated automatically",
+				"risk_level":      "low",
 			},
 			{
 				"dependency_type": "client_authentication",
-				"description":    "Security changes may affect client certificates",
-				"impact":         "Some clients may need certificate updates",
-				"risk_level":     "medium",
+				"description":     "Security changes may affect client certificates",
+				"impact":          "Some clients may need certificate updates",
+				"risk_level":      "medium",
 			},
 		},
 		"timeline_analysis": map[string]interface{}{
 			"implementation_phases": []map[string]interface{}{
 				{
-					"phase": 1,
-					"duration": "0-2 minutes",
-					"description": "Controller configuration updates",
-					"impact": "minimal",
+					"phase":             1,
+					"duration":          "0-2 minutes",
+					"description":       "Controller configuration updates",
+					"impact":            "minimal",
 					"affected_services": []string{"management_interface"},
 				},
 				{
-					"phase": 2,
-					"duration": "2-5 minutes",
-					"description": "Access point configuration deployment",
-					"impact": "medium",
+					"phase":             2,
+					"duration":          "2-5 minutes",
+					"description":       "Access point configuration deployment",
+					"impact":            "medium",
 					"affected_services": []string{"wifi_connectivity", "client_associations"},
 				},
 				{
-					"phase": 3,
-					"duration": "5-10 minutes",
-					"description": "Client adaptation and reconnection",
-					"impact": "low",
+					"phase":             3,
+					"duration":          "5-10 minutes",
+					"description":       "Client adaptation and reconnection",
+					"impact":            "low",
 					"affected_services": []string{"client_connections"},
 				},
 			},
 			"total_implementation_time": "10-15 minutes",
-			"stabilization_time": "15-30 minutes",
+			"stabilization_time":        "15-30 minutes",
 		},
 		"risk_mitigation_recommendations": []map[string]interface{}{
 			{
 				"risk_category": "service_disruption",
-				"mitigation": "implement_staged_rollout",
-				"description": "Deploy changes to 25% of APs first, monitor for 10 minutes",
-				"effort": "low",
+				"mitigation":    "implement_staged_rollout",
+				"description":   "Deploy changes to 25% of APs first, monitor for 10 minutes",
+				"effort":        "low",
 			},
 			{
 				"risk_category": "client_compatibility",
-				"mitigation": "prepare_fallback_configuration",
-				"description": "Have rollback plan ready for immediate execution",
-				"effort": "minimal",
+				"mitigation":    "prepare_fallback_configuration",
+				"description":   "Have rollback plan ready for immediate execution",
+				"effort":        "minimal",
 			},
 		},
 	}

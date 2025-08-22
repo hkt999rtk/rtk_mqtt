@@ -38,7 +38,7 @@ func (m *Manager) initializeDefaultRules() {
 			},
 		},
 	}
-	
+
 	for i := range defaultRules {
 		if err := m.AddDetectionRule(&defaultRules[i]); err != nil {
 			log.Printf("Failed to add default detection rule %s: %v", defaultRules[i].ID, err)

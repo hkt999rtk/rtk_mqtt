@@ -18,7 +18,7 @@ func TestWiFiScanChannelsTool_Execute(t *testing.T) {
 
 	// Test valid band parameter
 	params := map[string]interface{}{
-		"band": "2.4GHz",
+		"band":      "2.4GHz",
 		"scan_type": "active",
 	}
 
@@ -59,9 +59,9 @@ func TestWiFiAnalyzeInterferenceTool_Execute(t *testing.T) {
 	defer cancel()
 
 	params := map[string]interface{}{
-		"channel": 6,
+		"channel":          6,
 		"duration_seconds": 30,
-		"threshold_dbm": -70,
+		"threshold_dbm":    -70,
 	}
 
 	result, err := tool.Execute(ctx, params)
@@ -93,7 +93,7 @@ func TestWiFiSpectrumUtilizationTool_Execute(t *testing.T) {
 	defer cancel()
 
 	params := map[string]interface{}{
-		"band": "2.4GHz",
+		"band":             "2.4GHz",
 		"duration_seconds": 60,
 	}
 
@@ -114,8 +114,8 @@ func TestWiFiSignalStrengthMapTool_Execute(t *testing.T) {
 	defer cancel()
 
 	params := map[string]interface{}{
-		"ssid": "TestNetwork",
-		"area_size": 100,
+		"ssid":       "TestNetwork",
+		"area_size":  100,
 		"resolution": 10,
 	}
 
@@ -151,7 +151,7 @@ func TestWiFiCoverageAnalysisTool_Execute(t *testing.T) {
 			{"x": 50, "y": 50, "power_dbm": 20},
 		},
 		"area_dimensions": map[string]interface{}{
-			"width": 100,
+			"width":  100,
 			"height": 100,
 		},
 		"min_signal_threshold": -70,
@@ -209,9 +209,9 @@ func TestWiFiThroughputAnalysisTool_Execute(t *testing.T) {
 	defer cancel()
 
 	params := map[string]interface{}{
-		"target_device": "client-device-001",
-		"test_duration": 60,
-		"packet_size": 1500,
+		"target_device":      "client-device-001",
+		"test_duration":      60,
+		"packet_size":        1500,
 		"concurrent_streams": 4,
 	}
 
@@ -232,9 +232,9 @@ func TestWiFiLatencyProfilingTool_Execute(t *testing.T) {
 	defer cancel()
 
 	params := map[string]interface{}{
-		"target_device": "client-device-001",
-		"test_duration": 30,
-		"packet_count": 100,
+		"target_device":      "client-device-001",
+		"test_duration":      30,
+		"packet_count":       100,
 		"packet_interval_ms": 100,
 	}
 
@@ -346,7 +346,7 @@ func BenchmarkWiFiScanChannelsTool_Execute(b *testing.B) {
 	tool := &WiFiScanChannelsTool{name: "wifi.scan_channels"}
 	ctx := context.Background()
 	params := map[string]interface{}{
-		"band": "2.4GHz",
+		"band":      "2.4GHz",
 		"scan_type": "active",
 	}
 
@@ -363,7 +363,7 @@ func BenchmarkWiFiAnalyzeInterferenceTool_Execute(b *testing.B) {
 	tool := &WiFiAnalyzeInterferenceTool{name: "wifi.analyze_interference"}
 	ctx := context.Background()
 	params := map[string]interface{}{
-		"channel": 6,
+		"channel":          6,
 		"duration_seconds": 10,
 	}
 

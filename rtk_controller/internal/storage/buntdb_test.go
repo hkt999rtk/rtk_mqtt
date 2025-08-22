@@ -40,14 +40,14 @@ func TestNewBuntDB(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			db, err := NewBuntDB(tt.path)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, db)
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, db)
-				
+
 				// Clean up
 				if db != nil {
 					db.Close()
@@ -320,18 +320,18 @@ func TestBuntDB_ConcurrentAccess(t *testing.T) {
 
 	// Test concurrent writes
 	done := make(chan bool, numGoroutines)
-	
+
 	for i := 0; i < numGoroutines; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
-			
+
 			for j := 0; j < numOperations; j++ {
 				key := fmt.Sprintf("concurrent:goroutine%d:item%d", id, j)
 				value := fmt.Sprintf("value_%d_%d", id, j)
-				
+
 				err := db.Set(key, value)
 				assert.NoError(t, err)
-				
+
 				var retrieved string
 				err = db.Get(key, &retrieved)
 				assert.NoError(t, err)
@@ -368,7 +368,7 @@ func TestBuntDB_JSONSerialization(t *testing.T) {
 	}
 
 	now := time.Now().UTC().Truncate(time.Second)
-	
+
 	original := ComplexStruct{
 		ID:        "test-123",
 		Timestamp: now,
@@ -413,7 +413,7 @@ func TestBuntDB_Performance(t *testing.T) {
 	defer db.Close()
 
 	const numOperations = 10000
-	
+
 	// Test write performance
 	start := time.Now()
 	for i := 0; i < numOperations; i++ {
@@ -423,13 +423,13 @@ func TestBuntDB_Performance(t *testing.T) {
 			"name":  fmt.Sprintf("item_%d", i),
 			"value": i * 2,
 		}
-		
+
 		err := db.Set(key, value)
 		assert.NoError(t, err)
 	}
 	writeTime := time.Since(start)
-	
-	t.Logf("Write performance: %d operations in %v (%.2f ops/sec)", 
+
+	t.Logf("Write performance: %d operations in %v (%.2f ops/sec)",
 		numOperations, writeTime, float64(numOperations)/writeTime.Seconds())
 
 	// Test read performance
@@ -437,14 +437,14 @@ func TestBuntDB_Performance(t *testing.T) {
 	for i := 0; i < numOperations; i++ {
 		key := fmt.Sprintf("perf:item:%d", i)
 		var value map[string]interface{}
-		
+
 		err := db.Get(key, &value)
 		assert.NoError(t, err)
 		assert.Equal(t, i, int(value["id"].(float64)))
 	}
 	readTime := time.Since(start)
-	
-	t.Logf("Read performance: %d operations in %v (%.2f ops/sec)", 
+
+	t.Logf("Read performance: %d operations in %v (%.2f ops/sec)",
 		numOperations, readTime, float64(numOperations)/readTime.Seconds())
 
 	// Test list performance
@@ -453,7 +453,7 @@ func TestBuntDB_Performance(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, keys, numOperations)
 	listTime := time.Since(start)
-	
+
 	t.Logf("List performance: %d keys in %v", len(keys), listTime)
 }
 

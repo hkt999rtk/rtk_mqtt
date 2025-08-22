@@ -14,13 +14,13 @@ type GraphBuilder struct {
 	// Graph representation
 	nodes map[string]*TopologyNode
 	edges map[string]*TopologyEdge
-	
+
 	// Graph metadata
 	metadata GraphMetadata
-	
+
 	// Configuration
 	config GraphConfig
-	
+
 	// Identity management
 	identityManager *DeviceIdentityManager
 }
@@ -36,84 +36,84 @@ type TopologyNode struct {
 
 // TopologyEdge represents a connection between devices
 type TopologyEdge struct {
-	ID          string
-	From        *TopologyNode
-	To          *TopologyNode
-	Connection  types.DeviceConnection
-	Properties  EdgeProperties
+	ID         string
+	From       *TopologyNode
+	To         *TopologyNode
+	Connection types.DeviceConnection
+	Properties EdgeProperties
 }
 
 // NodePosition holds graph layout position information
 type NodePosition struct {
-	X         float64
-	Y         float64
-	Z         float64 // For 3D layouts
-	Layer     int     // Network layer (physical, data link, network, etc.)
-	Group     string  // Grouping identifier (subnet, building, etc.)
+	X     float64
+	Y     float64
+	Z     float64 // For 3D layouts
+	Layer int     // Network layer (physical, data link, network, etc.)
+	Group string  // Grouping identifier (subnet, building, etc.)
 }
 
 // NodeProperties holds additional node visualization properties
 type NodeProperties struct {
-	Size         float64
-	Color        string
-	Shape        string
-	Label        string
-	Tooltip      string
-	IconType     string
-	Status       string // online, offline, warning, error
-	Importance   float64 // For highlighting critical nodes
+	Size       float64
+	Color      string
+	Shape      string
+	Label      string
+	Tooltip    string
+	IconType   string
+	Status     string  // online, offline, warning, error
+	Importance float64 // For highlighting critical nodes
 }
 
 // EdgeProperties holds additional edge visualization properties
 type EdgeProperties struct {
-	Width       float64
-	Color       string
-	Style       string // solid, dashed, dotted
-	Label       string
-	Tooltip     string
-	Animated    bool
+	Width         float64
+	Color         string
+	Style         string // solid, dashed, dotted
+	Label         string
+	Tooltip       string
+	Animated      bool
 	Bidirectional bool
-	Quality     string // excellent, good, fair, poor
+	Quality       string // excellent, good, fair, poor
 }
 
 // GraphMetadata holds graph-wide information
 type GraphMetadata struct {
-	TotalNodes        int
-	TotalEdges        int
+	TotalNodes          int
+	TotalEdges          int
 	ConnectedComponents int
-	MaxPathLength     int
-	GraphDensity      float64
-	LastUpdate        time.Time
-	BuildDuration     time.Duration
+	MaxPathLength       int
+	GraphDensity        float64
+	LastUpdate          time.Time
+	BuildDuration       time.Duration
 }
 
 // GraphConfig holds graph building configuration
 type GraphConfig struct {
 	// Layout settings
-	EnableAutoLayout      bool
-	LayoutAlgorithm      string  // force, hierarchical, circular, grid
-	NodeSpacing          float64
-	EdgeLength           float64
-	LayerSeparation      float64
-	
+	EnableAutoLayout bool
+	LayoutAlgorithm  string // force, hierarchical, circular, grid
+	NodeSpacing      float64
+	EdgeLength       float64
+	LayerSeparation  float64
+
 	// Visual settings
-	ShowOfflineDevices   bool
-	ShowWeakConnections  bool
-	MinConnectionQuality float64
+	ShowOfflineDevices         bool
+	ShowWeakConnections        bool
+	MinConnectionQuality       float64
 	NodeSizeBasedOnConnections bool
 	EdgeWidthBasedOnBandwidth  bool
-	
+
 	// Grouping and clustering
-	EnableClustering     bool
-	ClusterBySubnet      bool
-	ClusterByDeviceType  bool
-	ClusterByLocation    bool
-	MaxClusterSize       int
-	
+	EnableClustering    bool
+	ClusterBySubnet     bool
+	ClusterByDeviceType bool
+	ClusterByLocation   bool
+	MaxClusterSize      int
+
 	// Performance settings
-	MaxNodes             int
-	MaxEdges             int
-	UpdateThrottleMs     int
+	MaxNodes         int
+	MaxEdges         int
+	UpdateThrottleMs int
 }
 
 // NewGraphBuilder creates a new topology graph builder
@@ -132,41 +132,41 @@ func NewGraphBuilder(config GraphConfig, identityManager *DeviceIdentityManager)
 // BuildGraph constructs the topology graph from devices and connections
 func (gb *GraphBuilder) BuildGraph(devices map[string]*types.NetworkDevice, connections []types.DeviceConnection) error {
 	startTime := time.Now()
-	
+
 	log.Printf("Building topology graph with %d devices and %d connections", len(devices), len(connections))
-	
+
 	// Clear existing graph
 	gb.clearGraph()
-	
+
 	// Add nodes (devices)
 	if err := gb.addNodes(devices); err != nil {
 		return fmt.Errorf("failed to add nodes: %w", err)
 	}
-	
+
 	// Add edges (connections)
 	if err := gb.addEdges(connections); err != nil {
 		return fmt.Errorf("failed to add edges: %w", err)
 	}
-	
+
 	// Apply layout algorithm
 	if gb.config.EnableAutoLayout {
 		if err := gb.applyLayout(); err != nil {
 			log.Printf("Warning: layout algorithm failed: %v", err)
 		}
 	}
-	
+
 	// Calculate graph properties
 	gb.calculateGraphProperties()
-	
+
 	// Update metadata
 	gb.metadata.TotalNodes = len(gb.nodes)
 	gb.metadata.TotalEdges = len(gb.edges)
 	gb.metadata.LastUpdate = time.Now()
 	gb.metadata.BuildDuration = time.Since(startTime)
-	
-	log.Printf("Topology graph built successfully in %v: %d nodes, %d edges", 
+
+	log.Printf("Topology graph built successfully in %v: %d nodes, %d edges",
 		gb.metadata.BuildDuration, gb.metadata.TotalNodes, gb.metadata.TotalEdges)
-	
+
 	return nil
 }
 
@@ -175,17 +175,17 @@ func (gb *GraphBuilder) GetGraph() (map[string]*TopologyNode, map[string]*Topolo
 	// Return copies to prevent external modification
 	nodesCopy := make(map[string]*TopologyNode)
 	edgesCopy := make(map[string]*TopologyEdge)
-	
+
 	for id, node := range gb.nodes {
 		nodeCopy := *node
 		nodesCopy[id] = &nodeCopy
 	}
-	
+
 	for id, edge := range gb.edges {
 		edgeCopy := *edge
 		edgesCopy[id] = &edgeCopy
 	}
-	
+
 	return nodesCopy, edgesCopy
 }
 
@@ -197,13 +197,13 @@ func (gb *GraphBuilder) GetGraphMetadata() GraphMetadata {
 // GetNodesByType returns nodes filtered by device type
 func (gb *GraphBuilder) GetNodesByType(deviceType string) []*TopologyNode {
 	var nodes []*TopologyNode
-	
+
 	for _, node := range gb.nodes {
 		if node.Device.DeviceType == deviceType {
 			nodes = append(nodes, node)
 		}
 	}
-	
+
 	return nodes
 }
 
@@ -213,12 +213,12 @@ func (gb *GraphBuilder) GetCriticalPath(fromDeviceID, toDeviceID string) ([]*Top
 	if !exists {
 		return nil, nil, fmt.Errorf("source device not found: %s", fromDeviceID)
 	}
-	
+
 	toNode, exists := gb.nodes[toDeviceID]
 	if !exists {
 		return nil, nil, fmt.Errorf("destination device not found: %s", toDeviceID)
 	}
-	
+
 	// Use Dijkstra's algorithm to find shortest path
 	path, edges := gb.findShortestPath(fromNode, toNode)
 	return path, edges, nil
@@ -237,13 +237,13 @@ func (gb *GraphBuilder) addNodes(devices map[string]*types.NetworkDevice) error 
 		if !gb.config.ShowOfflineDevices && !device.Online {
 			continue
 		}
-		
+
 		// Check node limit
 		if len(gb.nodes) >= gb.config.MaxNodes {
 			log.Printf("Warning: reached maximum node limit (%d)", gb.config.MaxNodes)
 			break
 		}
-		
+
 		node := &TopologyNode{
 			ID:          deviceID,
 			Device:      device,
@@ -251,10 +251,10 @@ func (gb *GraphBuilder) addNodes(devices map[string]*types.NetworkDevice) error 
 			Properties:  gb.calculateNodeProperties(device),
 			Connections: []*TopologyEdge{},
 		}
-		
+
 		gb.nodes[deviceID] = node
 	}
-	
+
 	return nil
 }
 
@@ -265,21 +265,21 @@ func (gb *GraphBuilder) addEdges(connections []types.DeviceConnection) error {
 		if 0.5 < gb.config.MinConnectionQuality {
 			continue
 		}
-		
+
 		// Check edge limit
 		if len(gb.edges) >= gb.config.MaxEdges {
 			log.Printf("Warning: reached maximum edge limit (%d)", gb.config.MaxEdges)
 			break
 		}
-		
+
 		// Get nodes
 		fromNode, fromExists := gb.nodes[conn.FromDeviceID]
 		toNode, toExists := gb.nodes[conn.ToDeviceID]
-		
+
 		if !fromExists || !toExists {
 			continue // Skip if either node doesn't exist
 		}
-		
+
 		edge := &TopologyEdge{
 			ID:         conn.ID,
 			From:       fromNode,
@@ -287,14 +287,14 @@ func (gb *GraphBuilder) addEdges(connections []types.DeviceConnection) error {
 			Connection: conn,
 			Properties: gb.calculateEdgeProperties(conn),
 		}
-		
+
 		gb.edges[conn.ID] = edge
-		
+
 		// Add edge to node connections
 		fromNode.Connections = append(fromNode.Connections, edge)
 		toNode.Connections = append(toNode.Connections, edge)
 	}
-	
+
 	return nil
 }
 
@@ -303,7 +303,7 @@ func (gb *GraphBuilder) calculateNodePosition(device *types.NetworkDevice) NodeP
 		Layer: gb.getDeviceLayer(device),
 		Group: gb.getDeviceGroup(device),
 	}
-	
+
 	// Initial positioning based on device type and role
 	switch device.Role {
 	case "gateway": // TODO: Add DeviceRoleGateway constant
@@ -319,7 +319,7 @@ func (gb *GraphBuilder) calculateNodePosition(device *types.NetworkDevice) NodeP
 	default:
 		position.Layer = 2
 	}
-	
+
 	return position
 }
 
@@ -328,7 +328,7 @@ func (gb *GraphBuilder) calculateNodeProperties(device *types.NetworkDevice) Nod
 		Label:   gb.getDeviceLabel(device),
 		Tooltip: gb.getDeviceTooltip(device),
 	}
-	
+
 	// Set status based on device state
 	if device.Online {
 		properties.Status = "online"
@@ -337,7 +337,7 @@ func (gb *GraphBuilder) calculateNodeProperties(device *types.NetworkDevice) Nod
 		properties.Status = "offline"
 		properties.Color = "#F44336" // Red
 	}
-	
+
 	// Set size based on number of connections if configured
 	if gb.config.NodeSizeBasedOnConnections {
 		connectionCount := len(device.Interfaces)
@@ -345,7 +345,7 @@ func (gb *GraphBuilder) calculateNodeProperties(device *types.NetworkDevice) Nod
 	} else {
 		properties.Size = 15
 	}
-	
+
 	// Set shape and icon based on device type
 	switch device.DeviceType {
 	case "router":
@@ -364,20 +364,20 @@ func (gb *GraphBuilder) calculateNodeProperties(device *types.NetworkDevice) Nod
 		properties.Shape = "circle"
 		properties.IconType = "device"
 	}
-	
+
 	// Calculate importance based on device role and connections
 	properties.Importance = gb.calculateDeviceImportance(device)
-	
+
 	return properties
 }
 
 func (gb *GraphBuilder) calculateEdgeProperties(conn types.DeviceConnection) EdgeProperties {
 	properties := EdgeProperties{
-		Label:    gb.getConnectionLabel(conn),
-		Tooltip:  gb.getConnectionTooltip(conn),
+		Label:         gb.getConnectionLabel(conn),
+		Tooltip:       gb.getConnectionTooltip(conn),
 		Bidirectional: true,
 	}
-	
+
 	// Set width based on bandwidth if configured
 	if gb.config.EdgeWidthBasedOnBandwidth && conn.Metrics.Bandwidth > 0 {
 		properties.Width = 1 + float64(conn.Metrics.Bandwidth)/100
@@ -387,7 +387,7 @@ func (gb *GraphBuilder) calculateEdgeProperties(conn types.DeviceConnection) Edg
 	} else {
 		properties.Width = 2
 	}
-	
+
 	// Set color and style based on connection quality
 	confidence := 0.5 // TODO: conn.Metrics.Confidence
 	if confidence >= 0.8 {
@@ -407,13 +407,13 @@ func (gb *GraphBuilder) calculateEdgeProperties(conn types.DeviceConnection) Edg
 		properties.Quality = "poor"
 		properties.Style = "dotted"
 	}
-	
+
 	// Set animation for active connections
 	now := time.Now().UnixMilli()
 	if (now - conn.LastSeen) < 60000 { // Active within last minute
 		properties.Animated = true
 	}
-	
+
 	return properties
 }
 
@@ -435,7 +435,7 @@ func (gb *GraphBuilder) applyLayout() error {
 func (gb *GraphBuilder) applyForceLayout() error {
 	// Simplified force-directed layout algorithm
 	iterations := 100
-	
+
 	for i := 0; i < iterations; i++ {
 		// Apply repulsion forces between all nodes
 		for _, node1 := range gb.nodes {
@@ -443,58 +443,58 @@ func (gb *GraphBuilder) applyForceLayout() error {
 				if node1.ID == node2.ID {
 					continue
 				}
-				
+
 				dx := node1.Position.X - node2.Position.X
 				dy := node1.Position.Y - node2.Position.Y
 				distance := dx*dx + dy*dy
-				
+
 				if distance < 0.01 {
 					distance = 0.01
 				}
-				
+
 				force := gb.config.NodeSpacing / distance
 				node1.Position.X += dx * force * 0.01
 				node1.Position.Y += dy * force * 0.01
 			}
 		}
-		
+
 		// Apply attraction forces along edges
 		for _, edge := range gb.edges {
 			dx := edge.To.Position.X - edge.From.Position.X
 			dy := edge.To.Position.Y - edge.From.Position.Y
 			distance := dx*dx + dy*dy
-			
+
 			force := (distance - gb.config.EdgeLength) * 0.01
-			
+
 			edge.From.Position.X += dx * force
 			edge.From.Position.Y += dy * force
 			edge.To.Position.X -= dx * force
 			edge.To.Position.Y -= dy * force
 		}
 	}
-	
+
 	return nil
 }
 
 func (gb *GraphBuilder) applyHierarchicalLayout() error {
 	// Arrange nodes in layers based on device role/type
 	layers := make(map[int][]*TopologyNode)
-	
+
 	for _, node := range gb.nodes {
 		layer := node.Position.Layer
 		layers[layer] = append(layers[layer], node)
 	}
-	
+
 	// Position nodes in each layer
 	for layer, nodes := range layers {
 		y := float64(layer) * gb.config.LayerSeparation
-		
+
 		for i, node := range nodes {
 			node.Position.X = float64(i-len(nodes)/2) * gb.config.NodeSpacing
 			node.Position.Y = y
 		}
 	}
-	
+
 	return nil
 }
 
@@ -504,14 +504,14 @@ func (gb *GraphBuilder) applyCircularLayout() error {
 	if len(centerNodes) == 0 {
 		centerNodes = gb.GetNodesByType("ap")
 	}
-	
+
 	// Place central nodes at origin
 	for i, node := range centerNodes {
 		angle := float64(i) * 2.0 * 3.14159 / float64(len(centerNodes))
 		node.Position.X = 10 * gb.math_cos(angle)
 		node.Position.Y = 10 * gb.math_sin(angle)
 	}
-	
+
 	// Place other nodes in outer circle
 	otherNodes := []*TopologyNode{}
 	for _, node := range gb.nodes {
@@ -526,14 +526,14 @@ func (gb *GraphBuilder) applyCircularLayout() error {
 			otherNodes = append(otherNodes, node)
 		}
 	}
-	
+
 	for i, node := range otherNodes {
 		angle := float64(i) * 2.0 * 3.14159 / float64(len(otherNodes))
 		radius := 50.0
 		node.Position.X = radius * gb.math_cos(angle)
 		node.Position.Y = radius * gb.math_sin(angle)
 	}
-	
+
 	return nil
 }
 
@@ -543,22 +543,22 @@ func (gb *GraphBuilder) applyGridLayout() error {
 	for _, node := range gb.nodes {
 		nodeList = append(nodeList, node)
 	}
-	
+
 	// Sort by device type for consistent layout
 	sort.Slice(nodeList, func(i, j int) bool {
 		return nodeList[i].Device.DeviceType < nodeList[j].Device.DeviceType
 	})
-	
+
 	gridSize := int(gb.math_sqrt(float64(len(nodeList)))) + 1
-	
+
 	for i, node := range nodeList {
 		row := i / gridSize
 		col := i % gridSize
-		
+
 		node.Position.X = float64(col) * gb.config.NodeSpacing
 		node.Position.Y = float64(row) * gb.config.NodeSpacing
 	}
-	
+
 	return nil
 }
 
@@ -566,16 +566,16 @@ func (gb *GraphBuilder) calculateGraphProperties() {
 	// Calculate connected components using DFS
 	visited := make(map[string]bool)
 	components := 0
-	
+
 	for nodeID := range gb.nodes {
 		if !visited[nodeID] {
 			gb.dfsMarkComponent(nodeID, visited)
 			components++
 		}
 	}
-	
+
 	gb.metadata.ConnectedComponents = components
-	
+
 	// Calculate graph density
 	maxEdges := len(gb.nodes) * (len(gb.nodes) - 1) / 2
 	if maxEdges > 0 {
@@ -585,7 +585,7 @@ func (gb *GraphBuilder) calculateGraphProperties() {
 
 func (gb *GraphBuilder) dfsMarkComponent(nodeID string, visited map[string]bool) {
 	visited[nodeID] = true
-	
+
 	node := gb.nodes[nodeID]
 	for _, edge := range node.Connections {
 		var neighborID string
@@ -594,7 +594,7 @@ func (gb *GraphBuilder) dfsMarkComponent(nodeID string, visited map[string]bool)
 		} else {
 			neighborID = edge.From.ID
 		}
-		
+
 		if !visited[neighborID] {
 			gb.dfsMarkComponent(neighborID, visited)
 		}
@@ -607,31 +607,31 @@ func (gb *GraphBuilder) findShortestPath(from, to *TopologyNode) ([]*TopologyNod
 	previous := make(map[string]*TopologyNode)
 	edgeMap := make(map[string]*TopologyEdge)
 	visited := make(map[string]bool)
-	
+
 	// Initialize distances
 	for nodeID := range gb.nodes {
 		distances[nodeID] = float64(^uint(0) >> 1) // Max float64
 	}
 	distances[from.ID] = 0
-	
+
 	for len(visited) < len(gb.nodes) {
 		// Find unvisited node with minimum distance
 		var current *TopologyNode
 		minDist := float64(^uint(0) >> 1)
-		
+
 		for nodeID, node := range gb.nodes {
 			if !visited[nodeID] && distances[nodeID] < minDist {
 				current = node
 				minDist = distances[nodeID]
 			}
 		}
-		
+
 		if current == nil || current.ID == to.ID {
 			break
 		}
-		
+
 		visited[current.ID] = true
-		
+
 		// Update distances to neighbors
 		for _, edge := range current.Connections {
 			var neighbor *TopologyNode
@@ -640,16 +640,16 @@ func (gb *GraphBuilder) findShortestPath(from, to *TopologyNode) ([]*TopologyNod
 			} else {
 				neighbor = edge.From
 			}
-			
+
 			if visited[neighbor.ID] {
 				continue
 			}
-			
+
 			// Use connection quality as weight (lower quality = higher cost)
 			// TODO: Use edge.Connection.Metrics.Confidence once available
 			weight := 1.0 / (0.5 + 0.1)
 			newDist := distances[current.ID] + weight
-			
+
 			if newDist < distances[neighbor.ID] {
 				distances[neighbor.ID] = newDist
 				previous[neighbor.ID] = current
@@ -657,11 +657,11 @@ func (gb *GraphBuilder) findShortestPath(from, to *TopologyNode) ([]*TopologyNod
 			}
 		}
 	}
-	
+
 	// Reconstruct path
 	var path []*TopologyNode
 	var edges []*TopologyEdge
-	
+
 	current := to
 	for current != nil {
 		path = append([]*TopologyNode{current}, path...)
@@ -670,7 +670,7 @@ func (gb *GraphBuilder) findShortestPath(from, to *TopologyNode) ([]*TopologyNod
 		}
 		current = previous[current.ID]
 	}
-	
+
 	return path, edges
 }
 
@@ -692,7 +692,7 @@ func (gb *GraphBuilder) math_sqrt(x float64) float64 {
 	}
 	z := x
 	for i := 0; i < 10; i++ {
-		z -= (z*z - x) / (2*z)
+		z -= (z*z - x) / (2 * z)
 	}
 	return z
 }
@@ -717,7 +717,7 @@ func (gb *GraphBuilder) getDeviceGroup(device *types.NetworkDevice) string {
 	if device.Location != "" {
 		return device.Location
 	}
-	
+
 	// Group by subnet if location not available
 	for _, iface := range device.Interfaces {
 		for _, ipInfo := range iface.IPAddresses {
@@ -726,7 +726,7 @@ func (gb *GraphBuilder) getDeviceGroup(device *types.NetworkDevice) string {
 			}
 		}
 	}
-	
+
 	return "default"
 }
 
@@ -738,19 +738,19 @@ func (gb *GraphBuilder) getDeviceLabel(device *types.NetworkDevice) string {
 			return identity.FriendlyName
 		}
 	}
-	
+
 	// Fall back to hostname if available
 	if device.Hostname != "" {
 		return device.Hostname
 	}
-	
+
 	// Last resort: use device ID (MAC address)
 	return device.DeviceID
 }
 
 func (gb *GraphBuilder) getDeviceTooltip(device *types.NetworkDevice) string {
-	return fmt.Sprintf("%s\nType: %s\nRole: %s\nStatus: %s", 
-		device.DeviceID, device.DeviceType, device.Role, 
+	return fmt.Sprintf("%s\nType: %s\nRole: %s\nStatus: %s",
+		device.DeviceID, device.DeviceType, device.Role,
 		map[bool]string{true: "Online", false: "Offline"}[device.Online])
 }
 
@@ -762,13 +762,13 @@ func (gb *GraphBuilder) getConnectionLabel(conn types.DeviceConnection) string {
 }
 
 func (gb *GraphBuilder) getConnectionTooltip(conn types.DeviceConnection) string {
-	return fmt.Sprintf("Type: %s\nConfidence: %.2f\nBandwidth: %d Mbps", 
+	return fmt.Sprintf("Type: %s\nConfidence: %.2f\nBandwidth: %d Mbps",
 		conn.ConnectionType, 0.5, conn.Metrics.Bandwidth) // TODO: Use conn.Metrics.Confidence
 }
 
 func (gb *GraphBuilder) calculateDeviceImportance(device *types.NetworkDevice) float64 {
 	importance := 0.5 // Base importance
-	
+
 	// Increase importance for infrastructure devices
 	switch device.Role {
 	case "gateway": // TODO: Add DeviceRoleGateway constant
@@ -778,14 +778,14 @@ func (gb *GraphBuilder) calculateDeviceImportance(device *types.NetworkDevice) f
 	case "switch", "access_point": // TODO: Add DeviceRoleSwitch/AccessPoint constants
 		importance += 0.2
 	}
-	
+
 	// Increase importance based on number of interfaces
 	importance += float64(len(device.Interfaces)) * 0.05
-	
+
 	// Cap at 1.0
 	if importance > 1.0 {
 		importance = 1.0
 	}
-	
+
 	return importance
 }

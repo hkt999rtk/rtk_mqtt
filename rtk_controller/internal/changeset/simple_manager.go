@@ -20,14 +20,14 @@ type SimpleManager struct {
 	// Dependencies
 	storage        storage.Storage
 	commandManager *command.Manager
-	
+
 	// Active changesets in memory
 	activeChangesets map[string]*types.Changeset
-	mutex           sync.RWMutex
-	
+	mutex            sync.RWMutex
+
 	// Configuration
 	config *ManagerConfig
-	
+
 	// Control
 	ctx     context.Context
 	cancel  context.CancelFunc
@@ -38,16 +38,16 @@ type SimpleManager struct {
 type ManagerConfig struct {
 	// MaxActiveChangesets limits the number of active changesets
 	MaxActiveChangesets int
-	
+
 	// ChangesetTimeout is how long a changeset can remain active
 	ChangesetTimeout time.Duration
-	
+
 	// AutoCleanup enables automatic cleanup of old changesets
 	AutoCleanup bool
-	
+
 	// CleanupInterval is how often to run cleanup
 	CleanupInterval time.Duration
-	
+
 	// RetentionDays is how long to keep completed changesets
 	RetentionDays int
 }
@@ -56,17 +56,17 @@ type ManagerConfig struct {
 func DefaultManagerConfig() *ManagerConfig {
 	return &ManagerConfig{
 		MaxActiveChangesets: 50,
-		ChangesetTimeout:   2 * time.Hour,
-		AutoCleanup:        true,
-		CleanupInterval:    1 * time.Hour,
-		RetentionDays:      30,
+		ChangesetTimeout:    2 * time.Hour,
+		AutoCleanup:         true,
+		CleanupInterval:     1 * time.Hour,
+		RetentionDays:       30,
 	}
 }
 
 // NewSimpleManager creates a new simple changeset manager
 func NewSimpleManager(storage storage.Storage, commandManager *command.Manager) *SimpleManager {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	return &SimpleManager{
 		storage:          storage,
 		commandManager:   commandManager,
@@ -81,24 +81,24 @@ func NewSimpleManager(storage storage.Storage, commandManager *command.Manager) 
 func (m *SimpleManager) Start(ctx context.Context) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	if m.started {
 		return fmt.Errorf("changeset manager already started")
 	}
-	
+
 	// Load active changesets from storage
 	if err := m.loadActiveChangesets(); err != nil {
 		log.WithError(err).Warn("Failed to load active changesets")
 	}
-	
+
 	// Start background workers
 	if m.config.AutoCleanup {
 		go m.cleanupWorker()
 	}
-	
+
 	m.started = true
 	log.Info("Simple changeset manager started")
-	
+
 	return nil
 }
 
@@ -106,14 +106,14 @@ func (m *SimpleManager) Start(ctx context.Context) error {
 func (m *SimpleManager) Stop() error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	if !m.started {
 		return nil
 	}
-	
+
 	m.cancel()
 	m.started = false
-	
+
 	log.Info("Simple changeset manager stopped")
 	return nil
 }
@@ -122,12 +122,12 @@ func (m *SimpleManager) Stop() error {
 func (m *SimpleManager) CreateChangeset(ctx context.Context, options *types.ChangesetOptions) (*types.Changeset, error) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	// Check limits
 	if len(m.activeChangesets) >= m.config.MaxActiveChangesets {
 		return nil, fmt.Errorf("maximum active changesets exceeded (%d)", m.config.MaxActiveChangesets)
 	}
-	
+
 	// Create changeset
 	changeset := &types.Changeset{
 		ID:        uuid.New().String(),
@@ -137,7 +137,7 @@ func (m *SimpleManager) CreateChangeset(ctx context.Context, options *types.Chan
 		Results:   make([]*types.CommandResult, 0),
 		Metadata:  make(map[string]interface{}),
 	}
-	
+
 	if options != nil {
 		changeset.Description = options.Description
 		changeset.CreatedBy = options.CreatedBy
@@ -149,20 +149,20 @@ func (m *SimpleManager) CreateChangeset(ctx context.Context, options *types.Chan
 			}
 		}
 	}
-	
+
 	// Store in memory and persistence
 	m.activeChangesets[changeset.ID] = changeset
 	if err := m.persistChangeset(changeset); err != nil {
 		delete(m.activeChangesets, changeset.ID)
 		return nil, fmt.Errorf("failed to persist changeset: %w", err)
 	}
-	
+
 	log.WithFields(log.Fields{
 		"changeset_id": changeset.ID,
 		"description":  changeset.Description,
 		"session_id":   changeset.SessionID,
 	}).Info("Created changeset")
-	
+
 	return changeset, nil
 }
 
@@ -170,28 +170,28 @@ func (m *SimpleManager) CreateChangeset(ctx context.Context, options *types.Chan
 func (m *SimpleManager) AddCommandToChangeset(changesetID string, cmd *types.Command) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	changeset, exists := m.activeChangesets[changesetID]
 	if !exists {
 		return fmt.Errorf("changeset %s not found", changesetID)
 	}
-	
+
 	if changeset.Status != types.ChangesetStatusDraft {
 		return fmt.Errorf("cannot add commands to changeset in status %s", changeset.Status)
 	}
-	
+
 	changeset.AddCommand(cmd)
-	
+
 	if err := m.persistChangeset(changeset); err != nil {
 		return fmt.Errorf("failed to persist changeset: %w", err)
 	}
-	
+
 	log.WithFields(log.Fields{
 		"changeset_id": changesetID,
 		"command_id":   cmd.ID,
 		"operation":    cmd.Operation,
 	}).Debug("Added command to changeset")
-	
+
 	return nil
 }
 
@@ -203,38 +203,38 @@ func (m *SimpleManager) ExecuteChangeset(ctx context.Context, changesetID string
 		m.mutex.Unlock()
 		return fmt.Errorf("changeset %s not found", changesetID)
 	}
-	
+
 	if changeset.Status != types.ChangesetStatusDraft {
 		m.mutex.Unlock()
 		return fmt.Errorf("changeset %s is not in draft status", changesetID)
 	}
-	
+
 	// Update status
 	changeset.Status = types.ChangesetStatusExecuting
 	m.mutex.Unlock()
-	
+
 	log.WithFields(log.Fields{
-		"changeset_id":   changesetID,
+		"changeset_id":  changesetID,
 		"command_count": len(changeset.Commands),
 	}).Info("Executing changeset")
-	
+
 	startTime := time.Now()
 	var allSuccessful = true
-	
+
 	// Execute each command
 	for _, cmd := range changeset.Commands {
 		cmdStartTime := time.Now()
-		
+
 		// Execute command through command manager
 		// Convert timeout from Duration to seconds
 		timeoutSeconds := int(cmd.Timeout.Seconds())
 		if timeoutSeconds <= 0 {
 			timeoutSeconds = 30 // default timeout
 		}
-		
+
 		// Use SendCommand instead of ExecuteCommand
 		_, err := m.commandManager.SendCommand("default", "default", cmd.DeviceID, cmd.Operation, cmd.Args, timeoutSeconds)
-		
+
 		duration := time.Since(cmdStartTime)
 		result := &types.CommandResult{
 			CommandID:  cmd.ID,
@@ -242,7 +242,7 @@ func (m *SimpleManager) ExecuteChangeset(ctx context.Context, changesetID string
 			ExecutedAt: time.Now(),
 			Duration:   duration,
 		}
-		
+
 		if err != nil {
 			result.Message = err.Error()
 			allSuccessful = false
@@ -255,17 +255,17 @@ func (m *SimpleManager) ExecuteChangeset(ctx context.Context, changesetID string
 			result.Message = "Command executed successfully"
 			result.Data = cmd.Result // If the command manager sets result data
 		}
-		
+
 		changeset.AddResult(result)
 	}
-	
+
 	// Update final status
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	executedAt := time.Now()
 	changeset.ExecutedAt = &executedAt
-	
+
 	if allSuccessful {
 		changeset.Status = types.ChangesetStatusCompleted
 		log.WithFields(log.Fields{
@@ -279,12 +279,12 @@ func (m *SimpleManager) ExecuteChangeset(ctx context.Context, changesetID string
 			"duration":     time.Since(startTime),
 		}).Error("Changeset execution failed")
 	}
-	
+
 	// Persist updated changeset
 	if err := m.persistChangeset(changeset); err != nil {
 		log.WithError(err).Error("Failed to persist changeset after execution")
 	}
-	
+
 	return nil
 }
 
@@ -296,36 +296,36 @@ func (m *SimpleManager) RollbackChangeset(ctx context.Context, changesetID strin
 		m.mutex.Unlock()
 		return fmt.Errorf("changeset %s not found", changesetID)
 	}
-	
+
 	if !changeset.IsRollbackable() {
 		m.mutex.Unlock()
 		return fmt.Errorf("changeset %s cannot be rolled back", changesetID)
 	}
-	
+
 	if len(changeset.RollbackCommands) == 0 {
 		m.mutex.Unlock()
 		return fmt.Errorf("no rollback commands defined for changeset %s", changesetID)
 	}
 	m.mutex.Unlock()
-	
+
 	log.WithFields(log.Fields{
-		"changeset_id":         changesetID,
+		"changeset_id":           changesetID,
 		"rollback_command_count": len(changeset.RollbackCommands),
 	}).Info("Rolling back changeset")
-	
+
 	startTime := time.Now()
 	var allSuccessful = true
-	
+
 	// Execute rollback commands in reverse order
 	for i := len(changeset.RollbackCommands) - 1; i >= 0; i-- {
 		cmd := changeset.RollbackCommands[i]
-		
+
 		// Convert timeout from Duration to seconds for rollback command
 		timeoutSeconds := int(cmd.Timeout.Seconds())
 		if timeoutSeconds <= 0 {
 			timeoutSeconds = 30 // default timeout
 		}
-		
+
 		// Use SendCommand instead of ExecuteCommand
 		_, err := m.commandManager.SendCommand("default", "default", cmd.DeviceID, cmd.Operation, cmd.Args, timeoutSeconds)
 		if err != nil {
@@ -337,14 +337,14 @@ func (m *SimpleManager) RollbackChangeset(ctx context.Context, changesetID strin
 			}).Error("Rollback command execution failed")
 		}
 	}
-	
+
 	// Update status
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	rolledBackAt := time.Now()
 	changeset.RolledBackAt = &rolledBackAt
-	
+
 	if allSuccessful {
 		changeset.Status = types.ChangesetStatusRolledBack
 		log.WithFields(log.Fields{
@@ -358,12 +358,12 @@ func (m *SimpleManager) RollbackChangeset(ctx context.Context, changesetID strin
 			"duration":     time.Since(startTime),
 		}).Error("Changeset rollback failed")
 	}
-	
+
 	// Persist updated changeset
 	if err := m.persistChangeset(changeset); err != nil {
 		log.WithError(err).Error("Failed to persist changeset after rollback")
 	}
-	
+
 	return nil
 }
 
@@ -375,7 +375,7 @@ func (m *SimpleManager) GetChangeset(changesetID string) (*types.Changeset, erro
 		return changeset, nil
 	}
 	m.mutex.RUnlock()
-	
+
 	// Try to load from storage
 	return m.loadChangeset(changesetID)
 }
@@ -384,7 +384,7 @@ func (m *SimpleManager) GetChangeset(changesetID string) (*types.Changeset, erro
 func (m *SimpleManager) ListChangesets(filter *types.ChangesetFilter, limit, offset int) ([]*types.ChangesetSummary, int, error) {
 	var summaries []*types.ChangesetSummary
 	var total int
-	
+
 	// Get from active changesets
 	m.mutex.RLock()
 	for _, changeset := range m.activeChangesets {
@@ -394,9 +394,9 @@ func (m *SimpleManager) ListChangesets(filter *types.ChangesetFilter, limit, off
 		}
 	}
 	m.mutex.RUnlock()
-	
+
 	// TODO: Also query from storage for complete list
-	
+
 	// Apply pagination
 	if offset > 0 && offset < len(summaries) {
 		summaries = summaries[offset:]
@@ -404,7 +404,7 @@ func (m *SimpleManager) ListChangesets(filter *types.ChangesetFilter, limit, off
 	if limit > 0 && len(summaries) > limit {
 		summaries = summaries[:limit]
 	}
-	
+
 	return summaries, total, nil
 }
 
@@ -412,23 +412,23 @@ func (m *SimpleManager) ListChangesets(filter *types.ChangesetFilter, limit, off
 func (m *SimpleManager) DeleteChangeset(changesetID string) error {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	changeset, exists := m.activeChangesets[changesetID]
 	if !exists {
 		return fmt.Errorf("changeset %s not found", changesetID)
 	}
-	
+
 	if changeset.Status == types.ChangesetStatusExecuting {
 		return fmt.Errorf("cannot delete changeset %s while executing", changesetID)
 	}
-	
+
 	// Remove from memory and storage
 	delete(m.activeChangesets, changesetID)
-	
+
 	if err := m.deleteChangesetFromStorage(changesetID); err != nil {
 		log.WithError(err).Warn("Failed to delete changeset from storage")
 	}
-	
+
 	log.WithField("changeset_id", changesetID).Info("Deleted changeset")
 	return nil
 }
@@ -446,17 +446,17 @@ func (m *SimpleManager) persistChangeset(changeset *types.Changeset) error {
 
 func (m *SimpleManager) loadChangeset(changesetID string) (*types.Changeset, error) {
 	key := fmt.Sprintf("changeset:%s", changesetID)
-	
+
 	data, err := m.storage.Get(key)
 	if err != nil {
 		return nil, fmt.Errorf("changeset %s not found", changesetID)
 	}
-	
+
 	var changeset types.Changeset
 	if err := json.Unmarshal([]byte(data), &changeset); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal changeset: %w", err)
 	}
-	
+
 	return &changeset, nil
 }
 
@@ -474,7 +474,7 @@ func (m *SimpleManager) matchesFilter(changeset *types.Changeset, filter *types.
 	if filter == nil {
 		return true
 	}
-	
+
 	// Status filter
 	if len(filter.Status) > 0 {
 		found := false
@@ -488,17 +488,17 @@ func (m *SimpleManager) matchesFilter(changeset *types.Changeset, filter *types.
 			return false
 		}
 	}
-	
+
 	// CreatedBy filter
 	if filter.CreatedBy != "" && changeset.CreatedBy != filter.CreatedBy {
 		return false
 	}
-	
+
 	// SessionID filter
 	if filter.SessionID != "" && changeset.SessionID != filter.SessionID {
 		return false
 	}
-	
+
 	// Time range filter
 	if filter.StartTime != nil && changeset.CreatedAt.Before(*filter.StartTime) {
 		return false
@@ -506,14 +506,14 @@ func (m *SimpleManager) matchesFilter(changeset *types.Changeset, filter *types.
 	if filter.EndTime != nil && changeset.CreatedAt.After(*filter.EndTime) {
 		return false
 	}
-	
+
 	return true
 }
 
 func (m *SimpleManager) cleanupWorker() {
 	ticker := time.NewTicker(m.config.CleanupInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-m.ctx.Done():
@@ -527,18 +527,18 @@ func (m *SimpleManager) cleanupWorker() {
 func (m *SimpleManager) cleanupOldChangesets() {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	
+
 	cutoff := time.Now().Add(-time.Duration(m.config.RetentionDays) * 24 * time.Hour)
-	
+
 	for id, changeset := range m.activeChangesets {
 		// Remove old completed/failed changesets
-		if (changeset.Status == types.ChangesetStatusCompleted || 
-		    changeset.Status == types.ChangesetStatusFailed ||
-		    changeset.Status == types.ChangesetStatusRolledBack) &&
-		   changeset.CreatedAt.Before(cutoff) {
-			
+		if (changeset.Status == types.ChangesetStatusCompleted ||
+			changeset.Status == types.ChangesetStatusFailed ||
+			changeset.Status == types.ChangesetStatusRolledBack) &&
+			changeset.CreatedAt.Before(cutoff) {
+
 			delete(m.activeChangesets, id)
-			
+
 			// Also remove from storage
 			if err := m.deleteChangesetFromStorage(id); err != nil {
 				log.WithError(err).WithField("changeset_id", id).

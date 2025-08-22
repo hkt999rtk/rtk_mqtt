@@ -1,0 +1,118 @@
+mqtt:
+  broker: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+  client_id_prefix: "rtk_test"
+
+test:
+  duration_seconds: 300  # 5 minutes
+  verbose: true
+  log_level: "info"
+
+devices:
+  # Gateway/Router 設備
+  - id: "gateway01"
+    type: "gateway"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 10
+      event_seconds: 20
+    properties:
+      ip: "192.168.1.1"
+      gateway: "10.0.1.1"
+      firmware: "1.2.3"
+  
+  # IoT 感測器設備
+  - id: "iot_sensor_01"
+    type: "iot_sensor"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 15
+      event_seconds: 25
+    properties:
+      ip: "10.0.1.105"
+      firmware: "1.0.2"
+  
+  - id: "iot_sensor_02"
+    type: "iot_sensor"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 15
+      event_seconds: 25
+    properties:
+      ip: "10.0.1.106"
+      firmware: "1.0.2"
+  
+  # NIC 網卡設備
+  - id: "nic01"
+    type: "nic"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 12
+      event_seconds: 30
+    properties:
+      ip: "10.0.1.100"
+      netmask: "255.255.255.0"
+      gateway: "10.0.1.1"
+      interface_name: "eth0"
+      firmware: "2.3.1"
+  
+  - id: "nic02"
+    type: "nic"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 12
+      event_seconds: 30
+    properties:
+      ip: "10.0.1.101"
+      netmask: "255.255.255.0"
+      gateway: "10.0.1.1"
+      interface_name: "eth1"
+      firmware: "2.3.1"
+  
+  # 交換機設備
+  - id: "switch01"
+    type: "switch"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: true
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 8
+      event_seconds: 20
+    properties:
+      ip: "10.0.1.10"
+      gateway: "10.0.1.1"
+      port_count: 24
+      firmware: "3.1.4"
+  
+  # 額外的 AP 設備（禁用，用於測試配置）
+  - id: "ap01"
+    type: "gateway"
+    tenant: "tenant1"
+    site: "site1"
+    enabled: false
+    intervals:
+      state_seconds: 30
+      telemetry_seconds: 10
+      event_seconds: 20
+    properties:
+      ip: "192.168.1.2"
+      gateway: "10.0.1.1"
+      firmware: "1.2.3"

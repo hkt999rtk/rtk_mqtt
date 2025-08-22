@@ -1,0 +1,327 @@
+# RTK Controller Workflow Definitions
+# This file defines diagnostic workflows for network troubleshooting
+
+engine_config:
+  default_timeout: "60s"
+  max_concurrent_workflows: 5
+  retry_attempts: 2
+  confidence_threshold: 0.8
+  fallback_workflow: "general_network_diagnosis"
+
+# Intent classification configuration
+intents:
+  classification_model: "rule_based"  # Will be upgraded to LLM later
+  confidence_threshold: 0.8
+  fallback_workflow: "general_network_diagnosis"
+
+# Workflow definitions
+workflows:
+  # WiFi Weak Signal Coverage Diagnosis (based on weak_signal_coverage_flow.puml)
+  - id: "weak_signal_coverage_diagnosis"
+    name: "WiFi Weak Signal Coverage Diagnosis"
+    description: "Diagnose WiFi coverage issues and identify weak signal areas with solution recommendations"
+    version: "1.0.0"
+    author: "RTK Controller"
+    tags: ["wifi", "coverage", "diagnosis", "signal_strength"]
+    
+    intent:
+      primary: "coverage_issues"
+      secondary: "weak_signal_coverage"
+    
+    # Multi-phase workflow matching the PUML flow
+    steps:
+      # Phase 1: Parallel Data Collection
+      - id: "data_collection_phase"
+        name: "Data Collection Phase"
+        type: "parallel"
+        timeout: "90s"
+        sub_steps:
+          - id: "wifi_coverage_scan"
+            name: "WiFi Coverage Analysis"
+            type: "tool_call"
+            tool_name: "wifi.coverage_analysis"
+            timeout: "30s"
+            parameters:
+              include_heatmap: true
+              detailed_analysis: true
+            
+          - id: "signal_strength_mapping"
+            name: "Signal Strength Mapping"
+            type: "tool_call"
+            tool_name: "wifi.signal_strength_map"
+            timeout: "45s"
+            parameters:
+              ssid: "all"
+              generate_heatmap: true
+              
+          - id: "topology_discovery"
+            name: "Network Topology Discovery"
+            type: "tool_call"
+            tool_name: "topology.get_full"
+            parameters:
+              include_offline: true
+              include_mesh_nodes: true
+            timeout: "20s"
+            
+          - id: "channel_analysis"
+            name: "WiFi Channel Scan and Analysis"
+            type: "tool_call"
+            tool_name: "wifi.scan_channels"
+            parameters:
+              band: "all"
+              scan_duration: 30
+              analyze_interference: true
+            timeout: "35s"
+      
+      # Phase 2: Conditional Interference Check
+      - id: "interference_analysis"
+        name: "Interference Analysis"
+        type: "condition"
+        condition:
+          field: "data_collection_phase.signal_strength_mapping.weak_signal_zones"
+          operator: "gt"
+          value: 0
+        sub_steps:
+          - id: "analyze_interference"
+            name: "Detailed Interference Analysis"
+            type: "tool_call"
+            tool_name: "wifi.analyze_interference"
+            timeout: "25s"
+            parameters:
+              deep_scan: true
+              identify_sources: true
+      
+      # Phase 3: Performance Validation
+      - id: "performance_validation"
+        name: "Network Performance Validation"
+        type: "condition"
+        condition:
+          field: "data_collection_phase.wifi_coverage_scan.problem_areas"
+          operator: "exists"
+        sub_steps:
+          - id: "speed_test"
+            name: "Comprehensive Speed Test"
+            type: "tool_call"
+            tool_name: "network.speedtest_full"
+            timeout: "60s"
+            parameters:
+              test_locations: "${data_collection_phase.wifi_coverage_scan.problem_areas}"
+              multi_location: true
+            
+          - id: "latency_analysis"
+            name: "Latency Profiling"
+            type: "tool_call"
+            tool_name: "wifi.latency_profiling"
+            timeout: "30s"
+            optional: true
+    
+    metadata:
+      requirements: ["wifi_scan", "spectrum_analyzer", "topology_discovery"]
+      expected_duration: "3-5 minutes"
+      complexity: "high"
+
+  # WAN Connectivity Diagnosis
+  - id: "wan_connectivity_diagnosis"
+    name: "WAN Connectivity Diagnosis"
+    description: "Diagnose WAN connectivity issues and internet access problems"
+    version: "1.0.0"
+    author: "RTK Controller"
+    tags: ["wan", "connectivity", "internet", "diagnosis"]
+    
+    intent:
+      primary: "connectivity_issues"
+      secondary: "wan_connectivity"
+    
+    steps:
+      - id: "basic_connectivity_check"
+        name: "Basic Connectivity Check"
+        type: "tool_call"
+        tool_name: "diagnostics.wan_connectivity"
+        timeout: "30s"
+        retry:
+          max_attempts: 3
+          backoff_ms: 2000
+          
+      - id: "dns_resolution_test"
+        name: "DNS Resolution Test"
+        type: "condition"
+        condition:
+          field: "basic_connectivity_check.dns_issues"
+          operator: "eq"
+          value: true
+        sub_steps:
+          - id: "dns_diagnostic"
+            type: "tool_call"
+            tool_name: "network.dns_test"
+            timeout: "20s"
+            
+      - id: "speed_test_wan"
+        name: "WAN Speed Test"
+        type: "tool_call"
+        tool_name: "network.speedtest_full"
+        timeout: "60s"
+        condition:
+          field: "basic_connectivity_check.success"
+          operator: "eq"
+          value: true
+    
+    metadata:
+      requirements: ["wan_access", "dns_resolution"]
+      expected_duration: "1-2 minutes"
+      complexity: "medium"
+
+  # Performance Bottleneck Analysis
+  - id: "performance_bottleneck_analysis"
+    name: "Network Performance Bottleneck Analysis"
+    description: "Analyze network performance bottlenecks and identify speed limiting factors"
+    version: "1.0.0"
+    author: "RTK Controller"
+    tags: ["performance", "speed", "throughput", "analysis"]
+    
+    intent:
+      primary: "performance_problems"
+      secondary: "slow_internet"
+    
+    steps:
+      - id: "comprehensive_analysis"
+        name: "Comprehensive Performance Analysis"
+        type: "parallel"
+        sub_steps:
+          - id: "speed_test_multi_server"
+            name: "Multi-Server Speed Test"
+            type: "tool_call"
+            tool_name: "network.speedtest_full"
+            parameters:
+              multi_server: true
+              test_duration: 30
+            timeout: "90s"
+            
+          - id: "wifi_throughput_analysis"
+            name: "WiFi Throughput Analysis"
+            type: "tool_call"
+            tool_name: "wifi.throughput_analysis"
+            timeout: "45s"
+            
+          - id: "qos_status_check"
+            name: "QoS Status and Configuration"
+            type: "tool_call"
+            tool_name: "qos.get_status"
+            parameters:
+              include_recommendations: true
+            timeout: "15s"
+            
+      - id: "bottleneck_identification"
+        name: "Bottleneck Identification"
+        type: "tool_call"
+        tool_name: "traffic.get_stats"
+        parameters:
+          time_range_hours: 1
+          include_top_talkers: true
+        timeout: "20s"
+    
+    metadata:
+      requirements: ["speed_test", "qos_analysis", "traffic_analysis"]
+      expected_duration: "2-3 minutes"
+      complexity: "high"
+
+  # General Network Diagnosis (Fallback)
+  - id: "general_network_diagnosis"
+    name: "General Network Diagnosis"
+    description: "General network diagnosis for unclassified or complex issues"
+    version: "1.0.0"
+    author: "RTK Controller"
+    tags: ["general", "diagnosis", "fallback", "comprehensive"]
+    
+    intent:
+      primary: "general"
+      secondary: "network_diagnosis"
+    
+    steps:
+      - id: "topology_overview"
+        name: "Network Topology Overview"
+        type: "tool_call"
+        tool_name: "topology.get_full"
+        parameters:
+          include_offline: true
+        timeout: "20s"
+        
+      - id: "basic_diagnostics"
+        name: "Basic Diagnostic Suite"
+        type: "parallel"
+        sub_steps:
+          - id: "wan_check"
+            name: "WAN Connectivity Check"
+            type: "tool_call"
+            tool_name: "diagnostics.wan_connectivity"
+            timeout: "30s"
+            optional: true
+            
+          - id: "wifi_overview"
+            name: "WiFi Status Overview"
+            type: "tool_call"
+            tool_name: "wifi.coverage_analysis"
+            timeout: "25s"
+            optional: true
+            
+          - id: "performance_check"
+            name: "Basic Performance Check"
+            type: "tool_call"
+            tool_name: "network.speedtest_full"
+            timeout: "45s"
+            optional: true
+    
+    metadata:
+      requirements: ["basic_network_access"]
+      expected_duration: "1-2 minutes"
+      complexity: "low"
+
+  # Device Connectivity Diagnosis  
+  - id: "device_connectivity_diagnosis"
+    name: "Device Connectivity Diagnosis"
+    description: "Diagnose connectivity issues for specific devices"
+    version: "1.0.0"
+    author: "RTK Controller"
+    tags: ["device", "connectivity", "troubleshooting"]
+    
+    intent:
+      primary: "device_issues"
+      secondary: "device_offline"
+    
+    steps:
+      - id: "device_discovery"
+        name: "Device Discovery and Status"
+        type: "tool_call"
+        tool_name: "clients.list"
+        parameters:
+          include_offline: true
+          device_filter: "${device_id}"
+        timeout: "20s"
+        
+      - id: "device_specific_tests"
+        name: "Device-Specific Connectivity Tests"
+        type: "condition"
+        condition:
+          field: "device_discovery.device_found"
+          operator: "eq"
+          value: true
+        sub_steps:
+          - id: "signal_strength_check"
+            name: "Device Signal Strength Check"
+            type: "tool_call"
+            tool_name: "wifi.signal_strength_map"
+            parameters:
+              target_device: "${device_id}"
+            timeout: "15s"
+            
+          - id: "connectivity_test"
+            name: "Device Connectivity Test"
+            type: "tool_call"
+            tool_name: "network.device_ping_test"
+            parameters:
+              device_id: "${device_id}"
+            timeout: "10s"
+    
+    metadata:
+      requirements: ["device_management", "network_discovery"]
+      expected_duration: "30-60 seconds"
+      complexity: "medium"

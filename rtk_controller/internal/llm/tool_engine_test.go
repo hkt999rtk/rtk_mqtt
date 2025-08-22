@@ -131,10 +131,10 @@ func setupTestEngine(t *testing.T) (*ToolEngine, *MockStorage) {
 
 	// Create minimal command manager for testing (pass nil for mqtt client since we're testing without MQTT)
 	commandManager := command.NewManager(nil, mockStorage)
-	
+
 	// Create engine with nil managers (we'll test without topology/qos dependencies)
 	engine := NewToolEngine(mockStorage, commandManager, nil, nil)
-	
+
 	return engine, mockStorage
 }
 
@@ -159,7 +159,7 @@ func TestToolEngine_Start(t *testing.T) {
 	err := engine.Start(ctx)
 	assert.NoError(t, err)
 	assert.True(t, engine.started)
-	
+
 	// Stop to clean up
 	engine.Stop()
 

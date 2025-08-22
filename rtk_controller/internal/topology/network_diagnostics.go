@@ -12,66 +12,66 @@ import (
 
 // NetworkDiagnosticsEngine provides comprehensive network diagnostic capabilities
 type NetworkDiagnosticsEngine struct {
-	topologyManager    *Manager
-	qualityMonitor     *ConnectionQualityMonitor
-	roamingDetector    *RoamingDetector
-	alertingSystem     *TopologyAlertingSystem
-	connectionTracker  *ConnectionHistoryTracker
-	storage            *storage.TopologyStorage
-	identityStorage    *storage.IdentityStorage
-	
+	topologyManager   *Manager
+	qualityMonitor    *ConnectionQualityMonitor
+	roamingDetector   *RoamingDetector
+	alertingSystem    *TopologyAlertingSystem
+	connectionTracker *ConnectionHistoryTracker
+	storage           *storage.TopologyStorage
+	identityStorage   *storage.IdentityStorage
+
 	// Diagnostic configuration
-	config             DiagnosticConfig
-	
+	config DiagnosticConfig
+
 	// Diagnostic reports cache
-	reportCache        map[string]*NetworkDiagnosticReport
-	cacheMu            sync.RWMutex
-	
+	reportCache map[string]*NetworkDiagnosticReport
+	cacheMu     sync.RWMutex
+
 	// Background processing
-	running            bool
-	cancel             context.CancelFunc
-	
+	running bool
+	cancel  context.CancelFunc
+
 	// Statistics
-	stats              DiagnosticStats
+	stats DiagnosticStats
 }
 
 // DiagnosticConfig holds configuration for network diagnostics
 type DiagnosticConfig struct {
 	// Report generation settings
-	ReportRetention         time.Duration
-	AutoReportInterval      time.Duration
-	EnablePeriodicReports   bool
-	EnableRealtimeAnalysis  bool
-	
+	ReportRetention        time.Duration
+	AutoReportInterval     time.Duration
+	EnablePeriodicReports  bool
+	EnableRealtimeAnalysis bool
+
 	// Analysis thresholds
-	QualityThresholds       DiagnosticThresholds
-	PerformanceThresholds   PerformanceThresholds
-	ConnectivityThresholds  ConnectivityThresholds
-	
+	QualityThresholds      DiagnosticThresholds
+	PerformanceThresholds  PerformanceThresholds
+	ConnectivityThresholds ConnectivityThresholds
+
 	// Diagnostic scope
-	AnalysisTimeWindow      time.Duration
-	MinimumDataPoints       int
-	IncludeHistoricalData   bool
-	
+	AnalysisTimeWindow    time.Duration
+	MinimumDataPoints     int
+	IncludeHistoricalData bool
+
 	// Report customization
-	DetailLevel             DetailLevel
-	IncludePredictions      bool
-	IncludeRecommendations  bool
-	IncludeVisualizations   bool
-	
+	DetailLevel            DetailLevel
+	IncludePredictions     bool
+	IncludeRecommendations bool
+	IncludeVisualizations  bool
+
 	// Performance settings
-	MaxConcurrentTests      int
-	TestTimeoutDuration     time.Duration
-	RetryAttempts          int
+	MaxConcurrentTests  int
+	TestTimeoutDuration time.Duration
+	RetryAttempts       int
 }
 
 // DiagnosticThresholds defines quality thresholds for diagnostics
 type DiagnosticThresholds struct {
-	ExcellentQuality    float64 // > 0.9
-	GoodQuality         float64 // > 0.7
-	AcceptableQuality   float64 // > 0.5
-	PoorQuality         float64 // > 0.3
-	CriticalQuality     float64 // <= 0.3
+	ExcellentQuality  float64 // > 0.9
+	GoodQuality       float64 // > 0.7
+	AcceptableQuality float64 // > 0.5
+	PoorQuality       float64 // > 0.3
+	CriticalQuality   float64 // <= 0.3
 }
 
 // PerformanceThresholds defines performance thresholds
@@ -85,59 +85,59 @@ type PerformanceThresholds struct {
 
 // ConnectivityThresholds defines connectivity health thresholds
 type ConnectivityThresholds struct {
-	MinConnectionSuccess    float64 // percentage
-	MaxDisconnectionRate    float64 // per hour
-	MaxReconnectionTime     time.Duration
-	MinSessionStability     float64 // percentage
+	MinConnectionSuccess float64 // percentage
+	MaxDisconnectionRate float64 // per hour
+	MaxReconnectionTime  time.Duration
+	MinSessionStability  float64 // percentage
 }
 
 // DetailLevel defines the level of detail in diagnostic reports
 type DetailLevel string
 
 const (
-	DetailLevelSummary      DetailLevel = "summary"
-	DetailLevelStandard     DetailLevel = "standard"
-	DetailLevelDetailed     DetailLevel = "detailed"
+	DetailLevelSummary       DetailLevel = "summary"
+	DetailLevelStandard      DetailLevel = "standard"
+	DetailLevelDetailed      DetailLevel = "detailed"
 	DetailLevelComprehensive DetailLevel = "comprehensive"
 )
 
 // NetworkDiagnosticReport contains comprehensive network diagnostic information
 type NetworkDiagnosticReport struct {
 	// Report metadata
-	ID              string                    `json:"id"`
-	GeneratedAt     time.Time                 `json:"generated_at"`
-	TimeWindow      DiagnosticTimeWindow      `json:"time_window"`
-	ReportType      ReportType                `json:"report_type"`
-	DetailLevel     DetailLevel               `json:"detail_level"`
-	
+	ID          string               `json:"id"`
+	GeneratedAt time.Time            `json:"generated_at"`
+	TimeWindow  DiagnosticTimeWindow `json:"time_window"`
+	ReportType  ReportType           `json:"report_type"`
+	DetailLevel DetailLevel          `json:"detail_level"`
+
 	// Overall assessment
-	OverallHealth   NetworkHealthStatus       `json:"overall_health"`
-	HealthScore     float64                   `json:"health_score"` // 0-100
-	
+	OverallHealth NetworkHealthStatus `json:"overall_health"`
+	HealthScore   float64             `json:"health_score"` // 0-100
+
 	// Network overview
-	NetworkOverview NetworkOverview           `json:"network_overview"`
-	
+	NetworkOverview NetworkOverview `json:"network_overview"`
+
 	// Diagnostic sections
-	TopologyHealth  TopologyHealthReport      `json:"topology_health"`
-	QualityAnalysis QualityAnalysisReport     `json:"quality_analysis"`
-	Performance     PerformanceReport         `json:"performance"`
-	Connectivity    ConnectivityReport        `json:"connectivity"`
-	Security        SecurityReport            `json:"security"`
-	RoamingAnalysis RoamingAnalysisReport     `json:"roaming_analysis"`
-	
+	TopologyHealth  TopologyHealthReport  `json:"topology_health"`
+	QualityAnalysis QualityAnalysisReport `json:"quality_analysis"`
+	Performance     PerformanceReport     `json:"performance"`
+	Connectivity    ConnectivityReport    `json:"connectivity"`
+	Security        SecurityReport        `json:"security"`
+	RoamingAnalysis RoamingAnalysisReport `json:"roaming_analysis"`
+
 	// Issues and recommendations
-	Issues          []DiagnosticIssue         `json:"issues"`
+	Issues          []DiagnosticIssue          `json:"issues"`
 	Recommendations []DiagnosticRecommendation `json:"recommendations"`
-	Predictions     []DiagnosticPrediction    `json:"predictions"`
-	
+	Predictions     []DiagnosticPrediction     `json:"predictions"`
+
 	// Trend analysis
-	Trends          TrendAnalysis             `json:"trends"`
-	
+	Trends TrendAnalysis `json:"trends"`
+
 	// Historical comparison
-	HistoricalData  HistoricalComparison      `json:"historical_data"`
-	
+	HistoricalData HistoricalComparison `json:"historical_data"`
+
 	// Report statistics
-	ReportStats     ReportStatistics          `json:"report_stats"`
+	ReportStats ReportStatistics `json:"report_stats"`
 }
 
 // DiagnosticTimeWindow defines the time range for diagnostic analysis
@@ -171,62 +171,62 @@ const (
 
 // NetworkOverview provides high-level network information
 type NetworkOverview struct {
-	TotalDevices        int                        `json:"total_devices"`
-	OnlineDevices       int                        `json:"online_devices"`
-	OfflineDevices      int                        `json:"offline_devices"`
-	DevicesByType       map[string]int             `json:"devices_by_type"`
-	NetworkSegments     []NetworkSegment           `json:"network_segments"`
-	CoverageAreas       []CoverageArea             `json:"coverage_areas"`
-	BandwidthUtilization BandwidthUtilizationInfo  `json:"bandwidth_utilization"`
+	TotalDevices         int                      `json:"total_devices"`
+	OnlineDevices        int                      `json:"online_devices"`
+	OfflineDevices       int                      `json:"offline_devices"`
+	DevicesByType        map[string]int           `json:"devices_by_type"`
+	NetworkSegments      []NetworkSegment         `json:"network_segments"`
+	CoverageAreas        []CoverageArea           `json:"coverage_areas"`
+	BandwidthUtilization BandwidthUtilizationInfo `json:"bandwidth_utilization"`
 }
 
 // TopologyHealthReport analyzes network topology health
 type TopologyHealthReport struct {
-	TopologyStability   float64                    `json:"topology_stability"`
-	ConnectivityMatrix  map[string]map[string]bool `json:"connectivity_matrix"`
-	IsolatedDevices     []string                   `json:"isolated_devices"`
-	RedundancyAnalysis  RedundancyAnalysis         `json:"redundancy_analysis"`
-	SinglePointsOfFailure []SinglePointOfFailure   `json:"single_points_of_failure"`
-	PathAnalysis        []NetworkPath              `json:"path_analysis"`
+	TopologyStability     float64                    `json:"topology_stability"`
+	ConnectivityMatrix    map[string]map[string]bool `json:"connectivity_matrix"`
+	IsolatedDevices       []string                   `json:"isolated_devices"`
+	RedundancyAnalysis    RedundancyAnalysis         `json:"redundancy_analysis"`
+	SinglePointsOfFailure []SinglePointOfFailure     `json:"single_points_of_failure"`
+	PathAnalysis          []NetworkPath              `json:"path_analysis"`
 }
 
 // QualityAnalysisReport analyzes connection quality across the network
 type QualityAnalysisReport struct {
-	AverageQuality      float64                    `json:"average_quality"`
-	QualityDistribution map[string]int             `json:"quality_distribution"`
-	QualityTrends       []QualityTrendPoint        `json:"quality_trends"`
-	PoorQualityDevices  []PoorQualityDevice        `json:"poor_quality_devices"`
-	QualityHotspots     []QualityHotspot           `json:"quality_hotspots"`
-	SignalCoverage      SignalCoverageAnalysis     `json:"signal_coverage"`
+	AverageQuality      float64                `json:"average_quality"`
+	QualityDistribution map[string]int         `json:"quality_distribution"`
+	QualityTrends       []QualityTrendPoint    `json:"quality_trends"`
+	PoorQualityDevices  []PoorQualityDevice    `json:"poor_quality_devices"`
+	QualityHotspots     []QualityHotspot       `json:"quality_hotspots"`
+	SignalCoverage      SignalCoverageAnalysis `json:"signal_coverage"`
 }
 
 // PerformanceReport analyzes network performance metrics
 type PerformanceReport struct {
-	LatencyAnalysis     LatencyAnalysis            `json:"latency_analysis"`
-	ThroughputAnalysis  ThroughputAnalysis         `json:"throughput_analysis"`
-	PacketLossAnalysis  PacketLossAnalysis         `json:"packet_loss_analysis"`
-	JitterAnalysis      JitterAnalysis             `json:"jitter_analysis"`
-	PerformanceTrends   []PerformanceTrendPoint    `json:"performance_trends"`
-	Bottlenecks         []PerformanceBottleneck    `json:"bottlenecks"`
+	LatencyAnalysis    LatencyAnalysis         `json:"latency_analysis"`
+	ThroughputAnalysis ThroughputAnalysis      `json:"throughput_analysis"`
+	PacketLossAnalysis PacketLossAnalysis      `json:"packet_loss_analysis"`
+	JitterAnalysis     JitterAnalysis          `json:"jitter_analysis"`
+	PerformanceTrends  []PerformanceTrendPoint `json:"performance_trends"`
+	Bottlenecks        []PerformanceBottleneck `json:"bottlenecks"`
 }
 
 // ConnectivityReport analyzes device connectivity patterns
 type ConnectivityReport struct {
-	ConnectionSuccess   float64                    `json:"connection_success"`
-	SessionStability    float64                    `json:"session_stability"`
-	ReconnectionPatterns []ReconnectionPattern     `json:"reconnection_patterns"`
-	ConnectivityIssues  []ConnectivityIssue        `json:"connectivity_issues"`
-	DeviceReliability   []DeviceReliabilityInfo    `json:"device_reliability"`
+	ConnectionSuccess    float64                 `json:"connection_success"`
+	SessionStability     float64                 `json:"session_stability"`
+	ReconnectionPatterns []ReconnectionPattern   `json:"reconnection_patterns"`
+	ConnectivityIssues   []ConnectivityIssue     `json:"connectivity_issues"`
+	DeviceReliability    []DeviceReliabilityInfo `json:"device_reliability"`
 }
 
 // SecurityReport analyzes network security aspects
 type SecurityReport struct {
-	SecurityScore       float64                    `json:"security_score"`
-	OpenNetworks        []OpenNetworkInfo          `json:"open_networks"`
-	WeakSecurityDevices []WeakSecurityDevice       `json:"weak_security_devices"`
-	UnauthorizedDevices []UnauthorizedDevice       `json:"unauthorized_devices"`
-	SecurityEvents      []SecurityEvent            `json:"security_events"`
-	ComplianceStatus    ComplianceStatus           `json:"compliance_status"`
+	SecurityScore       float64              `json:"security_score"`
+	OpenNetworks        []OpenNetworkInfo    `json:"open_networks"`
+	WeakSecurityDevices []WeakSecurityDevice `json:"weak_security_devices"`
+	UnauthorizedDevices []UnauthorizedDevice `json:"unauthorized_devices"`
+	SecurityEvents      []SecurityEvent      `json:"security_events"`
+	ComplianceStatus    ComplianceStatus     `json:"compliance_status"`
 }
 
 // RoamingAnalysisReport analyzes device roaming behavior
@@ -240,104 +240,109 @@ type RoamingAnalysisReport struct {
 
 // DiagnosticIssue represents a network issue found during diagnostics
 type DiagnosticIssue struct {
-	ID           string                     `json:"id"`
-	Type         IssueType                  `json:"type"`
-	Severity     IssueSeverity              `json:"severity"`
-	Title        string                     `json:"title"`
-	Description  string                     `json:"description"`
-	AffectedDevices []string                `json:"affected_devices"`
-	Impact       IssueImpact                `json:"impact"`
-	RootCause    string                     `json:"root_cause"`
-	FirstDetected time.Time                 `json:"first_detected"`
-	LastSeen     time.Time                  `json:"last_seen"`
-	Frequency    int                        `json:"frequency"`
-	Metadata     map[string]interface{}     `json:"metadata"`
+	ID              string                 `json:"id"`
+	Type            IssueType              `json:"type"`
+	Severity        IssueSeverity          `json:"severity"`
+	Title           string                 `json:"title"`
+	Description     string                 `json:"description"`
+	AffectedDevices []string               `json:"affected_devices"`
+	Impact          IssueImpact            `json:"impact"`
+	RootCause       string                 `json:"root_cause"`
+	FirstDetected   time.Time              `json:"first_detected"`
+	LastSeen        time.Time              `json:"last_seen"`
+	Frequency       int                    `json:"frequency"`
+	Metadata        map[string]interface{} `json:"metadata"`
 }
 
 // DiagnosticRecommendation provides actionable recommendations
 type DiagnosticRecommendation struct {
-	ID           string                     `json:"id"`
-	Category     RecommendationCategory     `json:"category"`
-	Priority     RecommendationPriority     `json:"priority"`
-	Title        string                     `json:"title"`
-	Description  string                     `json:"description"`
-	Actions      []RecommendedAction        `json:"actions"`
-	ExpectedImpact string                   `json:"expected_impact"`
-	Confidence   float64                    `json:"confidence"`
-	RelatedIssues []string                  `json:"related_issues"`
+	ID             string                 `json:"id"`
+	Category       RecommendationCategory `json:"category"`
+	Priority       RecommendationPriority `json:"priority"`
+	Title          string                 `json:"title"`
+	Description    string                 `json:"description"`
+	Actions        []RecommendedAction    `json:"actions"`
+	ExpectedImpact string                 `json:"expected_impact"`
+	Confidence     float64                `json:"confidence"`
+	RelatedIssues  []string               `json:"related_issues"`
 }
 
 // DiagnosticPrediction provides predictive insights
 type DiagnosticPrediction struct {
-	ID          string                     `json:"id"`
-	Type        PredictionType             `json:"type"`
-	Confidence  float64                    `json:"confidence"`
-	TimeHorizon time.Duration              `json:"time_horizon"`
-	Prediction  string                     `json:"prediction"`
-	Evidence    []PredictionEvidence       `json:"evidence"`
-	Likelihood  float64                    `json:"likelihood"`
+	ID          string               `json:"id"`
+	Type        PredictionType       `json:"type"`
+	Confidence  float64              `json:"confidence"`
+	TimeHorizon time.Duration        `json:"time_horizon"`
+	Prediction  string               `json:"prediction"`
+	Evidence    []PredictionEvidence `json:"evidence"`
+	Likelihood  float64              `json:"likelihood"`
 }
 
 // Supporting data structures
 type NetworkSegment struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Type        string   `json:"type"`
-	DeviceCount int      `json:"device_count"`
-	Subnet      string   `json:"subnet"`
-	VLAN        int      `json:"vlan,omitempty"`
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	DeviceCount int    `json:"device_count"`
+	Subnet      string `json:"subnet"`
+	VLAN        int    `json:"vlan,omitempty"`
 }
 
 type CoverageArea struct {
-	Name            string   `json:"name"`
-	Location        string   `json:"location"`
-	SignalStrength  int      `json:"signal_strength"`
-	Coverage        float64  `json:"coverage"`
+	Name             string  `json:"name"`
+	Location         string  `json:"location"`
+	SignalStrength   int     `json:"signal_strength"`
+	Coverage         float64 `json:"coverage"`
 	ConnectedDevices int     `json:"connected_devices"`
 }
 
 type BandwidthUtilizationInfo struct {
-	TotalCapacity    float64 `json:"total_capacity"`
-	UsedBandwidth    float64 `json:"used_bandwidth"`
-	UtilizationRate  float64 `json:"utilization_rate"`
-	PeakUsage        float64 `json:"peak_usage"`
-	AverageUsage     float64 `json:"average_usage"`
+	TotalCapacity   float64 `json:"total_capacity"`
+	UsedBandwidth   float64 `json:"used_bandwidth"`
+	UtilizationRate float64 `json:"utilization_rate"`
+	PeakUsage       float64 `json:"peak_usage"`
+	AverageUsage    float64 `json:"average_usage"`
 }
 
 // Enums and constants
 type IssueType string
+
 const (
-	IssueTypeConnectivity   IssueType = "connectivity"
-	IssueTypePerformance    IssueType = "performance"
-	IssueTypeTopology       IssueType = "topology"
-	IssueTypeSecurity       IssueType = "security"
-	IssueTypeConfiguration  IssueType = "configuration"
-	IssueTypeRoaming        IssueType = "roaming"
+	IssueTypeConnectivity  IssueType = "connectivity"
+	IssueTypePerformance   IssueType = "performance"
+	IssueTypeTopology      IssueType = "topology"
+	IssueTypeSecurity      IssueType = "security"
+	IssueTypeConfiguration IssueType = "configuration"
+	IssueTypeRoaming       IssueType = "roaming"
 )
 
 type IssueSeverity string
+
 // Severity constants moved to constants.go
 
 type RecommendationCategory string
+
 // Category constants moved to constants.go
 const (
-	CategoryOptimization   RecommendationCategory = "optimization"
-	CategoryConfiguration  RecommendationCategory = "configuration"
-	CategoryUpgrade        RecommendationCategory = "upgrade"
+	CategoryOptimization  RecommendationCategory = "optimization"
+	CategoryConfiguration RecommendationCategory = "configuration"
+	CategoryUpgrade       RecommendationCategory = "upgrade"
 )
 
 type RecommendationPriority string
+
 const (
-	PriorityUrgent    RecommendationPriority = "urgent"
+	PriorityUrgent RecommendationPriority = "urgent"
 	// Priority constants moved to constants.go - using package-level constants
 )
 
 type PredictionType string
+
 const (
-	PredictionTypeFailure      PredictionType = "failure"
-	PredictionTypeCapacity     PredictionType = "capacity"
-	PredictionTypePerformance  PredictionType = "performance"
-	PredictionTypeSecurity     PredictionType = "security"
+	PredictionTypeFailure     PredictionType = "failure"
+	PredictionTypeCapacity    PredictionType = "capacity"
+	PredictionTypePerformance PredictionType = "performance"
+	PredictionTypeSecurity    PredictionType = "security"
 )
 
 // Additional supporting structures would be defined here...
@@ -348,10 +353,10 @@ type RedundancyAnalysis struct {
 }
 
 type SinglePointOfFailure struct {
-	DeviceID    string  `json:"device_id"`
-	Impact      string  `json:"impact"`
-	Mitigation  string  `json:"mitigation"`
-	RiskScore   float64 `json:"risk_score"`
+	DeviceID   string  `json:"device_id"`
+	Impact     string  `json:"impact"`
+	Mitigation string  `json:"mitigation"`
+	RiskScore  float64 `json:"risk_score"`
 }
 
 type NetworkPath struct {
@@ -363,11 +368,11 @@ type NetworkPath struct {
 }
 
 type DiagnosticStats struct {
-	TotalReports       int64     `json:"total_reports"`
-	LastReportTime     time.Time `json:"last_report_time"`
-	AverageGenTime     time.Duration `json:"average_generation_time"`
-	CacheHitRate       float64   `json:"cache_hit_rate"`
-	ProcessingErrors   int64     `json:"processing_errors"`
+	TotalReports     int64         `json:"total_reports"`
+	LastReportTime   time.Time     `json:"last_report_time"`
+	AverageGenTime   time.Duration `json:"average_generation_time"`
+	CacheHitRate     float64       `json:"cache_hit_rate"`
+	ProcessingErrors int64         `json:"processing_errors"`
 }
 
 // NewNetworkDiagnosticsEngine creates a new network diagnostics engine
@@ -399,26 +404,26 @@ func NewNetworkDiagnosticsEngine(
 func (nde *NetworkDiagnosticsEngine) Start() error {
 	nde.cacheMu.Lock()
 	defer nde.cacheMu.Unlock()
-	
+
 	if nde.running {
 		return fmt.Errorf("network diagnostics engine is already running")
 	}
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
 	nde.cancel = cancel
 	nde.running = true
-	
+
 	// Start background processing
 	if nde.config.EnablePeriodicReports {
 		go nde.periodicReportGeneration(ctx)
 	}
-	
+
 	if nde.config.EnableRealtimeAnalysis {
 		go nde.realtimeAnalysis(ctx)
 	}
-	
+
 	go nde.cacheCleanup(ctx)
-	
+
 	return nil
 }
 
@@ -426,14 +431,14 @@ func (nde *NetworkDiagnosticsEngine) Start() error {
 func (nde *NetworkDiagnosticsEngine) Stop() error {
 	nde.cacheMu.Lock()
 	defer nde.cacheMu.Unlock()
-	
+
 	if !nde.running {
 		return fmt.Errorf("network diagnostics engine is not running")
 	}
-	
+
 	nde.cancel()
 	nde.running = false
-	
+
 	return nil
 }
 
@@ -443,9 +448,9 @@ func (nde *NetworkDiagnosticsEngine) GenerateReport(
 	timeWindow DiagnosticTimeWindow,
 	detailLevel DetailLevel,
 ) (*NetworkDiagnosticReport, error) {
-	
+
 	startTime := time.Now()
-	
+
 	report := &NetworkDiagnosticReport{
 		ID:          fmt.Sprintf("report_%d", time.Now().UnixNano()),
 		GeneratedAt: startTime,
@@ -453,62 +458,62 @@ func (nde *NetworkDiagnosticsEngine) GenerateReport(
 		ReportType:  reportType,
 		DetailLevel: detailLevel,
 	}
-	
+
 	// Generate each section of the report
 	if err := nde.generateNetworkOverview(report); err != nil {
 		return nil, fmt.Errorf("failed to generate network overview: %w", err)
 	}
-	
+
 	if err := nde.generateTopologyHealth(report); err != nil {
 		return nil, fmt.Errorf("failed to generate topology health: %w", err)
 	}
-	
+
 	if err := nde.generateQualityAnalysis(report); err != nil {
 		return nil, fmt.Errorf("failed to generate quality analysis: %w", err)
 	}
-	
+
 	if err := nde.generatePerformanceReport(report); err != nil {
 		return nil, fmt.Errorf("failed to generate performance report: %w", err)
 	}
-	
+
 	if err := nde.generateConnectivityReport(report); err != nil {
 		return nil, fmt.Errorf("failed to generate connectivity report: %w", err)
 	}
-	
+
 	if err := nde.generateSecurityReport(report); err != nil {
 		return nil, fmt.Errorf("failed to generate security report: %w", err)
 	}
-	
+
 	if err := nde.generateRoamingAnalysis(report); err != nil {
 		return nil, fmt.Errorf("failed to generate roaming analysis: %w", err)
 	}
-	
+
 	// Analyze issues and generate recommendations
 	nde.analyzeIssues(report)
 	nde.generateRecommendations(report)
-	
+
 	if nde.config.IncludePredictions {
 		nde.generatePredictions(report)
 	}
-	
+
 	// Calculate overall health score
 	nde.calculateOverallHealth(report)
-	
+
 	// Generate report statistics
 	report.ReportStats = ReportStatistics{
-		GenerationTime: time.Since(startTime),
-		DataPoints:     nde.countDataPoints(report),
+		GenerationTime:  time.Since(startTime),
+		DataPoints:      nde.countDataPoints(report),
 		AnalyzedDevices: len(report.NetworkOverview.DevicesByType),
 	}
-	
+
 	// Cache the report
 	nde.cacheReport(report)
-	
+
 	// Update statistics
 	nde.stats.TotalReports++
 	nde.stats.LastReportTime = time.Now()
 	nde.stats.AverageGenTime = (nde.stats.AverageGenTime + report.ReportStats.GenerationTime) / 2
-	
+
 	return report, nil
 }
 
@@ -516,12 +521,12 @@ func (nde *NetworkDiagnosticsEngine) GenerateReport(
 func (nde *NetworkDiagnosticsEngine) GetCachedReport(reportID string) (*NetworkDiagnosticReport, bool) {
 	nde.cacheMu.RLock()
 	defer nde.cacheMu.RUnlock()
-	
+
 	report, exists := nde.reportCache[reportID]
 	if exists {
 		nde.stats.CacheHitRate = (nde.stats.CacheHitRate + 1) / 2
 	}
-	
+
 	return report, exists
 }
 
@@ -529,7 +534,7 @@ func (nde *NetworkDiagnosticsEngine) GetCachedReport(reportID string) (*NetworkD
 func (nde *NetworkDiagnosticsEngine) ListReports() []ReportSummary {
 	nde.cacheMu.RLock()
 	defer nde.cacheMu.RUnlock()
-	
+
 	var summaries []ReportSummary
 	for _, report := range nde.reportCache {
 		summary := ReportSummary{
@@ -542,12 +547,12 @@ func (nde *NetworkDiagnosticsEngine) ListReports() []ReportSummary {
 		}
 		summaries = append(summaries, summary)
 	}
-	
+
 	// Sort by generation time (newest first)
 	sort.Slice(summaries, func(i, j int) bool {
 		return summaries[i].GeneratedAt.After(summaries[j].GeneratedAt)
 	})
-	
+
 	return summaries
 }
 
@@ -563,11 +568,11 @@ func (nde *NetworkDiagnosticsEngine) generateNetworkOverview(report *NetworkDiag
 	if err != nil {
 		return err
 	}
-	
+
 	overview := NetworkOverview{
 		DevicesByType: make(map[string]int),
 	}
-	
+
 	for _, device := range topology.Devices {
 		overview.TotalDevices++
 		if device.Online { // Use Online field instead of Status
@@ -577,7 +582,7 @@ func (nde *NetworkDiagnosticsEngine) generateNetworkOverview(report *NetworkDiag
 		}
 		overview.DevicesByType[string(device.DeviceType)]++
 	}
-	
+
 	report.NetworkOverview = overview
 	return nil
 }
@@ -585,9 +590,9 @@ func (nde *NetworkDiagnosticsEngine) generateNetworkOverview(report *NetworkDiag
 func (nde *NetworkDiagnosticsEngine) generateTopologyHealth(report *NetworkDiagnosticReport) error {
 	// Implementation would analyze topology stability, connectivity matrix, etc.
 	report.TopologyHealth = TopologyHealthReport{
-		TopologyStability: 0.85, // Example value
+		TopologyStability:  0.85, // Example value
 		ConnectivityMatrix: make(map[string]map[string]bool),
-		IsolatedDevices: []string{},
+		IsolatedDevices:    []string{},
 	}
 	return nil
 }
@@ -598,9 +603,9 @@ func (nde *NetworkDiagnosticsEngine) generateQualityAnalysis(report *NetworkDiag
 		AverageQuality: 0.75, // Example value
 		QualityDistribution: map[string]int{
 			"excellent": 5,
-			"good": 8,
-			"fair": 3,
-			"poor": 1,
+			"good":      8,
+			"fair":      3,
+			"poor":      1,
 		},
 	}
 	return nil
@@ -611,8 +616,8 @@ func (nde *NetworkDiagnosticsEngine) generatePerformanceReport(report *NetworkDi
 	report.Performance = PerformanceReport{
 		LatencyAnalysis: LatencyAnalysis{
 			AverageLatency: 15.5,
-			P95Latency: 45.2,
-			P99Latency: 89.1,
+			P95Latency:     45.2,
+			P99Latency:     89.1,
 		},
 	}
 	return nil
@@ -622,7 +627,7 @@ func (nde *NetworkDiagnosticsEngine) generateConnectivityReport(report *NetworkD
 	// Implementation would analyze connection success rates, stability, etc.
 	report.Connectivity = ConnectivityReport{
 		ConnectionSuccess: 0.95,
-		SessionStability: 0.88,
+		SessionStability:  0.88,
 	}
 	return nil
 }
@@ -630,8 +635,8 @@ func (nde *NetworkDiagnosticsEngine) generateConnectivityReport(report *NetworkD
 func (nde *NetworkDiagnosticsEngine) generateSecurityReport(report *NetworkDiagnosticReport) error {
 	// Implementation would analyze security aspects
 	report.Security = SecurityReport{
-		SecurityScore: 85.0,
-		OpenNetworks: []OpenNetworkInfo{},
+		SecurityScore:       85.0,
+		OpenNetworks:        []OpenNetworkInfo{},
 		WeakSecurityDevices: []WeakSecurityDevice{},
 	}
 	return nil
@@ -641,7 +646,7 @@ func (nde *NetworkDiagnosticsEngine) generateRoamingAnalysis(report *NetworkDiag
 	// Implementation would analyze roaming patterns and issues
 	report.RoamingAnalysis = RoamingAnalysisReport{
 		RoamingFrequency: 2.5, // Events per hour
-		RoamingSuccess: 0.92,
+		RoamingSuccess:   0.92,
 	}
 	return nil
 }
@@ -649,28 +654,28 @@ func (nde *NetworkDiagnosticsEngine) generateRoamingAnalysis(report *NetworkDiag
 func (nde *NetworkDiagnosticsEngine) analyzeIssues(report *NetworkDiagnosticReport) {
 	// Implementation would analyze all collected data to identify issues
 	issues := []DiagnosticIssue{}
-	
+
 	// Example issue detection
 	if report.QualityAnalysis.AverageQuality < nde.config.QualityThresholds.AcceptableQuality {
 		issue := DiagnosticIssue{
-			ID:          fmt.Sprintf("quality_issue_%d", time.Now().Unix()),
-			Type:        IssueTypePerformance,
-			Severity:    SeverityMedium,
-			Title:       "Poor Network Quality Detected",
-			Description: "Average network quality is below acceptable threshold",
+			ID:            fmt.Sprintf("quality_issue_%d", time.Now().Unix()),
+			Type:          IssueTypePerformance,
+			Severity:      SeverityMedium,
+			Title:         "Poor Network Quality Detected",
+			Description:   "Average network quality is below acceptable threshold",
 			FirstDetected: time.Now(),
-			LastSeen:    time.Now(),
+			LastSeen:      time.Now(),
 		}
 		issues = append(issues, issue)
 	}
-	
+
 	report.Issues = issues
 }
 
 func (nde *NetworkDiagnosticsEngine) generateRecommendations(report *NetworkDiagnosticReport) {
 	// Implementation would generate recommendations based on identified issues
 	recommendations := []DiagnosticRecommendation{}
-	
+
 	for _, issue := range report.Issues {
 		if issue.Type == IssueTypePerformance {
 			rec := DiagnosticRecommendation{
@@ -684,14 +689,14 @@ func (nde *NetworkDiagnosticsEngine) generateRecommendations(report *NetworkDiag
 			recommendations = append(recommendations, rec)
 		}
 	}
-	
+
 	report.Recommendations = recommendations
 }
 
 func (nde *NetworkDiagnosticsEngine) generatePredictions(report *NetworkDiagnosticReport) {
 	// Implementation would generate predictive insights
 	predictions := []DiagnosticPrediction{}
-	
+
 	// Example prediction
 	if report.Performance.LatencyAnalysis.AverageLatency > 20 {
 		prediction := DiagnosticPrediction{
@@ -703,7 +708,7 @@ func (nde *NetworkDiagnosticsEngine) generatePredictions(report *NetworkDiagnost
 		}
 		predictions = append(predictions, prediction)
 	}
-	
+
 	report.Predictions = predictions
 }
 
@@ -712,11 +717,11 @@ func (nde *NetworkDiagnosticsEngine) calculateOverallHealth(report *NetworkDiagn
 	qualityScore := report.QualityAnalysis.AverageQuality * 100
 	connectivityScore := report.Connectivity.ConnectionSuccess * 100
 	securityScore := report.Security.SecurityScore
-	
+
 	// Weight the different scores
 	overallScore := (qualityScore*0.4 + connectivityScore*0.3 + securityScore*0.3)
 	report.HealthScore = overallScore
-	
+
 	// Determine health status
 	switch {
 	case overallScore >= 90:
@@ -735,7 +740,7 @@ func (nde *NetworkDiagnosticsEngine) calculateOverallHealth(report *NetworkDiagn
 func (nde *NetworkDiagnosticsEngine) cacheReport(report *NetworkDiagnosticReport) {
 	nde.cacheMu.Lock()
 	defer nde.cacheMu.Unlock()
-	
+
 	nde.reportCache[report.ID] = report
 }
 
@@ -747,19 +752,19 @@ func (nde *NetworkDiagnosticsEngine) countDataPoints(report *NetworkDiagnosticRe
 func (nde *NetworkDiagnosticsEngine) periodicReportGeneration(ctx context.Context) {
 	ticker := time.NewTicker(nde.config.AutoReportInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
 			timeWindow := DiagnosticTimeWindow{
-				StartTime: time.Now().Add(-nde.config.AnalysisTimeWindow),
-				EndTime:   time.Now(),
-				Duration:  nde.config.AnalysisTimeWindow,
+				StartTime:   time.Now().Add(-nde.config.AnalysisTimeWindow),
+				EndTime:     time.Now(),
+				Duration:    nde.config.AnalysisTimeWindow,
 				Description: "Scheduled periodic report",
 			}
-			
+
 			_, err := nde.GenerateReport(ReportTypeScheduled, timeWindow, DetailLevelStandard)
 			if err != nil {
 				nde.stats.ProcessingErrors++
@@ -772,7 +777,7 @@ func (nde *NetworkDiagnosticsEngine) realtimeAnalysis(ctx context.Context) {
 	// Implementation for real-time analysis
 	ticker := time.NewTicker(time.Minute)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -786,7 +791,7 @@ func (nde *NetworkDiagnosticsEngine) realtimeAnalysis(ctx context.Context) {
 func (nde *NetworkDiagnosticsEngine) cacheCleanup(ctx context.Context) {
 	ticker := time.NewTicker(time.Hour)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -800,9 +805,9 @@ func (nde *NetworkDiagnosticsEngine) cacheCleanup(ctx context.Context) {
 func (nde *NetworkDiagnosticsEngine) cleanExpiredReports() {
 	nde.cacheMu.Lock()
 	defer nde.cacheMu.Unlock()
-	
+
 	cutoff := time.Now().Add(-nde.config.ReportRetention)
-	
+
 	for id, report := range nde.reportCache {
 		if report.GeneratedAt.Before(cutoff) {
 			delete(nde.reportCache, id)
@@ -812,12 +817,12 @@ func (nde *NetworkDiagnosticsEngine) cleanExpiredReports() {
 
 // Additional supporting structures
 type ReportSummary struct {
-	ID          string              `json:"id"`
-	GeneratedAt time.Time           `json:"generated_at"`
-	ReportType  ReportType          `json:"report_type"`
-	DetailLevel DetailLevel         `json:"detail_level"`
-	HealthScore float64             `json:"health_score"`
-	IssueCount  int                 `json:"issue_count"`
+	ID          string      `json:"id"`
+	GeneratedAt time.Time   `json:"generated_at"`
+	ReportType  ReportType  `json:"report_type"`
+	DetailLevel DetailLevel `json:"detail_level"`
+	HealthScore float64     `json:"health_score"`
+	IssueCount  int         `json:"issue_count"`
 }
 
 type ReportStatistics struct {
@@ -833,35 +838,35 @@ type LatencyAnalysis struct {
 }
 
 type ThroughputAnalysis struct {
-	AverageThroughput float64 `json:"average_throughput"`
-	PeakThroughput    float64 `json:"peak_throughput"`
+	AverageThroughput float64  `json:"average_throughput"`
+	PeakThroughput    float64  `json:"peak_throughput"`
 	BottleneckDevices []string `json:"bottleneck_devices"`
 }
 
 type PacketLossAnalysis struct {
-	AveragePacketLoss float64 `json:"average_packet_loss"`
-	MaxPacketLoss     float64 `json:"max_packet_loss"`
+	AveragePacketLoss float64  `json:"average_packet_loss"`
+	MaxPacketLoss     float64  `json:"max_packet_loss"`
 	AffectedDevices   []string `json:"affected_devices"`
 }
 
 type JitterAnalysis struct {
-	AverageJitter float64 `json:"average_jitter"`
-	MaxJitter     float64 `json:"max_jitter"`
+	AverageJitter  float64  `json:"average_jitter"`
+	MaxJitter      float64  `json:"max_jitter"`
 	JitterHotspots []string `json:"jitter_hotspots"`
 }
 
 type PerformanceTrendPoint struct {
-	Timestamp time.Time `json:"timestamp"`
-	Latency   float64   `json:"latency"`
-	Throughput float64  `json:"throughput"`
-	PacketLoss float64  `json:"packet_loss"`
+	Timestamp  time.Time `json:"timestamp"`
+	Latency    float64   `json:"latency"`
+	Throughput float64   `json:"throughput"`
+	PacketLoss float64   `json:"packet_loss"`
 }
 
 type PerformanceBottleneck struct {
-	DeviceID    string  `json:"device_id"`
-	Type        string  `json:"type"`
-	Impact      string  `json:"impact"`
-	Severity    float64 `json:"severity"`
+	DeviceID string  `json:"device_id"`
+	Type     string  `json:"type"`
+	Impact   string  `json:"impact"`
+	Severity float64 `json:"severity"`
 }
 
 type ReconnectionPattern struct {
@@ -879,9 +884,9 @@ type ConnectivityIssue struct {
 }
 
 type DeviceReliabilityInfo struct {
-	DeviceID         string  `json:"device_id"`
-	UptimePercentage float64 `json:"uptime_percentage"`
-	ConnectionScore  float64 `json:"connection_score"`
+	DeviceID         string   `json:"device_id"`
+	UptimePercentage float64  `json:"uptime_percentage"`
+	ConnectionScore  float64  `json:"connection_score"`
 	Issues           []string `json:"issues"`
 }
 
@@ -892,16 +897,16 @@ type OpenNetworkInfo struct {
 }
 
 type WeakSecurityDevice struct {
-	DeviceID     string `json:"device_id"`
-	Issue        string `json:"issue"`
+	DeviceID       string `json:"device_id"`
+	Issue          string `json:"issue"`
 	Recommendation string `json:"recommendation"`
 }
 
 type UnauthorizedDevice struct {
-	DeviceID      string    `json:"device_id"`
-	MacAddress    string    `json:"mac_address"`
-	FirstSeen     time.Time `json:"first_seen"`
-	ThreatLevel   string    `json:"threat_level"`
+	DeviceID    string    `json:"device_id"`
+	MacAddress  string    `json:"mac_address"`
+	FirstSeen   time.Time `json:"first_seen"`
+	ThreatLevel string    `json:"threat_level"`
 }
 
 type SecurityEvent struct {
@@ -913,21 +918,21 @@ type SecurityEvent struct {
 }
 
 type ComplianceStatus struct {
-	OverallCompliance float64                    `json:"overall_compliance"`
+	OverallCompliance float64                   `json:"overall_compliance"`
 	Standards         map[string]ComplianceInfo `json:"standards"`
 }
 
 type ComplianceInfo struct {
-	Status      string `json:"status"`
-	Compliance  float64 `json:"compliance"`
-	Issues      []string `json:"issues"`
+	Status     string   `json:"status"`
+	Compliance float64  `json:"compliance"`
+	Issues     []string `json:"issues"`
 }
 
 type RoamingPattern struct {
-	DeviceID    string    `json:"device_id"`
-	Pattern     string    `json:"pattern"`
-	Frequency   float64   `json:"frequency"`
-	SuccessRate float64   `json:"success_rate"`
+	DeviceID    string  `json:"device_id"`
+	Pattern     string  `json:"pattern"`
+	Frequency   float64 `json:"frequency"`
+	SuccessRate float64 `json:"success_rate"`
 }
 
 type ProblematicRoamingDevice struct {
@@ -938,10 +943,10 @@ type ProblematicRoamingDevice struct {
 }
 
 type RoamingOptimization struct {
-	Type           string  `json:"type"`
-	Description    string  `json:"description"`
-	ExpectedGain   string  `json:"expected_gain"`
-	Implementation string  `json:"implementation"`
+	Type           string `json:"type"`
+	Description    string `json:"description"`
+	ExpectedGain   string `json:"expected_gain"`
+	Implementation string `json:"implementation"`
 }
 
 type QualityTrendPoint struct {
@@ -951,50 +956,50 @@ type QualityTrendPoint struct {
 }
 
 type PoorQualityDevice struct {
-	DeviceID    string  `json:"device_id"`
-	Quality     float64 `json:"quality"`
+	DeviceID    string   `json:"device_id"`
+	Quality     float64  `json:"quality"`
 	Issues      []string `json:"issues"`
 	Suggestions []string `json:"suggestions"`
 }
 
 type QualityHotspot struct {
-	Location      string  `json:"location"`
-	AverageQuality float64 `json:"average_quality"`
-	DeviceCount   int     `json:"device_count"`
-	Issues        []string `json:"issues"`
+	Location       string   `json:"location"`
+	AverageQuality float64  `json:"average_quality"`
+	DeviceCount    int      `json:"device_count"`
+	Issues         []string `json:"issues"`
 }
 
 type SignalCoverageAnalysis struct {
-	CoveragePercentage float64              `json:"coverage_percentage"`
-	WeakSpots         []WeakSignalSpot     `json:"weak_spots"`
-	OptimalPlacements []OptimalPlacement   `json:"optimal_placements"`
+	CoveragePercentage float64            `json:"coverage_percentage"`
+	WeakSpots          []WeakSignalSpot   `json:"weak_spots"`
+	OptimalPlacements  []OptimalPlacement `json:"optimal_placements"`
 }
 
 type WeakSignalSpot struct {
-	Location       string  `json:"location"`
-	SignalStrength int     `json:"signal_strength"`
+	Location       string   `json:"location"`
+	SignalStrength int      `json:"signal_strength"`
 	Devices        []string `json:"devices"`
 }
 
 type OptimalPlacement struct {
-	Location    string  `json:"location"`
-	Improvement string  `json:"improvement"`
+	Location      string `json:"location"`
+	Improvement   string `json:"improvement"`
 	Justification string `json:"justification"`
 }
 
 type TrendAnalysis struct {
-	QualityTrend       string                `json:"quality_trend"`
-	PerformanceTrend   string                `json:"performance_trend"`
-	ConnectivityTrend  string                `json:"connectivity_trend"`
-	TrendMetrics       map[string]float64    `json:"trend_metrics"`
+	QualityTrend      string             `json:"quality_trend"`
+	PerformanceTrend  string             `json:"performance_trend"`
+	ConnectivityTrend string             `json:"connectivity_trend"`
+	TrendMetrics      map[string]float64 `json:"trend_metrics"`
 }
 
 type HistoricalComparison struct {
-	PreviousReport    string                `json:"previous_report"`
-	QualityChange     float64               `json:"quality_change"`
-	PerformanceChange float64               `json:"performance_change"`
-	DeviceChanges     map[string]int        `json:"device_changes"`
-	IssueComparison   IssueComparison       `json:"issue_comparison"`
+	PreviousReport    string          `json:"previous_report"`
+	QualityChange     float64         `json:"quality_change"`
+	PerformanceChange float64         `json:"performance_change"`
+	DeviceChanges     map[string]int  `json:"device_changes"`
+	IssueComparison   IssueComparison `json:"issue_comparison"`
 }
 
 type IssueComparison struct {
@@ -1004,18 +1009,18 @@ type IssueComparison struct {
 }
 
 type IssueImpact struct {
-	UserExperience    string  `json:"user_experience"`
-	BusinessImpact    string  `json:"business_impact"`
-	TechnicalImpact   string  `json:"technical_impact"`
-	SeverityScore     float64 `json:"severity_score"`
+	UserExperience  string  `json:"user_experience"`
+	BusinessImpact  string  `json:"business_impact"`
+	TechnicalImpact string  `json:"technical_impact"`
+	SeverityScore   float64 `json:"severity_score"`
 }
 
 type RecommendedAction struct {
-	Action      string        `json:"action"`
-	Steps       []string      `json:"steps"`
-	Timeline    time.Duration `json:"timeline"`
-	Resources   []string      `json:"resources"`
-	Automation  bool          `json:"automation"`
+	Action     string        `json:"action"`
+	Steps      []string      `json:"steps"`
+	Timeline   time.Duration `json:"timeline"`
+	Resources  []string      `json:"resources"`
+	Automation bool          `json:"automation"`
 }
 
 type PredictionEvidence struct {

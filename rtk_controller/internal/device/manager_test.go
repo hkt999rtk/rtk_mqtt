@@ -73,9 +73,9 @@ func (m *MockStorage) Update(fn func(storage.Transaction) error) error {
 
 func TestNewManager(t *testing.T) {
 	mockStorage := NewMockStorage()
-	
+
 	manager := NewManager(mockStorage)
-	
+
 	assert.NotNil(t, manager)
 	assert.Equal(t, mockStorage, manager.storage)
 	assert.NotNil(t, manager.devices)
@@ -91,7 +91,7 @@ func TestManager_Start(t *testing.T) {
 
 	ctx := context.Background()
 	err := manager.Start(ctx)
-	
+
 	assert.NoError(t, err)
 	mockStorage.AssertExpectations(t)
 }
@@ -117,16 +117,16 @@ func TestManager_RegisterDevice(t *testing.T) {
 	mockStorage.On("Set", expectedKey, mock.AnythingOfType("types.DeviceState")).Return(nil)
 
 	err := manager.RegisterDevice(deviceInfo)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify device was added to in-memory store
 	key := "test-tenant:test-site:test-device"
 	device, exists := manager.devices[key]
 	assert.True(t, exists)
 	assert.Equal(t, deviceInfo.DeviceInfo, device.DeviceInfo)
 	assert.Equal(t, types.DeviceStatusOnline, device.Status)
-	
+
 	mockStorage.AssertExpectations(t)
 }
 
@@ -156,16 +156,16 @@ func TestManager_UpdateDeviceState(t *testing.T) {
 	}
 
 	err = manager.UpdateDeviceState(deviceInfo.DeviceInfo, stateData)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify state was updated
 	key := "test-tenant:test-site:test-device"
 	device, exists := manager.devices[key]
 	assert.True(t, exists)
 	assert.Equal(t, stateData, device.State)
 	assert.WithinDuration(t, time.Now(), device.LastSeen, time.Second)
-	
+
 	mockStorage.AssertExpectations(t)
 }
 
@@ -199,7 +199,7 @@ func TestManager_GetDevice(t *testing.T) {
 		DeviceID: "non-existent",
 		Type:     "wifi_router",
 	}
-	
+
 	device, err = manager.GetDevice(nonExistentDevice)
 	assert.Error(t, err)
 	assert.Nil(t, device)
@@ -397,7 +397,7 @@ func TestManager_GetStats(t *testing.T) {
 	for _, device := range devices {
 		err := manager.RegisterDevice(device.info)
 		require.NoError(t, err)
-		
+
 		err = manager.SetDeviceStatus(device.info.DeviceInfo, device.status)
 		require.NoError(t, err)
 	}
@@ -448,24 +448,24 @@ func TestManager_ConcurrentAccess(t *testing.T) {
 
 	// Test concurrent device registration
 	done := make(chan bool, numGoroutines)
-	
+
 	for i := 0; i < numGoroutines; i++ {
 		go func(id int) {
 			defer func() { done <- true }()
-			
+
 			for j := 0; j < numDevices; j++ {
 				deviceInfo := types.ExtendedDeviceInfo{
 					DeviceInfo: types.DeviceInfo{
 						Tenant:   "tenant1",
 						Site:     "site1",
-						DeviceID: string(rune('A'+id*numDevices+j)), // Unique device IDs
+						DeviceID: string(rune('A' + id*numDevices + j)), // Unique device IDs
 						Type:     "wifi_router",
 					},
 				}
-				
+
 				err := manager.RegisterDevice(deviceInfo)
 				assert.NoError(t, err)
-				
+
 				// Test concurrent status updates
 				err = manager.SetDeviceStatus(deviceInfo.DeviceInfo, types.DeviceStatusOnline)
 				assert.NoError(t, err)
@@ -518,7 +518,7 @@ func TestManager_DeviceTimeout(t *testing.T) {
 	// Check if device would be considered offline (this would be done by a background process)
 	device, err = manager.GetDevice(deviceInfo.DeviceInfo)
 	assert.NoError(t, err)
-	
+
 	// The device should still be marked as online until the timeout checker runs
 	// This test verifies the structure is in place for timeout checking
 	assert.True(t, device.LastSeen.Before(time.Now().Add(-5*time.Minute)))

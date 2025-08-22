@@ -78,7 +78,7 @@ func (cli *InteractiveCLI) handleIdentityCommand(args []string) {
 	}
 
 	subCommand := args[0]
-	
+
 	switch subCommand {
 	case "list":
 		cli.showIdentityList()
@@ -119,7 +119,7 @@ func (cli *InteractiveCLI) updateDeviceIdentity(macAddr string, args []string) {
 
 func (cli *InteractiveCLI) showIdentityStats() {
 	stats := cli.identityManager.GetStats()
-	
+
 	fmt.Println("Identity Management Statistics")
 	fmt.Println("==============================")
 	fmt.Printf("Total Devices: %d\n", stats.TotalDevices)

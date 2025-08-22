@@ -10,22 +10,22 @@ import (
 
 // QoSManager manages QoS policies and recommendations
 type QoSManager struct {
-	mu                sync.RWMutex
-	config            *QoSConfig
-	policies          map[string]*types.BandwidthRule
-	trafficRules      map[string]*types.TrafficRule
-	queues            map[string]*types.QueueInfo
-	recommendations   map[string]*types.QoSRecommendation
-	trafficAnalyzer   *TrafficAnalyzer
-	policyEngine      *PolicyEngine
+	mu              sync.RWMutex
+	config          *QoSConfig
+	policies        map[string]*types.BandwidthRule
+	trafficRules    map[string]*types.TrafficRule
+	queues          map[string]*types.QueueInfo
+	recommendations map[string]*types.QoSRecommendation
+	trafficAnalyzer *TrafficAnalyzer
+	policyEngine    *PolicyEngine
 }
 
 // QoSConfig contains QoS manager configuration
 type QoSConfig struct {
-	Enabled              bool    `json:"enabled"`
-	AutoRecommendations  bool    `json:"auto_recommendations"`
-	MaxBandwidthMbps     float64 `json:"max_bandwidth_mbps"`
-	DefaultPriority      int     `json:"default_priority"`
+	Enabled              bool          `json:"enabled"`
+	AutoRecommendations  bool          `json:"auto_recommendations"`
+	MaxBandwidthMbps     float64       `json:"max_bandwidth_mbps"`
+	DefaultPriority      int           `json:"default_priority"`
 	RecommendationWindow time.Duration `json:"recommendation_window"`
 }
 
@@ -176,7 +176,7 @@ func (qm *QoSManager) AnalyzeAndRecommend() []*types.QoSRecommendation {
 
 	// Get current traffic statistics
 	stats := qm.trafficAnalyzer.GetCurrentStats()
-	
+
 	// Analyze bandwidth usage
 	if rec := qm.analyzeBandwidthUsage(stats); rec != nil {
 		recommendations = append(recommendations, rec)
@@ -272,7 +272,7 @@ func (qm *QoSManager) recommendForHotspot(deviceID string) *types.QoSRecommendat
 // recommendForAnomaly generates recommendation for a traffic anomaly
 func (qm *QoSManager) recommendForAnomaly(anomaly *types.TrafficAnomaly) *types.QoSRecommendation {
 	var recType, description string
-	
+
 	switch anomaly.Type {
 	case "spike":
 		recType = "priority_queue"
@@ -328,14 +328,14 @@ func (qm *QoSManager) validateTrafficRule(rule *types.TrafficRule) error {
 	if !validActions[rule.Action] {
 		return fmt.Errorf("invalid action: %s", rule.Action)
 	}
-	
+
 	validProtocols := map[string]bool{
 		"tcp": true, "udp": true, "icmp": true, "all": true,
 	}
 	if !validProtocols[rule.Protocol] {
 		return fmt.Errorf("invalid protocol: %s", rule.Protocol)
 	}
-	
+
 	return nil
 }
 

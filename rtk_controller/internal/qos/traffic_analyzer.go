@@ -22,19 +22,19 @@ type TrafficAnalyzer struct {
 
 // Config for traffic analyzer
 type Config struct {
-	SamplingInterval   time.Duration `json:"sampling_interval"`
-	HistoryRetention   time.Duration `json:"history_retention"`
-	AnomalyThreshold   float64       `json:"anomaly_threshold"`
-	TopTalkersCount    int           `json:"top_talkers_count"`
-	EnableAutoDetect   bool          `json:"enable_auto_detect"`
-	BandwidthCapacity  float64       `json:"bandwidth_capacity_mbps"`
+	SamplingInterval  time.Duration `json:"sampling_interval"`
+	HistoryRetention  time.Duration `json:"history_retention"`
+	AnomalyThreshold  float64       `json:"anomaly_threshold"`
+	TopTalkersCount   int           `json:"top_talkers_count"`
+	EnableAutoDetect  bool          `json:"enable_auto_detect"`
+	BandwidthCapacity float64       `json:"bandwidth_capacity_mbps"`
 }
 
 // DeviceTrafficHistory stores historical traffic data for a device
 type DeviceTrafficHistory struct {
-	DeviceID     string
-	Samples      []TrafficSample
-	LastUpdated  time.Time
+	DeviceID        string
+	Samples         []TrafficSample
+	LastUpdated     time.Time
 	AverageUpload   float64
 	AverageDownload float64
 	PeakUpload      float64
@@ -139,20 +139,20 @@ func (ta *TrafficAnalyzer) updateStatistics(history *DeviceTrafficHistory, sampl
 func (ta *TrafficAnalyzer) cleanOldSamples(history *DeviceTrafficHistory) {
 	cutoff := time.Now().Add(-ta.config.HistoryRetention)
 	newSamples := []TrafficSample{}
-	
+
 	for _, sample := range history.Samples {
 		if sample.Timestamp.After(cutoff) {
 			newSamples = append(newSamples, sample)
 		}
 	}
-	
+
 	history.Samples = newSamples
 }
 
 // detectAnomalies detects traffic anomalies
 func (ta *TrafficAnalyzer) detectAnomalies(deviceID string, history *DeviceTrafficHistory, sample TrafficSample) {
 	anomalies := ta.anomalyDetector.Detect(deviceID, history, sample, ta.config.BandwidthCapacity)
-	
+
 	for _, anomaly := range anomalies {
 		ta.anomalies[anomaly.ID] = anomaly
 	}
@@ -190,7 +190,7 @@ func (ta *TrafficAnalyzer) getDeviceTraffic() []types.DeviceTrafficInfo {
 
 		// Get latest sample
 		latest := history.Samples[len(history.Samples)-1]
-		
+
 		info := types.DeviceTrafficInfo{
 			DeviceID:     deviceID,
 			UploadMbps:   latest.UploadMbps,
@@ -199,7 +199,7 @@ func (ta *TrafficAnalyzer) getDeviceTraffic() []types.DeviceTrafficInfo {
 			ActiveConns:  latest.Connections,
 			BandwidthPct: ((latest.UploadMbps + latest.DownloadMbps) / ta.config.BandwidthCapacity) * 100,
 		}
-		
+
 		devices = append(devices, info)
 	}
 
@@ -224,7 +224,7 @@ func (ta *TrafficAnalyzer) getTopTalkers() []types.TopTalkerInfo {
 			TotalMbps:   totalMbps,
 			TrafficType: "total",
 		}
-		
+
 		talkers = append(talkers, talker)
 	}
 
@@ -295,12 +295,12 @@ func (ta *TrafficAnalyzer) AnalyzeTrafficPattern(deviceID string, duration time.
 
 // TrafficPattern represents analyzed traffic patterns
 type TrafficPattern struct {
-	DeviceID        string
-	PeakHours       []int     // Hours of day with peak usage
-	AverageDaily    float64   // Average daily bandwidth
-	Consistency     float64   // How consistent the pattern is (0-1)
-	Type            string    // streaming, browsing, gaming, mixed
-	Recommendation  string
+	DeviceID       string
+	PeakHours      []int   // Hours of day with peak usage
+	AverageDaily   float64 // Average daily bandwidth
+	Consistency    float64 // How consistent the pattern is (0-1)
+	Type           string  // streaming, browsing, gaming, mixed
+	Recommendation string
 }
 
 // analyzePattern analyzes traffic patterns for a device
@@ -317,7 +317,7 @@ func analyzePattern(history *DeviceTrafficHistory, duration time.Duration) *Traf
 	// Analyze peak hours
 	hourlyUsage := make(map[int]float64)
 	cutoff := time.Now().Add(-duration)
-	
+
 	for _, sample := range history.Samples {
 		if sample.Timestamp.After(cutoff) {
 			hour := sample.Timestamp.Hour()
@@ -334,7 +334,7 @@ func analyzePattern(history *DeviceTrafficHistory, duration time.Duration) *Traf
 
 	// Determine traffic type based on patterns
 	pattern.Type = determineTrafficType(history)
-	
+
 	// Generate recommendation
 	pattern.Recommendation = generateRecommendation(pattern.Type, history)
 

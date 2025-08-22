@@ -57,10 +57,10 @@ func createTestSchemaFile(t *testing.T, dir, filename string, schema map[string]
 	schemaPath := filepath.Join(dir, filename)
 	schemaBytes, err := json.MarshalIndent(schema, "", "  ")
 	require.NoError(t, err)
-	
+
 	err = os.WriteFile(schemaPath, schemaBytes, 0644)
 	require.NoError(t, err)
-	
+
 	return schemaPath
 }
 
@@ -75,13 +75,13 @@ func TestNewManager(t *testing.T) {
 		{
 			name: "valid config with enabled schema",
 			config: Config{
-				Enabled:              true,
-				SchemaFiles:          []string{},
-				StrictValidation:     false,
-				LogValidationErrors:  true,
-				CacheResults:         true,
-				CacheSize:            1000,
-				StoreResults:         false,
+				Enabled:             true,
+				SchemaFiles:         []string{},
+				StrictValidation:    false,
+				LogValidationErrors: true,
+				CacheResults:        true,
+				CacheSize:           1000,
+				StoreResults:        false,
 			},
 			wantErr: false,
 		},
@@ -105,7 +105,7 @@ func TestNewManager(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manager, err := NewManager(tt.config, mockStorage)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, manager)
@@ -199,17 +199,17 @@ func TestManager_Initialize(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockStorage := &MockStorage{}
-			
+
 			manager, err := NewManager(tt.config, mockStorage)
 			require.NoError(t, err)
 
 			err = manager.Initialize()
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				
+
 				if tt.config.Enabled {
 					assert.NotNil(t, manager.validator)
 				}
@@ -275,13 +275,13 @@ func TestManager_ValidateMessage(t *testing.T) {
 			name:  "valid device message",
 			topic: "rtk/v1/tenant1/site1/device1/state",
 			message: map[string]interface{}{
-				"schema":    "state/1.0",
-				"ts":        1640995200,
-				"health":    "ok",
-				"uptime_s":  3600,
-				"version":   "1.0.0",
+				"schema":   "state/1.0",
+				"ts":       1640995200,
+				"health":   "ok",
+				"uptime_s": 3600,
+				"version":  "1.0.0",
 				"components": map[string]interface{}{
-					"cpu": "ok",
+					"cpu":    "ok",
 					"memory": "warning",
 				},
 			},
@@ -336,12 +336,12 @@ func TestManager_ValidateMessage(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			messageBytes, err := json.Marshal(tt.message)
 			require.NoError(t, err)
-			
+
 			result, err := manager.ValidateMessage(tt.topic, messageBytes)
 			require.NoError(t, err)
-			
+
 			assert.Equal(t, tt.expectValid, result.Valid)
-			
+
 			if !tt.expectValid {
 				assert.NotEmpty(t, result.Errors)
 			} else {
@@ -424,7 +424,7 @@ func TestManager_ValidateMessage_StrictMode(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			messageBytes, err := json.Marshal(tt.message)
 			require.NoError(t, err)
-			
+
 			result, err := manager.ValidateMessage(tt.topic, messageBytes)
 			require.NoError(t, err)
 			assert.Equal(t, tt.expectValid, result.Valid)
@@ -449,7 +449,7 @@ func TestManager_ValidateMessage_Disabled(t *testing.T) {
 		"any": "data",
 	})
 	require.NoError(t, err)
-	
+
 	result, err := manager.ValidateMessage("any/topic", messageBytes)
 	require.NoError(t, err)
 
@@ -549,7 +549,7 @@ func TestManager_CacheValidation(t *testing.T) {
 	messageBytes, _ := json.Marshal(map[string]interface{}{
 		"device_id": "device1",
 	})
-	
+
 	// First validation
 	result1, err := manager.ValidateMessage("rtk/v1/tenant1/site1/device1/state", messageBytes)
 	require.NoError(t, err)

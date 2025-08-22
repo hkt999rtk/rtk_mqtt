@@ -44,12 +44,12 @@ type TopicsConfig struct {
 
 // MQTTLogging holds MQTT message logging configuration
 type MQTTLogging struct {
-	Enabled           bool     `mapstructure:"enabled"`
-	RetentionSeconds  int      `mapstructure:"retention_seconds"`
-	PurgeInterval     string   `mapstructure:"purge_interval"`
-	BatchSize         int      `mapstructure:"batch_size"`
-	MaxMessageSize    int      `mapstructure:"max_message_size"`
-	ExcludeTopics     []string `mapstructure:"exclude_topics"`
+	Enabled          bool     `mapstructure:"enabled"`
+	RetentionSeconds int      `mapstructure:"retention_seconds"`
+	PurgeInterval    string   `mapstructure:"purge_interval"`
+	BatchSize        int      `mapstructure:"batch_size"`
+	MaxMessageSize   int      `mapstructure:"max_message_size"`
+	ExcludeTopics    []string `mapstructure:"exclude_topics"`
 }
 
 // API and Console configs removed - using CLI only
@@ -71,13 +71,13 @@ type DiagnosisConfig struct {
 
 // SchemaConfig holds JSON schema validation configuration
 type SchemaConfig struct {
-	Enabled              bool     `mapstructure:"enabled"`
-	SchemaFiles          []string `mapstructure:"schema_files"`
-	StrictValidation     bool     `mapstructure:"strict_validation"`
-	LogValidationErrors  bool     `mapstructure:"log_validation_errors"`
-	CacheResults         bool     `mapstructure:"cache_results"`
-	CacheSize            int      `mapstructure:"cache_size"`
-	StoreResults         bool     `mapstructure:"store_results"`
+	Enabled             bool     `mapstructure:"enabled"`
+	SchemaFiles         []string `mapstructure:"schema_files"`
+	StrictValidation    bool     `mapstructure:"strict_validation"`
+	LogValidationErrors bool     `mapstructure:"log_validation_errors"`
+	CacheResults        bool     `mapstructure:"cache_results"`
+	CacheSize           int      `mapstructure:"cache_size"`
+	StoreResults        bool     `mapstructure:"store_results"`
 }
 
 // AnalyzerConfig holds individual analyzer configuration
@@ -99,15 +99,15 @@ type RoutingConfig struct {
 
 // LoggingConfig holds logging configuration
 type LoggingConfig struct {
-	Level      string `mapstructure:"level"`
-	Format     string `mapstructure:"format"`
-	File       string `mapstructure:"file"`
-	MaxSize    int    `mapstructure:"max_size"`    // MB
-	MaxBackups int    `mapstructure:"max_backups"` // number of backups
-	MaxAge     int    `mapstructure:"max_age"`     // days
-	Compress   bool   `mapstructure:"compress"`    // compress rotated files
-	Audit      bool   `mapstructure:"audit"`       // enable audit logging
-	Performance bool  `mapstructure:"performance"` // enable performance logging
+	Level       string `mapstructure:"level"`
+	Format      string `mapstructure:"format"`
+	File        string `mapstructure:"file"`
+	MaxSize     int    `mapstructure:"max_size"`    // MB
+	MaxBackups  int    `mapstructure:"max_backups"` // number of backups
+	MaxAge      int    `mapstructure:"max_age"`     // days
+	Compress    bool   `mapstructure:"compress"`    // compress rotated files
+	Audit       bool   `mapstructure:"audit"`       // enable audit logging
+	Performance bool   `mapstructure:"performance"` // enable performance logging
 }
 
 // LoadConfig loads configuration from file
@@ -143,7 +143,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	viper.SetDefault("diagnosis.enabled", true)
 	viper.SetDefault("diagnosis.default_analyzers", []string{
 		"wifi_analyzer",
-		"network_analyzer", 
+		"network_analyzer",
 		"system_analyzer",
 	})
 

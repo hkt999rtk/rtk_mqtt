@@ -1,0 +1,192 @@
+# Home Assistant Wrapper 配置
+name: "Home Assistant Wrapper"
+description: "Converts Home Assistant MQTT messages to RTK format"
+
+# 支援的設備類型
+supported_device_types:
+  - light
+  - switch
+  - sensor
+  - climate
+  - cover
+  - binary_sensor
+  - fan
+  - lock
+
+# Topic 模式
+topic_patterns:
+  uplink:
+    - pattern: "homeassistant/{device_class}/{device_name}/state"
+      priority: 100
+      device_id_extract: "{device_name}"
+      message_type: "state"
+      
+    - pattern: "homeassistant/{device_class}/{device_name}/attributes"
+      priority: 95
+      device_id_extract: "{device_name}"
+      message_type: "attr"
+      
+    # 支援巢狀命名
+    - pattern: "homeassistant/{device_class}/{location}/{device_name}/state"
+      priority: 90
+      device_id_extract: "{location}_{device_name}"
+      message_type: "state"
+      
+    # 可用性狀態
+    - pattern: "homeassistant/{device_class}/{device_name}/availability"
+      priority: 85
+      device_id_extract: "{device_name}"
+      message_type: "lwt"
+
+  downlink:
+    - pattern: "rtk/v1/{tenant}/{site}/{device_id}/cmd/req"
+      priority: 100
+      message_type: "command"
+
+# Payload 處理規則
+payload_rules:
+  # 狀態轉換
+  state_transform:
+    # 布林值映射
+    boolean_mapping:
+      "on": true
+      "off": false
+      "ON": true
+      "OFF": false
+      "open": true
+      "closed": false
+      "locked": true
+      "unlocked": false
+    
+    # 單位轉換
+    unit_conversions:
+      temperature:
+        from_unit: "°F"
+        to_unit: "°C"
+        formula: "(x - 32) * 5/9"
+        
+      brightness:
+        from_range: [0, 255]
+        to_range: [0, 100]
+
+  # 屬性提取
+  attribute_extraction:
+    # 從 HA attributes 提取到 RTK payload
+    brightness: "attributes.brightness"
+    color_temp: "attributes.color_temp"
+    rgb_color: "attributes.rgb_color"
+    
+    # 計算衍生屬性
+    power_consumption:
+      formula: "voltage * current"
+      sources: ["voltage", "current"]
+
+# 設備映射表
+device_mapping:
+  # HA entity_id → RTK device_id 映射範例
+  "light.living_room": "living_room_light"
+  "switch.bedroom_fan": "bedroom_fan_switch"
+  "sensor.kitchen_temperature": "kitchen_temp_sensor"
+  "climate.main_thermostat": "main_climate_control"
+  "cover.living_room_blinds": "living_room_cover"
+
+# 錯誤處理
+error_handling:
+  invalid_json:
+    action: "log_and_drop" # log_and_drop, forward_raw, retry
+    max_retries: 3
+  
+  missing_fields:
+    action: "fill_defaults"
+    defaults:
+      device_id: "unknown_ha_device"
+      timestamp: "current_time"
+  
+  transformation_errors:
+    action: "log_and_forward_original"
+
+# 設備類型特定配置
+device_type_config:
+  light:
+    # 燈光設備特定設定
+    default_brightness_range: [0, 255]
+    support_color: true
+    support_color_temp: true
+    
+  switch:
+    # 開關設備特定設定
+    monitor_energy: true
+    default_power_unit: "W"
+    
+  sensor:
+    # 感測器特定設定
+    auto_detect_unit: true
+    numeric_precision: 2
+    
+  climate:
+    # 空調設備特定設定
+    temperature_unit: "°C"
+    support_fan_modes: true
+    support_hvac_modes: true
+    
+  cover:
+    # 窗簾設備特定設定
+    position_range: [0, 100]
+    support_tilt: false
+
+# HA 整合設定
+homeassistant_integration:
+  # Discovery 設定
+  discovery:
+    enabled: true
+    discovery_prefix: "homeassistant"
+    
+  # 狀態更新設定
+  state_updates:
+    batch_updates: false
+    update_interval: "30s"
+    retain_state: true
+    
+  # 服務調用設定
+  service_calls:
+    timeout: "10s"
+    retry_failed: true
+    max_retries: 3
+
+# 高級功能
+advanced:
+  # 設備分組
+  device_groups:
+    lights:
+      - "light.*"
+    switches:
+      - "switch.*"
+    sensors:
+      - "sensor.*"
+      - "binary_sensor.*"
+      
+  # 自動化觸發
+  automation_triggers:
+    state_change: true
+    attribute_change: true
+    availability_change: true
+    
+  # 快取設定
+  caching:
+    cache_device_states: true
+    cache_ttl: "5m"
+    max_cache_size: 1000
+
+# 除錯和監控
+debug:
+  log_all_messages: false
+  log_transformations: true
+  log_errors: true
+  log_device_discovery: false
+  
+monitoring:
+  track_message_count: true
+  track_transformation_time: true
+  track_error_rate: true
+  alert_on_high_error_rate: true
+  error_rate_threshold: 0.05 # 5%

@@ -50,7 +50,7 @@ func (p *Publisher) Publish(topic string, qos byte, retained bool, payload inter
 	}).Debug("Publishing MQTT message")
 
 	token := p.client.client.Publish(topic, qos, retained, data)
-	
+
 	// Wait for publish with timeout
 	if !token.WaitTimeout(5 * time.Second) {
 		return fmt.Errorf("publish timeout for topic %s", topic)
@@ -68,7 +68,7 @@ func (p *Publisher) Publish(topic string, qos byte, retained bool, payload inter
 func (p *Publisher) PublishCommand(deviceID, operation string, args map[string]interface{}, timeout time.Duration) (string, error) {
 	// Generate command ID
 	cmdID := fmt.Sprintf("cmd-%d", time.Now().UnixMilli())
-	
+
 	// Build command payload
 	command := map[string]interface{}{
 		"id":         cmdID,
@@ -84,7 +84,7 @@ func (p *Publisher) PublishCommand(deviceID, operation string, args map[string]i
 	// Extract tenant, site from device ID (assuming format: tenant-site-device)
 	// For now, use default values
 	topic := fmt.Sprintf("rtk/v1/default/default/%s/cmd/req", deviceID)
-	
+
 	err := p.Publish(topic, 1, false, command)
 	if err != nil {
 		return "", fmt.Errorf("failed to publish command: %w", err)
@@ -102,11 +102,11 @@ func (p *Publisher) PublishCommand(deviceID, operation string, args map[string]i
 // PublishState publishes controller state
 func (p *Publisher) PublishState() error {
 	state := map[string]interface{}{
-		"schema":     "state/1.0",
-		"ts":         time.Now().UnixMilli(),
-		"health":     "ok",
-		"uptime_s":   int64(time.Since(time.Now()).Seconds()), // TODO: Track actual uptime
-		"version":    "1.0.0", // TODO: Get from build info
+		"schema":   "state/1.0",
+		"ts":       time.Now().UnixMilli(),
+		"health":   "ok",
+		"uptime_s": int64(time.Since(time.Now()).Seconds()), // TODO: Track actual uptime
+		"version":  "1.0.0",                                 // TODO: Get from build info
 		"components": map[string]interface{}{
 			"mqtt":      "connected",
 			"storage":   "ready",

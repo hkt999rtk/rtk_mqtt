@@ -86,7 +86,7 @@ func (cli *InteractiveCLI) createChangeset(args []string, changesetManager *chan
 		Description: description,
 		CreatedBy:   "cli-user",
 		Metadata: map[string]interface{}{
-			"source": "interactive_cli",
+			"source":      "interactive_cli",
 			"created_via": "changeset_command",
 		},
 	}
@@ -125,14 +125,14 @@ func (cli *InteractiveCLI) showChangeset(changesetID string, changesetManager *c
 	fmt.Printf("Status: %s\n", changeset.Status)
 	fmt.Printf("Created: %s\n", changeset.CreatedAt.Format(time.RFC3339))
 	fmt.Printf("Created by: %s\n", changeset.CreatedBy)
-	
+
 	if changeset.ExecutedAt != nil {
 		fmt.Printf("Executed: %s\n", changeset.ExecutedAt.Format(time.RFC3339))
 	}
 	if changeset.RolledBackAt != nil {
 		fmt.Printf("Rolled back: %s\n", changeset.RolledBackAt.Format(time.RFC3339))
 	}
-	
+
 	if len(changeset.Commands) > 0 {
 		fmt.Printf("\nCommands (%d):\n", len(changeset.Commands))
 		fmt.Println(strings.Repeat("-", 20))
@@ -140,7 +140,7 @@ func (cli *InteractiveCLI) showChangeset(changesetID string, changesetManager *c
 			fmt.Printf("%d. %s -> %s: %s\n", i+1, cmd.DeviceID, cmd.Operation, cmd.ID)
 		}
 	}
-	
+
 	if len(changeset.Results) > 0 {
 		fmt.Printf("\nResults (%d):\n", len(changeset.Results))
 		fmt.Println(strings.Repeat("-", 15))
@@ -225,12 +225,12 @@ func (cli *InteractiveCLI) addCommandToChangeset(args []string, changesetManager
 
 	// Create command
 	command := &types.Command{
-		DeviceID:   deviceID,
-		Operation:  operation,
-		Args:       cmdParams,
-		Timeout:    30 * time.Second, // default timeout
-		Status:     types.CommandStatusPending,
-		CreatedAt:  time.Now(),
+		DeviceID:    deviceID,
+		Operation:   operation,
+		Args:        cmdParams,
+		Timeout:     30 * time.Second, // default timeout
+		Status:      types.CommandStatusPending,
+		CreatedAt:   time.Now(),
 		Expectation: "result", // expect result by default
 	}
 

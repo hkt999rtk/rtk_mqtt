@@ -120,7 +120,7 @@ func (dc *DiagnosticsCommands) TestLatency(args []string) (string, error) {
 	for _, target := range targets {
 		fmt.Printf("Testing %s...\n", target)
 		latency, loss := dc.testSingleTarget(target)
-		
+
 		if latency > 0 {
 			output += fmt.Sprintf("%-20s: %.2f ms", target, latency)
 			if loss > 0 {
@@ -159,7 +159,7 @@ func (dc *DiagnosticsCommands) ScheduleTests(args []string) (string, error) {
 		if err != nil {
 			fmt.Printf("Scheduled diagnostic failed: %v\n", err)
 		} else {
-			fmt.Printf("Scheduled diagnostic completed at %s\n", 
+			fmt.Printf("Scheduled diagnostic completed at %s\n",
 				time.Now().Format("2006-01-02 15:04:05"))
 			// Store or process result as needed
 			_ = result
@@ -179,14 +179,14 @@ func (dc *DiagnosticsCommands) ScheduleTests(args []string) (string, error) {
 // ShowSchedules shows all test schedules
 func (dc *DiagnosticsCommands) ShowSchedules(args []string) (string, error) {
 	schedules := dc.scheduler.GetScheduleStatus()
-	
+
 	if len(schedules) == 0 {
 		return "No test schedules configured", nil
 	}
 
 	output := "Test Schedules:\n"
 	output += "===============\n"
-	
+
 	for _, schedule := range schedules {
 		output += fmt.Sprintf("\nSchedule: %s\n", schedule.Name)
 		output += fmt.Sprintf("  Enabled:  %v\n", schedule.Enabled)
@@ -245,7 +245,7 @@ func (dc *DiagnosticsCommands) formatDiagnosticsResult(result *types.NetworkDiag
 	if result.WANTest != nil {
 		output += fmt.Sprintf("WAN Status:\n")
 		output += fmt.Sprintf("-----------\n")
-		output += fmt.Sprintf("  Gateway:     %s (%.2f ms)\n", 
+		output += fmt.Sprintf("  Gateway:     %s (%.2f ms)\n",
 			dc.boolToStatus(result.WANTest.ISPGatewayReachable),
 			result.WANTest.ISPGatewayLatency)
 		output += fmt.Sprintf("  External DNS: %.2f ms\n", result.WANTest.ExternalDNSLatency)
@@ -263,7 +263,7 @@ func (dc *DiagnosticsCommands) formatDiagnosticsResult(result *types.NetworkDiag
 		for _, target := range result.LatencyTest.Targets {
 			output += fmt.Sprintf("  %-15s: ", target.Target)
 			if target.Status == "success" {
-				output += fmt.Sprintf("%.2f ms (min: %.2f, max: %.2f)", 
+				output += fmt.Sprintf("%.2f ms (min: %.2f, max: %.2f)",
 					target.AvgLatency, target.MinLatency, target.MaxLatency)
 				if target.PacketLoss > 0 {
 					output += fmt.Sprintf(" [%.0f%% loss]", target.PacketLoss)
@@ -280,24 +280,24 @@ func (dc *DiagnosticsCommands) formatDiagnosticsResult(result *types.NetworkDiag
 	if result.ConnectivityTest != nil {
 		output += fmt.Sprintf("Connectivity:\n")
 		output += fmt.Sprintf("-------------\n")
-		
+
 		reachableInternal := 0
 		for _, target := range result.ConnectivityTest.InternalReachability {
 			if target.Reachable {
 				reachableInternal++
 			}
 		}
-		
+
 		reachableExternal := 0
 		for _, target := range result.ConnectivityTest.ExternalReachability {
 			if target.Reachable {
 				reachableExternal++
 			}
 		}
-		
-		output += fmt.Sprintf("  Internal: %d/%d devices reachable\n", 
+
+		output += fmt.Sprintf("  Internal: %d/%d devices reachable\n",
 			reachableInternal, len(result.ConnectivityTest.InternalReachability))
-		output += fmt.Sprintf("  External: %d/%d services reachable\n", 
+		output += fmt.Sprintf("  External: %d/%d services reachable\n",
 			reachableExternal, len(result.ConnectivityTest.ExternalReachability))
 	}
 

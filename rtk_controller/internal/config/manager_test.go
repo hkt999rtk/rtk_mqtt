@@ -59,20 +59,20 @@ logging:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			manager, err := NewManager(tt.path)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Nil(t, manager)
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, manager)
-				
+
 				// Verify config was loaded
 				config := manager.GetConfig()
 				assert.NotNil(t, config)
 				assert.NotEmpty(t, config.MQTT.Broker)
 				assert.Greater(t, config.MQTT.Port, 0)
-				
+
 				// Clean up
 				if manager != nil {
 					manager.Stop()
@@ -193,7 +193,7 @@ func TestManager_SetConfig(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	manager, err := NewManager(configPath)
 	require.NoError(t, err)
 	defer manager.Stop()
@@ -233,7 +233,7 @@ func TestManager_ValidateConfig(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	manager, err := NewManager(configPath)
 	require.NoError(t, err)
 	defer manager.Stop()
@@ -366,7 +366,7 @@ func TestManager_ValidateConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := manager.ValidateConfig(tt.config)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), tt.errMsg)
@@ -429,7 +429,7 @@ func TestManager_AddWatcher(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	manager, err := NewManager(configPath)
 	require.NoError(t, err)
 	defer manager.Stop()
@@ -616,7 +616,7 @@ func TestManager_Stop(t *testing.T) {
 	defer os.RemoveAll(tempDir)
 
 	configPath := filepath.Join(tempDir, "test_config.yaml")
-	
+
 	manager, err := NewManager(configPath)
 	require.NoError(t, err)
 

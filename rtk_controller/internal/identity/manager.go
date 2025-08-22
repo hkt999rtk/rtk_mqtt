@@ -16,23 +16,23 @@ import (
 // Manager handles device identity management
 // ManagerConfig holds configuration for the identity manager
 type ManagerConfig struct {
-	EnableAutoDiscovery   bool
-	EnableFingerprinting  bool
-	FingerprintTimeout    time.Duration
-	DeviceRetention       time.Duration
-	CleanupInterval       time.Duration
+	EnableAutoDiscovery  bool
+	EnableFingerprinting bool
+	FingerprintTimeout   time.Duration
+	DeviceRetention      time.Duration
+	CleanupInterval      time.Duration
 }
 
 type Manager struct {
-	storage       *storage.IdentityStorage
-	config        ManagerConfig
+	storage        *storage.IdentityStorage
+	config         ManagerConfig
 	detectionRules map[string]*types.DetectionRule
-	rulesMutex    sync.RWMutex
-	
+	rulesMutex     sync.RWMutex
+
 	// Auto-detection configuration
 	autoDetectionEnabled bool
 	detectionInterval    time.Duration
-	
+
 	// Statistics
 	stats      *types.DeviceIdentityStats
 	statsMutex sync.RWMutex
@@ -46,19 +46,19 @@ func NewManager(identityStorage *storage.IdentityStorage, config ManagerConfig) 
 		detectionRules:       make(map[string]*types.DetectionRule),
 		autoDetectionEnabled: true,
 		detectionInterval:    5 * time.Minute,
-		stats:               &types.DeviceIdentityStats{},
+		stats:                &types.DeviceIdentityStats{},
 	}
-	
+
 	// Load detection rules from storage
 	if err := manager.loadDetectionRules(); err != nil {
 		log.Printf("Failed to load detection rules: %v", err)
 	}
-	
+
 	// Initialize default detection rules if none exist
 	if len(manager.detectionRules) == 0 {
 		manager.initializeDefaultRules()
 	}
-	
+
 	return manager
 }
 
@@ -68,14 +68,14 @@ func NewManager(identityStorage *storage.IdentityStorage, config ManagerConfig) 
 func (m *Manager) SetDeviceIdentity(identity *types.DeviceIdentity) error {
 	identity.LastUpdated = time.Now()
 	identity.UpdatedBy = "user"
-	
+
 	if err := m.storage.SaveDeviceIdentity(identity); err != nil {
 		return fmt.Errorf("failed to save device identity: %w", err)
 	}
-	
+
 	// Update statistics
 	m.updateStats()
-	
+
 	return nil
 }
 
@@ -85,7 +85,7 @@ func (m *Manager) GetDeviceIdentity(macAddress string) (*types.DeviceIdentity, e
 	if err != nil {
 		return nil, fmt.Errorf("failed to get device identity: %w", err)
 	}
-	
+
 	return identity, nil
 }
 
@@ -96,11 +96,11 @@ func (m *Manager) GetDeviceFriendlyName(macAddress string) string {
 		// Return MAC address if no friendly name is set
 		return macAddress
 	}
-	
+
 	if identity.FriendlyName != "" {
 		return identity.FriendlyName
 	}
-	
+
 	return macAddress
 }
 
@@ -109,10 +109,10 @@ func (m *Manager) DeleteDeviceIdentity(macAddress string) error {
 	if err := m.storage.DeleteDeviceIdentity(macAddress); err != nil {
 		return fmt.Errorf("failed to delete device identity: %w", err)
 	}
-	
+
 	// Update statistics
 	m.updateStats()
-	
+
 	return nil
 }
 
@@ -122,7 +122,7 @@ func (m *Manager) ListDeviceIdentities(filter *types.DeviceIdentityFilter, limit
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list device identities: %w", err)
 	}
-	
+
 	return identities, total, nil
 }
 
@@ -133,20 +133,20 @@ func (m *Manager) ProcessDetectionCandidate(candidate *types.DeviceDetectionCand
 	if !m.autoDetectionEnabled {
 		return nil, nil
 	}
-	
+
 	// Check if identity already exists
 	existingIdentity, err := m.GetDeviceIdentity(candidate.MacAddress)
 	if err == nil && existingIdentity != nil && !existingIdentity.AutoDetected {
 		// Don't override manually set identities
 		return existingIdentity, nil
 	}
-	
+
 	// Run detection rules
 	matches := m.runDetectionRules(candidate)
 	if len(matches) == 0 {
 		return nil, nil
 	}
-	
+
 	// Sort matches by confidence and priority
 	sort.Slice(matches, func(i, j int) bool {
 		if matches[i].Confidence != matches[j].Confidence {
@@ -154,14 +154,14 @@ func (m *Manager) ProcessDetectionCandidate(candidate *types.DeviceDetectionCand
 		}
 		return m.getRulePriority(matches[i].RuleID) > m.getRulePriority(matches[j].RuleID)
 	})
-	
+
 	// Apply the best match
 	bestMatch := matches[0]
 	rule := m.detectionRules[bestMatch.RuleID]
 	if rule == nil {
 		return nil, fmt.Errorf("detection rule not found: %s", bestMatch.RuleID)
 	}
-	
+
 	// Create or update identity
 	identity := &types.DeviceIdentity{
 		MacAddress:     candidate.MacAddress,
@@ -173,17 +173,17 @@ func (m *Manager) ProcessDetectionCandidate(candidate *types.DeviceDetectionCand
 		LastUpdated:    time.Now(),
 		UpdatedBy:      "auto_detection",
 	}
-	
+
 	// Apply detection action
 	m.applyDetectionAction(identity, &rule.Action, candidate)
-	
+
 	// Save the identity
 	if err := m.storage.SaveDeviceIdentity(identity); err != nil {
 		return nil, fmt.Errorf("failed to save auto-detected identity: %w", err)
 	}
-	
+
 	m.updateStats()
-	
+
 	return identity, nil
 }
 
@@ -193,16 +193,16 @@ func (m *Manager) ProcessDetectionCandidate(candidate *types.DeviceDetectionCand
 func (m *Manager) AddDetectionRule(rule *types.DetectionRule) error {
 	m.rulesMutex.Lock()
 	defer m.rulesMutex.Unlock()
-	
+
 	rule.CreatedAt = time.Now()
 	rule.UpdatedAt = time.Now()
-	
+
 	if err := m.storage.SaveDetectionRule(rule); err != nil {
 		return fmt.Errorf("failed to save detection rule: %w", err)
 	}
-	
+
 	m.detectionRules[rule.ID] = rule
-	
+
 	return nil
 }
 
@@ -210,12 +210,12 @@ func (m *Manager) AddDetectionRule(rule *types.DetectionRule) error {
 func (m *Manager) GetDetectionRule(ruleID string) (*types.DetectionRule, error) {
 	m.rulesMutex.RLock()
 	defer m.rulesMutex.RUnlock()
-	
+
 	rule, exists := m.detectionRules[ruleID]
 	if !exists {
 		return nil, fmt.Errorf("detection rule not found: %s", ruleID)
 	}
-	
+
 	return rule, nil
 }
 
@@ -223,19 +223,19 @@ func (m *Manager) GetDetectionRule(ruleID string) (*types.DetectionRule, error) 
 func (m *Manager) UpdateDetectionRule(rule *types.DetectionRule) error {
 	m.rulesMutex.Lock()
 	defer m.rulesMutex.Unlock()
-	
+
 	if _, exists := m.detectionRules[rule.ID]; !exists {
 		return fmt.Errorf("detection rule not found: %s", rule.ID)
 	}
-	
+
 	rule.UpdatedAt = time.Now()
-	
+
 	if err := m.storage.SaveDetectionRule(rule); err != nil {
 		return fmt.Errorf("failed to update detection rule: %w", err)
 	}
-	
+
 	m.detectionRules[rule.ID] = rule
-	
+
 	return nil
 }
 
@@ -243,13 +243,13 @@ func (m *Manager) UpdateDetectionRule(rule *types.DetectionRule) error {
 func (m *Manager) DeleteDetectionRule(ruleID string) error {
 	m.rulesMutex.Lock()
 	defer m.rulesMutex.Unlock()
-	
+
 	if err := m.storage.DeleteDetectionRule(ruleID); err != nil {
 		return fmt.Errorf("failed to delete detection rule: %w", err)
 	}
-	
+
 	delete(m.detectionRules, ruleID)
-	
+
 	return nil
 }
 
@@ -257,17 +257,17 @@ func (m *Manager) DeleteDetectionRule(ruleID string) error {
 func (m *Manager) ListDetectionRules() ([]*types.DetectionRule, error) {
 	m.rulesMutex.RLock()
 	defer m.rulesMutex.RUnlock()
-	
+
 	rules := make([]*types.DetectionRule, 0, len(m.detectionRules))
 	for _, rule := range m.detectionRules {
 		rules = append(rules, rule)
 	}
-	
+
 	// Sort by priority (descending)
 	sort.Slice(rules, func(i, j int) bool {
 		return rules[i].Priority > rules[j].Priority
 	})
-	
+
 	return rules, nil
 }
 
@@ -277,7 +277,7 @@ func (m *Manager) ListDetectionRules() ([]*types.DetectionRule, error) {
 func (m *Manager) ImportDeviceIdentities(entries []*types.IdentityImportEntry, overwrite bool) (int, int, error) {
 	imported := 0
 	skipped := 0
-	
+
 	for _, entry := range entries {
 		// Check if identity already exists
 		existing, err := m.GetDeviceIdentity(entry.MacAddress)
@@ -285,7 +285,7 @@ func (m *Manager) ImportDeviceIdentities(entries []*types.IdentityImportEntry, o
 			skipped++
 			continue
 		}
-		
+
 		// Create identity from import entry
 		identity := &types.DeviceIdentity{
 			MacAddress:   entry.MacAddress,
@@ -304,16 +304,16 @@ func (m *Manager) ImportDeviceIdentities(entries []*types.IdentityImportEntry, o
 			LastUpdated:  time.Now(),
 			UpdatedBy:    "import",
 		}
-		
+
 		if err := m.storage.SaveDeviceIdentity(identity); err != nil {
 			return imported, skipped, fmt.Errorf("failed to import identity for %s: %w", entry.MacAddress, err)
 		}
-		
+
 		imported++
 	}
-	
+
 	m.updateStats()
-	
+
 	return imported, skipped, nil
 }
 
@@ -323,7 +323,7 @@ func (m *Manager) ExportDeviceIdentities(filter *types.DeviceIdentityFilter) ([]
 	if err != nil {
 		return nil, fmt.Errorf("failed to list identities for export: %w", err)
 	}
-	
+
 	exports := make([]*types.IdentityExportEntry, len(identities))
 	for i, identity := range identities {
 		exports[i] = &types.IdentityExportEntry{
@@ -343,7 +343,7 @@ func (m *Manager) ExportDeviceIdentities(filter *types.DeviceIdentityFilter) ([]
 			Notes:        identity.Notes,
 		}
 	}
-	
+
 	return exports, nil
 }
 
@@ -353,7 +353,7 @@ func (m *Manager) ExportDeviceIdentities(filter *types.DeviceIdentityFilter) ([]
 func (m *Manager) GetStats() *types.DeviceIdentityStats {
 	m.statsMutex.RLock()
 	defer m.statsMutex.RUnlock()
-	
+
 	// Return a copy to avoid race conditions
 	stats := *m.stats
 	return &stats
@@ -378,28 +378,28 @@ func (m *Manager) loadDetectionRules() error {
 	if err != nil {
 		return err
 	}
-	
+
 	m.rulesMutex.Lock()
 	defer m.rulesMutex.Unlock()
-	
+
 	for _, rule := range rules {
 		m.detectionRules[rule.ID] = rule
 	}
-	
+
 	return nil
 }
 
 func (m *Manager) runDetectionRules(candidate *types.DeviceDetectionCandidate) []types.DetectionRuleMatch {
 	m.rulesMutex.RLock()
 	defer m.rulesMutex.RUnlock()
-	
+
 	var matches []types.DetectionRuleMatch
-	
+
 	for _, rule := range m.detectionRules {
 		if !rule.Enabled {
 			continue
 		}
-		
+
 		if m.evaluateRule(rule, candidate) {
 			match := types.DetectionRuleMatch{
 				RuleID:       rule.ID,
@@ -412,7 +412,7 @@ func (m *Manager) runDetectionRules(candidate *types.DeviceDetectionCandidate) [
 			matches = append(matches, match)
 		}
 	}
-	
+
 	return matches
 }
 
@@ -428,7 +428,7 @@ func (m *Manager) evaluateRule(rule *types.DetectionRule, candidate *types.Devic
 
 func (m *Manager) evaluateCondition(condition *types.DetectionCondition, candidate *types.DeviceDetectionCandidate) bool {
 	var fieldValue string
-	
+
 	switch condition.Type {
 	case "mac_prefix":
 		fieldValue = candidate.MacAddress
@@ -443,9 +443,9 @@ func (m *Manager) evaluateCondition(condition *types.DetectionCondition, candida
 	default:
 		return false
 	}
-	
+
 	matched := false
-	
+
 	switch condition.Operator {
 	case "equals":
 		matched = strings.EqualFold(fieldValue, condition.Value)
@@ -466,11 +466,11 @@ func (m *Manager) evaluateCondition(condition *types.DetectionCondition, candida
 			}
 		}
 	}
-	
+
 	if condition.Negate {
 		matched = !matched
 	}
-	
+
 	return matched
 }
 
@@ -499,7 +499,7 @@ func (m *Manager) applyDetectionAction(identity *types.DeviceIdentity, action *t
 	if len(action.AddTags) > 0 {
 		identity.Tags = append(identity.Tags, action.AddTags...)
 	}
-	
+
 	// Use manufacturer from candidate if not set by action
 	if identity.Manufacturer == "" && candidate.Manufacturer != "" {
 		identity.Manufacturer = candidate.Manufacturer
@@ -520,7 +520,7 @@ func (m *Manager) updateStats() {
 			log.Printf("Failed to update identity stats: %v", err)
 			return
 		}
-		
+
 		m.statsMutex.Lock()
 		m.stats = stats
 		m.statsMutex.Unlock()
@@ -562,7 +562,7 @@ func (m *Manager) updateStats() {
 // 			},
 // 		},
 // 	}
-// 	
+//
 // 	for i := range defaultRules {
 // 		if err := m.AddDetectionRule(&defaultRules[i]); err != nil {
 // 			log.Printf("Failed to add default detection rule %s: %v", defaultRules[i].ID, err)

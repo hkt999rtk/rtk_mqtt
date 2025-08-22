@@ -33,7 +33,7 @@ func (c *CLI) sendCommand(cmd *cobra.Command, args []string) error {
 			parts := strings.SplitN(arg, "=", 2)
 			key := strings.TrimPrefix(parts[0], "--")
 			value := parts[1]
-			
+
 			// Try to parse as different types
 			if val, err := strconv.ParseBool(value); err == nil {
 				cmdParams[key] = val
@@ -52,7 +52,7 @@ func (c *CLI) sendCommand(cmd *cobra.Command, args []string) error {
 	tenant := "default"
 	site := "default"
 	actualDeviceID := deviceID
-	
+
 	if len(deviceParts) >= 3 {
 		tenant = deviceParts[0]
 		site = deviceParts[1]

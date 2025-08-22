@@ -10,19 +10,19 @@ import (
 
 // AnomalyDetector detects traffic anomalies
 type AnomalyDetector struct {
-	threshold        float64
-	baselineWindow   time.Duration
-	spikeThreshold   float64
-	sustainedWindow  time.Duration
+	threshold       float64
+	baselineWindow  time.Duration
+	spikeThreshold  float64
+	sustainedWindow time.Duration
 }
 
 // NewAnomalyDetector creates a new anomaly detector
 func NewAnomalyDetector(threshold float64) *AnomalyDetector {
 	return &AnomalyDetector{
-		threshold:        threshold,
-		baselineWindow:   1 * time.Hour,
-		spikeThreshold:   2.0, // 200% of average
-		sustainedWindow:  5 * time.Minute,
+		threshold:       threshold,
+		baselineWindow:  1 * time.Hour,
+		spikeThreshold:  2.0, // 200% of average
+		sustainedWindow: 5 * time.Minute,
 	}
 }
 
@@ -142,7 +142,7 @@ func (ad *AnomalyDetector) detectUnusualPattern(deviceID string, history *Device
 	for _, s := range history.Samples {
 		values = append(values, s.UploadMbps+s.DownloadMbps)
 	}
-	
+
 	mean, stdDev := calculateStats(values)
 	current := sample.UploadMbps + sample.DownloadMbps
 
@@ -165,7 +165,7 @@ func (ad *AnomalyDetector) detectUnusualPattern(deviceID string, history *Device
 	if sample.UploadMbps > 0 && sample.DownloadMbps > 0 {
 		ratio := sample.UploadMbps / sample.DownloadMbps
 		historicalRatio := history.AverageUpload / math.Max(history.AverageDownload, 0.1)
-		
+
 		if math.Abs(ratio-historicalRatio) > historicalRatio*2 {
 			return &types.TrafficAnomaly{
 				ID:          fmt.Sprintf("ratio-%s-%d", deviceID, time.Now().Unix()),

@@ -19,7 +19,7 @@ func TestConfigWiFiSettingsTool_Execute(t *testing.T) {
 	params := map[string]interface{}{
 		"device_id": "ap-001",
 		"config_changes": map[string]interface{}{
-			"ssid": "NewNetwork",
+			"ssid":    "NewNetwork",
 			"channel": 36,
 		},
 	}
@@ -123,7 +123,7 @@ func TestConfigValidateChangesTool_Execute(t *testing.T) {
 	params := map[string]interface{}{
 		"proposed_changes": map[string]interface{}{
 			"wifi_channel": 36,
-			"tx_power": 20,
+			"tx_power":     20,
 		},
 	}
 
@@ -165,7 +165,7 @@ func TestConfigImpactAnalysisTool_Execute(t *testing.T) {
 
 	params := map[string]interface{}{
 		"proposed_changes": map[string]interface{}{
-			"channel_change": "6 -> 36",
+			"channel_change":   "6 -> 36",
 			"power_adjustment": "20dBm -> 18dBm",
 		},
 	}

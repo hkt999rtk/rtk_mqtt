@@ -54,14 +54,14 @@ func (t *TopologyGetFullTool) Execute(ctx context.Context, params map[string]int
 		Success:   false,
 		Timestamp: getCurrentTime(),
 	}
-	
+
 	// Get topology from the manager
 	topology, err := t.topologyManager.GetCurrentTopology()
 	if err != nil {
 		result.Error = fmt.Sprintf("Failed to retrieve topology: %v", err)
 		return result, nil
 	}
-	
+
 	// Create structured response
 	topologyData := map[string]interface{}{
 		"devices":     topology.Devices,
@@ -76,10 +76,10 @@ func (t *TopologyGetFullTool) Execute(ctx context.Context, params map[string]int
 			"updated_at":       topology.UpdatedAt,
 		},
 	}
-	
+
 	result.Success = true
 	result.Data = topologyData
-	
+
 	return result, nil
 }
 
@@ -123,13 +123,13 @@ func (c *ClientsListTool) Validate(params map[string]interface{}) error {
 			return fmt.Errorf("include_offline must be a boolean")
 		}
 	}
-	
+
 	if deviceType, exists := params["device_type"]; exists {
 		if _, ok := deviceType.(string); !ok {
 			return fmt.Errorf("device_type must be a string")
 		}
 	}
-	
+
 	return nil
 }
 
@@ -140,14 +140,14 @@ func (c *ClientsListTool) Execute(ctx context.Context, params map[string]interfa
 		Success:   false,
 		Timestamp: getCurrentTime(),
 	}
-	
+
 	// Get topology to access device information
 	topology, err := c.topologyManager.GetCurrentTopology()
 	if err != nil {
 		result.Error = fmt.Sprintf("Failed to retrieve topology: %v", err)
 		return result, nil
 	}
-	
+
 	// Parse optional parameters
 	includeOffline := true // default to true
 	if val, exists := params["include_offline"]; exists {
@@ -155,35 +155,35 @@ func (c *ClientsListTool) Execute(ctx context.Context, params map[string]interfa
 			includeOffline = b
 		}
 	}
-	
+
 	var deviceTypeFilter string
 	if val, exists := params["device_type"]; exists {
 		if s, ok := val.(string); ok {
 			deviceTypeFilter = s
 		}
 	}
-	
+
 	// Build client list
 	var clients []map[string]interface{}
 	var onlineCount, offlineCount int
-	
+
 	for deviceID, device := range topology.Devices {
 		// Apply filters
 		if !includeOffline && !device.Online {
 			continue
 		}
-		
+
 		if deviceTypeFilter != "" && device.DeviceType != deviceTypeFilter {
 			continue
 		}
-		
+
 		// Count online/offline status
 		if device.Online {
 			onlineCount++
 		} else {
 			offlineCount++
 		}
-		
+
 		// Get primary IP address if available
 		var primaryIP string
 		if len(device.Interfaces) > 0 {
@@ -194,7 +194,7 @@ func (c *ClientsListTool) Execute(ctx context.Context, params map[string]interfa
 				}
 			}
 		}
-		
+
 		clientInfo := map[string]interface{}{
 			"device_id":    deviceID,
 			"hostname":     device.Hostname,
@@ -208,10 +208,10 @@ func (c *ClientsListTool) Execute(ctx context.Context, params map[string]interfa
 			"role":         device.Role,
 			"last_seen":    device.LastSeen,
 		}
-		
+
 		clients = append(clients, clientInfo)
 	}
-	
+
 	// Create structured response
 	clientsData := map[string]interface{}{
 		"clients": clients,
@@ -229,9 +229,9 @@ func (c *ClientsListTool) Execute(ctx context.Context, params map[string]interfa
 			"source":       "topology_manager",
 		},
 	}
-	
+
 	result.Success = true
 	result.Data = clientsData
-	
+
 	return result, nil
 }

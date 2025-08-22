@@ -5,11 +5,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"rtk_controller/internal/config"
-	"rtk_controller/internal/storage"
-	"rtk_controller/internal/device"
 	"rtk_controller/internal/command"
+	"rtk_controller/internal/config"
+	"rtk_controller/internal/device"
 	"rtk_controller/internal/mqtt"
+	"rtk_controller/internal/storage"
 )
 
 // CLI represents the command line interface

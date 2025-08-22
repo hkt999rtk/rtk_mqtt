@@ -31,19 +31,19 @@ type MessageLogger struct {
 	config      config.MQTTLogging
 	storage     storage.Storage
 	purgeWorker *PurgeWorker
-	
+
 	// Message buffer for batch processing
 	buffer      chan *MQTTMessageLog
 	batchBuffer []*MQTTMessageLog
 	mu          sync.Mutex
-	
+
 	// Control channels
-	ctx        context.Context
-	cancel     context.CancelFunc
-	done       chan struct{}
-	
+	ctx    context.Context
+	cancel context.CancelFunc
+	done   chan struct{}
+
 	// Statistics
-	stats      *LoggingStats
+	stats *LoggingStats
 }
 
 // LoggingStats holds logging statistics
@@ -61,7 +61,7 @@ type LoggingStats struct {
 // NewMessageLogger creates a new message logger
 func NewMessageLogger(config config.MQTTLogging, storage storage.Storage) (*MessageLogger, error) {
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	logger := &MessageLogger{
 		config:      config,
 		storage:     storage,
@@ -108,15 +108,15 @@ func (ml *MessageLogger) Start(ctx context.Context) error {
 // Stop stops the message logger
 func (ml *MessageLogger) Stop() {
 	log.Info("Stopping MQTT message logger")
-	
+
 	ml.cancel()
-	
+
 	// Wait for batch processor to finish
 	<-ml.done
-	
+
 	// Stop purge worker
 	ml.purgeWorker.Stop()
-	
+
 	log.Info("MQTT message logger stopped")
 }
 
@@ -141,7 +141,7 @@ func (ml *MessageLogger) LogMessage(topic string, payload []byte, qos byte, reta
 			"size":  len(payload),
 			"limit": ml.config.MaxMessageSize,
 		}).Warn("Message size exceeds limit, skipping log")
-		
+
 		ml.mu.Lock()
 		ml.stats.DroppedMessages++
 		ml.mu.Unlock()
@@ -178,7 +178,7 @@ func (ml *MessageLogger) LogMessage(topic string, payload []byte, qos byte, reta
 // batchProcessor processes messages in batches
 func (ml *MessageLogger) batchProcessor() {
 	defer close(ml.done)
-	
+
 	ticker := time.NewTicker(1 * time.Second)
 	defer ticker.Stop()
 
@@ -188,15 +188,15 @@ func (ml *MessageLogger) batchProcessor() {
 			// Process remaining messages
 			ml.flushBatch()
 			return
-			
+
 		case message := <-ml.buffer:
 			ml.batchBuffer = append(ml.batchBuffer, message)
-			
+
 			// Flush if batch is full
 			if len(ml.batchBuffer) >= ml.config.BatchSize {
 				ml.flushBatch()
 			}
-			
+
 		case <-ticker.C:
 			// Flush batch periodically
 			if len(ml.batchBuffer) > 0 {
@@ -238,7 +238,7 @@ func (ml *MessageLogger) writeBatch(messages []*MQTTMessageLog) error {
 			if err != nil {
 				return fmt.Errorf("failed to marshal message: %w", err)
 			}
-			
+
 			if err := tx.Set(key, string(data)); err != nil {
 				return fmt.Errorf("failed to store message: %w", err)
 			}
@@ -251,46 +251,46 @@ func (ml *MessageLogger) writeBatch(messages []*MQTTMessageLog) error {
 func (ml *MessageLogger) GetStats() *LoggingStats {
 	ml.mu.Lock()
 	defer ml.mu.Unlock()
-	
+
 	// Create a copy of stats
 	stats := *ml.stats
-	
+
 	// TODO: Calculate rates (messages/sec, bytes/sec)
 	// This would require tracking time windows
-	
+
 	return &stats
 }
 
 // QueryMessages queries messages from storage
 func (ml *MessageLogger) QueryMessages(startTime, endTime int64, filters map[string]string, limit int) ([]*MQTTMessageLog, error) {
 	var messages []*MQTTMessageLog
-	
+
 	err := ml.storage.View(func(tx storage.Transaction) error {
 		// Create iterator for time range
 		startKey := fmt.Sprintf("mqtt_log:%d:", startTime)
 		endKey := fmt.Sprintf("mqtt_log:%d:", endTime+1)
-		
+
 		return tx.IterateRange(startKey, endKey, func(key, value string) error {
 			var msg MQTTMessageLog
 			if err := json.Unmarshal([]byte(value), &msg); err != nil {
 				log.WithError(err).Warn("Failed to unmarshal message log")
 				return nil // Continue iteration
 			}
-			
+
 			// Apply filters
 			if ml.applyFilters(&msg, filters) {
 				messages = append(messages, &msg)
-				
+
 				// Check limit
 				if limit > 0 && len(messages) >= limit {
 					return storage.ErrStopIteration
 				}
 			}
-			
+
 			return nil
 		})
 	})
-	
+
 	return messages, err
 }
 

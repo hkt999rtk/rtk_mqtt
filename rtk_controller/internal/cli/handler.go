@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"os"
 
-	"rtk_controller/internal/config"
-	"rtk_controller/internal/storage"
-	"rtk_controller/internal/device"
 	"rtk_controller/internal/command"
+	"rtk_controller/internal/config"
+	"rtk_controller/internal/device"
 	"rtk_controller/internal/mqtt"
+	"rtk_controller/internal/storage"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -47,10 +47,10 @@ func (h *Handler) Execute(command string, args []string) error {
 		// Set up os.Args for cobra
 		originalArgs := os.Args
 		defer func() { os.Args = originalArgs }()
-		
+
 		os.Args = append([]string{"rtk-cli"}, command)
 		os.Args = append(os.Args, args...)
-		
+
 		return h.cli.Execute()
 	}
 
@@ -76,7 +76,7 @@ func (h *Handler) ExecuteInteractive() error {
 	if h.cli == nil {
 		return fmt.Errorf("full CLI services not available")
 	}
-	
+
 	return h.cli.Execute()
 }
 

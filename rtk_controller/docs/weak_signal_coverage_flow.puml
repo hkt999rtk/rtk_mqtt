@@ -1,0 +1,91 @@
+@startuml weak_signal_coverage_end_to_end_flow
+!theme plain
+skinparam maxMessageSize 300
+skinparam wrapWidth 200
+skinparam minClassWidth 100
+skinparam sequenceParticipant underline
+title End-to-End Flow: Wi-Fi Coverage Diagnosis
+
+actor User as U
+participant "LLM Host" as LH
+participant "LLM Engine\n(Hailo-10)" as LE
+participant "MCP Server" as MCP
+participant "RTK Controller" as CTRL
+participant "MQTT Broker" as MQTT
+participant "Network Devices\n(APs/Mesh Nodes)" as DEV
+
+== Intent Recognition ==
+U -> LH: Wi-Fi is great in the living room\nbut dead in my bedroom
+activate LH
+
+LH -> LE: POST /v1/chat/completions\n{messages: analyze intent, model: gpt-4o}
+activate LE
+LE -> LH: {intent: weak_signal_coverage, confidence: 0.95}
+deactivate LE
+
+== MCP Tool Invocation ==
+LH -> MCP: POST /tools/invoke\n{tool: weak_signal_coverage, params: bedroom vs living_room}
+activate MCP
+
+== Data Collection via MQTT ==
+note over MCP: MCP server executes multiple diagnostic tools
+
+MCP -> CTRL: Execute multiple WiFi diagnostic tools
+activate CTRL
+
+CTRL -> MQTT: PUBLISH rtk/v1/home/main/+/cmd/req\n{command: wifi_coverage_scan}
+activate MQTT
+MQTT -> DEV: Forward coverage scan request
+activate DEV
+DEV -> MQTT: PUBLISH rtk/v1/home/main/ap001/telemetry/wifi_coverage\n{zones: [living_room: -42dBm excellent, bedroom: -78dBm poor]}
+MQTT -> CTRL: Forward coverage results
+deactivate DEV
+deactivate MQTT
+
+CTRL -> MQTT: PUBLISH rtk/v1/home/main/+/cmd/req\n{command: signal_strength_survey}
+activate MQTT
+MQTT -> DEV: Forward signal mapping request
+activate DEV
+DEV -> MQTT: PUBLISH rtk/v1/home/main/ap001/telemetry/signal_map\n{heatmap: [living_room: -42, hallway: -55, bedroom: -78]}
+MQTT -> CTRL: Forward signal map
+deactivate DEV
+deactivate MQTT
+
+CTRL -> MQTT: PUBLISH rtk/v1/home/main/+/topology/discovery
+activate MQTT
+MQTT -> DEV: Request topology update
+activate DEV
+DEV -> MQTT: PUBLISH rtk/v1/home/main/ap001/topology/update\n{device_type: mesh_router, location: living_room, coverage_radius: 25m}
+MQTT -> CTRL: Topology data
+deactivate DEV
+deactivate MQTT
+
+CTRL -> MQTT: PUBLISH rtk/v1/home/main/+/cmd/req\n{command: channel_scan}
+activate MQTT
+MQTT -> DEV: Channel scan request
+activate DEV
+DEV -> MQTT: PUBLISH rtk/v1/home/main/ap001/telemetry/channel_scan\n{current_channel: 6, interference: moderate, optimal_channels: [36, 149]}
+MQTT -> CTRL: Channel analysis
+deactivate DEV
+deactivate MQTT
+
+CTRL -> MCP: Consolidated diagnostic results\n{coverage_analysis, signal_map, topology, channel_data}
+deactivate CTRL
+
+== Data Aggregation ==
+note over MCP: MCP server consolidates all diagnostic data
+
+MCP -> LH: {coverage_analysis: {problem_areas: [bedroom],\nsignal_strength: {living_room: -42, bedroom: -78},\nrecommendations: [add_mesh_node, relocate_router]},\ninterference_analysis: {current_channel: 6, congestion: moderate},\ntopology: {active_aps: 1, coverage_gaps: [bedroom_area]}}
+deactivate MCP
+
+== Response Generation ==
+LH -> LE: POST /v1/chat/completions\n{system: generate user-friendly diagnosis, user: WiFi coverage data}
+activate LE
+
+LE -> LH: WiFi Coverage Analysis Complete\n{bedroom_signal: -78dBm (poor), living_room_signal: -42dBm (excellent),\nrecommendations: [add_mesh_node, relocate_router, upgrade_to_wifi6e]}
+deactivate LE
+
+LH -> U: WiFi Coverage Diagnosis Complete\n\nBedroom signal: -78 dBm (poor) vs Living room: -42 dBm (excellent)\n36 dB difference explains why WiFi is dead in bedroom.\n\nRecommendations:\n1. Add mesh node in hallway\n2. Relocate router to central location\n3. Upgrade to WiFi 6E\n\nExpected improvement: 25-30 dB signal boost
+deactivate LH
+
+@enduml

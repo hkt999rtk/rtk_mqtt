@@ -15,10 +15,10 @@ type PolicyEngine struct {
 
 // PolicyRule represents a QoS policy rule
 type PolicyRule struct {
-	Name        string
-	Condition   func(*TrafficPattern) bool
-	Action      func(*TrafficPattern) *types.QoSRecommendation
-	Priority    int
+	Name      string
+	Condition func(*TrafficPattern) bool
+	Action    func(*TrafficPattern) *types.QoSRecommendation
+	Priority  int
 }
 
 // NewPolicyEngine creates a new policy engine
@@ -236,7 +236,7 @@ type PolicySimulation struct {
 // simulateBandwidthCap simulates the effect of bandwidth capping
 func (pe *PolicyEngine) simulateBandwidthCap(rec *types.QoSRecommendation, stats *types.TrafficStats) *types.TrafficStats {
 	simulated := *stats // Copy stats
-	
+
 	if rule, ok := rec.Rule.(*types.BandwidthRule); ok {
 		// Reduce bandwidth for affected devices
 		for i, device := range simulated.DeviceTraffic {
@@ -251,21 +251,21 @@ func (pe *PolicyEngine) simulateBandwidthCap(rec *types.QoSRecommendation, stats
 				}
 			}
 		}
-		
+
 		// Recalculate total usage
 		simulated.UsedBandwidthMbps = 0
 		for _, device := range simulated.DeviceTraffic {
 			simulated.UsedBandwidthMbps += device.UploadMbps + device.DownloadMbps
 		}
 	}
-	
+
 	return &simulated
 }
 
 // simulateTrafficShaping simulates the effect of traffic shaping
 func (pe *PolicyEngine) simulateTrafficShaping(rec *types.QoSRecommendation, stats *types.TrafficStats) *types.TrafficStats {
 	simulated := *stats // Copy stats
-	
+
 	if rule, ok := rec.Rule.(*types.TrafficRule); ok {
 		// Simulate the effect based on action
 		switch rule.Action {
@@ -291,19 +291,19 @@ func (pe *PolicyEngine) simulateTrafficShaping(rec *types.QoSRecommendation, sta
 			}
 		}
 	}
-	
+
 	return &simulated
 }
 
 // simulatePriorityQueue simulates the effect of priority queuing
 func (pe *PolicyEngine) simulatePriorityQueue(rec *types.QoSRecommendation, stats *types.TrafficStats) *types.TrafficStats {
 	simulated := *stats // Copy stats
-	
+
 	// Priority queuing doesn't change total bandwidth but redistributes it
 	// This is a simplified simulation
 	if queue, ok := rec.Rule.(*types.QueueInfo); ok {
 		allocatedBandwidth := stats.TotalBandwidthMbps * (queue.BandwidthPct / 100)
-		
+
 		// Ensure high-priority devices get their allocated bandwidth
 		for i, device := range simulated.DeviceTraffic {
 			for _, affectedID := range rec.Devices {
@@ -319,7 +319,7 @@ func (pe *PolicyEngine) simulatePriorityQueue(rec *types.QoSRecommendation, stat
 			}
 		}
 	}
-	
+
 	return &simulated
 }
 
@@ -328,7 +328,7 @@ func (pe *PolicyEngine) calculateImpact(before, after *types.TrafficStats) float
 	if before.UsedBandwidthMbps == 0 {
 		return 0
 	}
-	
+
 	// Calculate percentage change in bandwidth usage
 	change := (before.UsedBandwidthMbps - after.UsedBandwidthMbps) / before.UsedBandwidthMbps
 	return change * 100

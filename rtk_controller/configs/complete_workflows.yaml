@@ -1,0 +1,309 @@
+# Complete Workflows Configuration
+# Based on MIDDLE_LAYER_PLAN.md Section 5.13
+
+# Core workflow definitions
+workflows:
+  - id: "weak_signal_coverage_diagnosis"
+    name: "WiFi 弱信號覆蓋診斷"
+    description: "診斷 WiFi 覆蓋問題，識別弱信號區域並提供解決方案"
+    intent:
+      primary: "coverage_issues"
+      secondary: "weak_signal_coverage"
+    metadata:
+      version: "1.0.0"
+      author: "RTK Controller Team"
+      tags: ["wifi", "coverage", "signal", "diagnosis"]
+      requirements: ["wifi_tools", "topology_tools"]
+    
+    steps:
+      - id: "data_collection"
+        name: "並行數據收集"
+        type: "parallel"
+        sub_steps:
+          - id: "wifi_coverage_scan"
+            name: "WiFi覆蓋掃描"
+            type: "tool_call"
+            tool_name: "wifi_signal_analysis"
+            timeout: "30s"
+            
+          - id: "signal_strength_mapping"
+            name: "信號強度映射"
+            type: "tool_call"
+            tool_name: "wifi_signal_analysis"
+            timeout: "45s"
+            
+          - id: "topology_discovery"
+            name: "拓撲發現"
+            type: "tool_call"
+            tool_name: "network_topology_scan"
+            parameters:
+              include_offline: true
+            timeout: "20s"
+            
+          - id: "channel_analysis"
+            name: "頻道分析"
+            type: "tool_call" 
+            tool_name: "wifi_channel_analysis"
+            parameters:
+              band: "all"
+              scan_duration: 30
+            timeout: "35s"
+      
+      - id: "interference_check"
+        name: "干擾檢測"
+        type: "sequential"
+        condition:
+          field: "data_collection.signal_strength_mapping.weak_signal_zones"
+          operator: "greater_than"
+          value: 0
+        sub_steps:
+          - id: "analyze_interference"
+            name: "分析干擾"
+            type: "tool_call"
+            tool_name: "device_interference_scan"
+            timeout: "25s"
+      
+      - id: "performance_validation"
+        name: "性能驗證"
+        type: "tool_call"
+        tool_name: "wan_connectivity_test"
+        condition:
+          field: "data_collection.wifi_coverage_scan.problem_areas"
+          operator: "exists"
+        timeout: "60s"
+
+  - id: "wan_connectivity_diagnosis"
+    name: "WAN 連線診斷"
+    description: "診斷 WAN 連線問題，檢測網路連線狀態"
+    intent:
+      primary: "connectivity_issues"
+      secondary: "wan_connectivity"
+    metadata:
+      version: "1.0.0"
+      author: "RTK Controller Team"
+      tags: ["wan", "connectivity", "internet"]
+    
+    steps:
+      - id: "wan_status_check"
+        name: "WAN 狀態檢查"
+        type: "tool_call"
+        tool_name: "wan_connectivity_test"
+        timeout: "30s"
+      
+      - id: "dns_resolution_test"
+        name: "DNS 解析測試"
+        type: "tool_call"
+        tool_name: "wan_connectivity_test"
+        parameters:
+          test_type: "dns"
+        timeout: "15s"
+      
+      - id: "speed_test"
+        name: "速度測試"
+        type: "tool_call"
+        tool_name: "lan_performance_test"
+        condition:
+          field: "wan_status_check.connectivity_status"
+          operator: "equals"
+          value: "connected"
+        timeout: "60s"
+
+  - id: "performance_bottleneck_analysis"
+    name: "效能瓶頸分析"
+    description: "分析網路效能瓶頸，識別速度和延遲問題"
+    intent:
+      primary: "performance_problems"
+      secondary: "slow_internet"
+    metadata:
+      version: "1.0.0"
+      author: "RTK Controller Team"
+      tags: ["performance", "speed", "latency"]
+    
+    steps:
+      - id: "baseline_measurement"
+        name: "基準測量"
+        type: "parallel"
+        sub_steps:
+          - id: "speed_test_wan"
+            name: "WAN速度測試"
+            type: "tool_call"
+            tool_name: "wan_connectivity_test"
+            timeout: "60s"
+          
+          - id: "speed_test_lan"
+            name: "LAN速度測試"
+            type: "tool_call"
+            tool_name: "lan_performance_test"
+            timeout: "30s"
+          
+          - id: "qos_analysis"
+            name: "QoS分析"
+            type: "tool_call"
+            tool_name: "qos_analysis"
+            timeout: "20s"
+      
+      - id: "bottleneck_identification"
+        name: "瓶頸識別"
+        type: "tool_call"
+        tool_name: "network_health_check"
+        timeout: "30s"
+
+  - id: "device_offline_diagnosis"
+    name: "設備離線診斷"
+    description: "診斷設備離線問題，檢查設備連線狀態"
+    intent:
+      primary: "connectivity_issues"  
+      secondary: "device_offline"
+    metadata:
+      version: "1.0.0"
+      author: "RTK Controller Team"
+      tags: ["device", "offline", "connectivity"]
+    
+    steps:
+      - id: "topology_scan"
+        name: "拓撲掃描"
+        type: "tool_call"
+        tool_name: "network_topology_scan"
+        parameters:
+          include_offline: true
+          deep_scan: true
+        timeout: "45s"
+      
+      - id: "device_ping_test"
+        name: "設備Ping測試"
+        type: "tool_call"
+        tool_name: "network_health_check"
+        parameters:
+          target_devices: "extracted_from_input"
+        timeout: "30s"
+
+  - id: "general_network_diagnosis"
+    name: "通用網路診斷"
+    description: "通用網路診斷工作流程，用於未分類或複雜問題"
+    intent:
+      primary: "general"
+      secondary: "network_diagnosis"
+    metadata:
+      version: "1.0.0"
+      author: "RTK Controller Team"
+      tags: ["general", "fallback", "comprehensive"]
+    
+    steps:
+      - id: "comprehensive_scan"
+        name: "綜合掃描"
+        type: "parallel"
+        sub_steps:
+          - id: "topology_scan"
+            name: "拓撲掃描"
+            type: "tool_call"
+            tool_name: "network_topology_scan"
+            timeout: "30s"
+          
+          - id: "health_check"
+            name: "健康檢查"
+            type: "tool_call"
+            tool_name: "network_health_check"
+            timeout: "25s"
+          
+          - id: "wifi_analysis"
+            name: "WiFi分析"
+            type: "tool_call"
+            tool_name: "wifi_signal_analysis"
+            timeout: "20s"
+      
+      - id: "problem_analysis"
+        name: "問題分析"
+        type: "tool_call"
+        tool_name: "wifi_advanced_diagnostics"
+        timeout: "40s"
+
+# Intent classification configuration
+intents:
+  classification_model: "gpt-4o-mini"  # 使用較小的模型進行分類
+  confidence_threshold: 0.8
+  fallback_workflow: "general_network_diagnosis"
+  
+  # Intent feedback mechanism (Risk Mitigation 8.1)
+  enable_feedback: true
+  feedback_threshold: 0.6  # Below this, ask for user confirmation
+  
+  # Retry configuration
+  max_retries: 2
+  retry_delay_ms: 1000
+  
+  # Manual override settings (Risk Mitigation 8.1)
+  enable_manual_override: true
+  override_confirmation_required: true
+
+# Workflow execution configuration
+execution:
+  default_timeout: "60s"
+  max_concurrent_workflows: 5
+  retry_attempts: 2
+  
+  # Risk Mitigation 8.2: Dynamic parameters
+  enable_dynamic_parameters: true
+  parameter_injection_safe_mode: true  # Validate injected parameters
+  
+  # Risk Mitigation 8.2: Conditional execution
+  enable_conditional_steps: true
+  condition_evaluation_timeout: "5s"
+  
+  # Fallback mechanism
+  fallback_on_failure: true
+  fallback_workflow: "general_network_diagnosis"
+  preserve_original_parameters: true
+
+# Monitoring and metrics
+monitoring:
+  enable_execution_tracking: true
+  track_intent_accuracy: true
+  generate_execution_reports: true
+  
+  # Metrics collection intervals
+  metrics_collection_interval: "30s"
+  metrics_retention_hours: 168  # 7 days
+  
+  # Alert thresholds
+  failure_rate_threshold: 0.1  # Alert if >10% workflows fail
+  low_confidence_threshold: 0.7  # Alert if avg confidence <70%
+
+# Risk mitigation settings (MIDDLE_LAYER_PLAN.md Section 8)
+risk_mitigation:
+  # 8.1 Intent classification error mitigation
+  intent_classification:
+    confidence_thresholds:
+      high: 0.9
+      medium: 0.7
+      low: 0.5
+      fallback: 0.3
+    enable_human_feedback: true
+    feedback_collection_rate: 0.1  # Collect feedback on 10% of classifications
+  
+  # 8.2 Workflow rigidity mitigation
+  workflow_flexibility:
+    enable_parameter_injection: true
+    enable_conditional_branches: true
+    enable_fallback_to_llm: false  # Keep LLM as backup only
+    dynamic_step_ordering: false   # Maintain deterministic execution
+  
+  # 8.3 Configuration complexity mitigation
+  configuration:
+    enable_validation: true
+    validation_on_startup: true
+    validation_on_reload: true
+    strict_schema_validation: true
+  
+  # 8.4 MCP integration risk mitigation
+  mcp_integration:
+    enable_version_compatibility_check: true
+    enable_backward_compatibility: true
+    export_schema_validation: true
+    graceful_degradation: true
+
+# Development and debugging
+development:
+  enable_debug_logging: false
+  log_classification_details: false
+  log_workflow_execution_steps: false
+  enable_workflow_dry_run: false

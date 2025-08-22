@@ -15,22 +15,22 @@ type WiFiClientCollector struct {
 	// Storage
 	storage         *storage.TopologyStorage
 	identityStorage *storage.IdentityStorage
-	
+
 	// WiFi client tracking
-	clients    map[string]*WiFiClientState
-	clientsMu  sync.RWMutex
-	
+	clients   map[string]*WiFiClientState
+	clientsMu sync.RWMutex
+
 	// Access point tracking
 	accessPoints map[string]*AccessPointState
-	apMu        sync.RWMutex
-	
+	apMu         sync.RWMutex
+
 	// Configuration
 	config WiFiCollectorConfig
-	
+
 	// Background processing
 	running bool
 	cancel  context.CancelFunc
-	
+
 	// Statistics
 	stats WiFiCollectorStats
 }
@@ -52,15 +52,15 @@ type WiFiClientState struct {
 
 // AccessPointState tracks the state of an access point
 type AccessPointState struct {
-	DeviceID        string
-	SSID           string
-	BSSID          string
-	Channel        int
-	Band           string
-	MaxClients     int
+	DeviceID         string
+	SSID             string
+	BSSID            string
+	Channel          int
+	Band             string
+	MaxClients       int
 	ConnectedClients map[string]*WiFiClientInfo
-	LastUpdate     time.Time
-	SignalQuality  AccessPointQuality
+	LastUpdate       time.Time
+	SignalQuality    AccessPointQuality
 }
 
 // WiFiClientInfo holds detailed information about a connected client
@@ -70,85 +70,85 @@ type WiFiClientInfo struct {
 	Hostname       string
 	ConnectedAt    time.Time
 	LastSeen       time.Time
-	RSSI          int
-	TxRate        int
-	RxRate        int
-	TxBytes       int64
-	RxBytes       int64
-	TxPackets     int64
-	RxPackets     int64
+	RSSI           int
+	TxRate         int
+	RxRate         int
+	TxBytes        int64
+	RxBytes        int64
+	TxPackets      int64
+	RxPackets      int64
 	SignalStrength int
-	NoiseLevel    int
+	NoiseLevel     int
 	ConnectionTime int64
-	Capabilities  []string
+	Capabilities   []string
 }
 
 // SignalMeasurement represents a signal strength measurement
 type SignalMeasurement struct {
-	Timestamp    time.Time
-	RSSI         int
-	NoiseLevel   int
-	TxRate       int
-	RxRate       int
-	APDeviceID   string
+	Timestamp  time.Time
+	RSSI       int
+	NoiseLevel int
+	TxRate     int
+	RxRate     int
+	APDeviceID string
 }
 
 // RoamingEvent represents a client roaming between access points
 type RoamingEvent struct {
-	Timestamp     time.Time
-	FromAP        string
-	ToAP          string
-	FromSSID      string
-	ToSSID        string
-	Reason        string
-	Duration      time.Duration
-	SignalBefore  int
-	SignalAfter   int
+	Timestamp    time.Time
+	FromAP       string
+	ToAP         string
+	FromSSID     string
+	ToSSID       string
+	Reason       string
+	Duration     time.Duration
+	SignalBefore int
+	SignalAfter  int
 }
 
 // AccessPointQuality holds AP quality metrics
 type AccessPointQuality struct {
-	AverageRSSI      int
-	ClientCount      int
+	AverageRSSI        int
+	ClientCount        int
 	ChannelUtilization float64
-	Interference     int
-	QualityScore     float64
+	Interference       int
+	QualityScore       float64
 }
 
 // WiFiCollectorConfig holds WiFi collector configuration
 type WiFiCollectorConfig struct {
 	// Collection intervals
-	ClientUpdateInterval    time.Duration
-	SignalSampleInterval   time.Duration
-	QualityCheckInterval   time.Duration
-	
+	ClientUpdateInterval time.Duration
+	SignalSampleInterval time.Duration
+	QualityCheckInterval time.Duration
+
 	// Data retention
-	SignalHistoryRetention time.Duration
-	ClientOfflineTimeout   time.Duration
+	SignalHistoryRetention  time.Duration
+	ClientOfflineTimeout    time.Duration
 	RoamingHistoryRetention time.Duration
-	
+
 	// Analysis settings
 	EnableRoamingDetection bool
 	RoamingTimeThreshold   time.Duration
 	WeakSignalThreshold    int
 	QualityUpdateThreshold float64
-	
+
 	// Performance settings
-	MaxClientsPerAP        int
-	MaxSignalSamples       int
-	BatchSize              int
+	MaxClientsPerAP  int
+	MaxSignalSamples int
+	BatchSize        int
 }
 
 // WiFiCollectorStats holds collection statistics
 type WiFiCollectorStats struct {
 	TotalClientsTracked    int64
-	ActiveClients         int64
-	TotalAccessPoints     int64
-	ActiveAccessPoints    int64
-	RoamingEventsDetected int64
+	ActiveClients          int64
+	TotalAccessPoints      int64
+	ActiveAccessPoints     int64
+	RoamingEventsDetected  int64
 	SignalSamplesCollected int64
-	LastUpdate            time.Time
-	ProcessingErrors      int64
+	LastUpdate             time.Time
+	ProcessingErrors       int64
 }
 
 // NewWiFiClientCollector creates a new WiFi client collector
@@ -160,10 +160,10 @@ func NewWiFiClientCollector(
 	return &WiFiClientCollector{
 		storage:         storage,
 		identityStorage: identityStorage,
-		clients:        make(map[string]*WiFiClientState),
-		accessPoints:   make(map[string]*AccessPointState),
-		config:         config,
-		stats:          WiFiCollectorStats{},
+		clients:         make(map[string]*WiFiClientState),
+		accessPoints:    make(map[string]*AccessPointState),
+		config:          config,
+		stats:           WiFiCollectorStats{},
 	}
 }
 
@@ -171,28 +171,28 @@ func NewWiFiClientCollector(
 func (wc *WiFiClientCollector) Start() error {
 	wc.clientsMu.Lock()
 	defer wc.clientsMu.Unlock()
-	
+
 	if wc.running {
 		return fmt.Errorf("WiFi client collector is already running")
 	}
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
 	wc.cancel = cancel
 	wc.running = true
-	
+
 	log.Printf("Starting WiFi client collector")
-	
+
 	// Start background processing goroutines
 	go wc.clientTrackingLoop(ctx)
 	go wc.signalAnalysisLoop(ctx)
 	go wc.qualityMonitoringLoop(ctx)
 	go wc.cleanupLoop(ctx)
-	
+
 	// Load existing data
 	if err := wc.loadExistingData(); err != nil {
 		log.Printf("Failed to load existing WiFi data: %v", err)
 	}
-	
+
 	return nil
 }
 
@@ -200,14 +200,14 @@ func (wc *WiFiClientCollector) Start() error {
 func (wc *WiFiClientCollector) Stop() error {
 	wc.clientsMu.Lock()
 	defer wc.clientsMu.Unlock()
-	
+
 	if !wc.running {
 		return fmt.Errorf("WiFi client collector is not running")
 	}
-	
+
 	wc.cancel()
 	wc.running = false
-	
+
 	log.Printf("WiFi client collector stopped")
 	return nil
 }
@@ -220,13 +220,13 @@ func (wc *WiFiClientCollector) ProcessWiFiClientsMessage(
 	clients []map[string]interface{},
 	timestamp int64,
 ) error {
-	
+
 	// Update access point state
 	if err := wc.updateAccessPointState(deviceID, interfaceName, apInfo, timestamp); err != nil {
 		log.Printf("Failed to update AP state: %v", err)
 		wc.stats.ProcessingErrors++
 	}
-	
+
 	// Process each client
 	for _, clientData := range clients {
 		if err := wc.processClientData(deviceID, clientData, timestamp); err != nil {
@@ -235,7 +235,7 @@ func (wc *WiFiClientCollector) ProcessWiFiClientsMessage(
 			continue
 		}
 	}
-	
+
 	wc.stats.LastUpdate = time.Now()
 	return nil
 }
@@ -244,12 +244,12 @@ func (wc *WiFiClientCollector) ProcessWiFiClientsMessage(
 func (wc *WiFiClientCollector) GetWiFiClientState(macAddress string) (*WiFiClientState, bool) {
 	wc.clientsMu.RLock()
 	defer wc.clientsMu.RUnlock()
-	
+
 	client, exists := wc.clients[macAddress]
 	if !exists {
 		return nil, false
 	}
-	
+
 	// Return copy
 	clientCopy := *client
 	return &clientCopy, true
@@ -259,12 +259,12 @@ func (wc *WiFiClientCollector) GetWiFiClientState(macAddress string) (*WiFiClien
 func (wc *WiFiClientCollector) GetAccessPointState(deviceID string) (*AccessPointState, bool) {
 	wc.apMu.RLock()
 	defer wc.apMu.RUnlock()
-	
+
 	ap, exists := wc.accessPoints[deviceID]
 	if !exists {
 		return nil, false
 	}
-	
+
 	// Return copy
 	apCopy := *ap
 	apCopy.ConnectedClients = make(map[string]*WiFiClientInfo)
@@ -272,7 +272,7 @@ func (wc *WiFiClientCollector) GetAccessPointState(deviceID string) (*AccessPoin
 		clientCopy := *client
 		apCopy.ConnectedClients[mac] = &clientCopy
 	}
-	
+
 	return &apCopy, true
 }
 
@@ -280,17 +280,17 @@ func (wc *WiFiClientCollector) GetAccessPointState(deviceID string) (*AccessPoin
 func (wc *WiFiClientCollector) GetActiveClients() map[string]*WiFiClientState {
 	wc.clientsMu.RLock()
 	defer wc.clientsMu.RUnlock()
-	
+
 	activeClients := make(map[string]*WiFiClientState)
 	now := time.Now()
-	
+
 	for mac, client := range wc.clients {
 		if now.Sub(client.LastSeen) < wc.config.ClientOfflineTimeout {
 			clientCopy := *client
 			activeClients[mac] = &clientCopy
 		}
 	}
-	
+
 	return activeClients
 }
 
@@ -298,9 +298,9 @@ func (wc *WiFiClientCollector) GetActiveClients() map[string]*WiFiClientState {
 func (wc *WiFiClientCollector) GetRoamingEvents(since time.Time) []RoamingEvent {
 	wc.clientsMu.RLock()
 	defer wc.clientsMu.RUnlock()
-	
+
 	var events []RoamingEvent
-	
+
 	for _, client := range wc.clients {
 		for _, event := range client.RoamingHistory {
 			if event.Timestamp.After(since) {
@@ -308,7 +308,7 @@ func (wc *WiFiClientCollector) GetRoamingEvents(since time.Time) []RoamingEvent 
 			}
 		}
 	}
-	
+
 	return events
 }
 
@@ -318,30 +318,30 @@ func (wc *WiFiClientCollector) GetStats() WiFiCollectorStats {
 	wc.apMu.RLock()
 	defer wc.clientsMu.RUnlock()
 	defer wc.apMu.RUnlock()
-	
+
 	stats := wc.stats
 	stats.TotalClientsTracked = int64(len(wc.clients))
 	stats.TotalAccessPoints = int64(len(wc.accessPoints))
-	
+
 	// Count active clients and APs
 	now := time.Now()
 	var activeClients, activeAPs int64
-	
+
 	for _, client := range wc.clients {
 		if now.Sub(client.LastSeen) < wc.config.ClientOfflineTimeout {
 			activeClients++
 		}
 	}
-	
+
 	for _, ap := range wc.accessPoints {
 		if now.Sub(ap.LastUpdate) < wc.config.ClientOfflineTimeout {
 			activeAPs++
 		}
 	}
-	
+
 	stats.ActiveClients = activeClients
 	stats.ActiveAccessPoints = activeAPs
-	
+
 	return stats
 }
 
@@ -353,10 +353,10 @@ func (wc *WiFiClientCollector) updateAccessPointState(
 	apInfo map[string]interface{},
 	timestamp int64,
 ) error {
-	
+
 	wc.apMu.Lock()
 	defer wc.apMu.Unlock()
-	
+
 	ap, exists := wc.accessPoints[deviceID]
 	if !exists {
 		ap = &AccessPointState{
@@ -365,7 +365,7 @@ func (wc *WiFiClientCollector) updateAccessPointState(
 		}
 		wc.accessPoints[deviceID] = ap
 	}
-	
+
 	// Update AP information
 	if ssid, ok := apInfo["ssid"].(string); ok {
 		ap.SSID = ssid
@@ -382,9 +382,9 @@ func (wc *WiFiClientCollector) updateAccessPointState(
 	if maxClients, ok := apInfo["max_clients"].(float64); ok {
 		ap.MaxClients = int(maxClients)
 	}
-	
+
 	ap.LastUpdate = time.UnixMilli(timestamp)
-	
+
 	return nil
 }
 
@@ -393,15 +393,15 @@ func (wc *WiFiClientCollector) processClientData(
 	clientData map[string]interface{},
 	timestamp int64,
 ) error {
-	
+
 	macAddress, ok := clientData["mac_address"].(string)
 	if !ok {
 		return fmt.Errorf("missing or invalid mac_address")
 	}
-	
+
 	wc.clientsMu.Lock()
 	defer wc.clientsMu.Unlock()
-	
+
 	// Get or create client state
 	client, exists := wc.clients[macAddress]
 	if !exists {
@@ -413,34 +413,34 @@ func (wc *WiFiClientCollector) processClientData(
 		wc.clients[macAddress] = client
 		wc.stats.TotalClientsTracked++
 	}
-	
+
 	// Get friendly name from identity storage
 	if identity, err := wc.identityStorage.GetDeviceIdentity(macAddress); err == nil {
 		client.FriendlyName = identity.FriendlyName
 	}
-	
+
 	// Check for roaming
 	previousAP := client.CurrentAP
 	currentAP := apDeviceID
-	
+
 	if previousAP != "" && previousAP != currentAP && wc.config.EnableRoamingDetection {
 		wc.detectRoaming(client, previousAP, currentAP, timestamp)
 	}
-	
+
 	// Update client state
 	client.CurrentAP = currentAP
 	client.LastSeen = time.UnixMilli(timestamp)
-	
+
 	if connectedAt, ok := clientData["connected_at"].(float64); ok {
 		client.ConnectionTime = time.UnixMilli(int64(connectedAt))
 	}
-	
+
 	// Update signal measurement
 	measurement := SignalMeasurement{
 		Timestamp:  time.UnixMilli(timestamp),
 		APDeviceID: apDeviceID,
 	}
-	
+
 	if rssi, ok := clientData["rssi"].(float64); ok {
 		measurement.RSSI = int(rssi)
 	}
@@ -453,20 +453,20 @@ func (wc *WiFiClientCollector) processClientData(
 	if rxRate, ok := clientData["rx_rate"].(float64); ok {
 		measurement.RxRate = int(rxRate)
 	}
-	
+
 	// Add to signal history
 	client.SignalHistory = append(client.SignalHistory, measurement)
-	
+
 	// Limit signal history size
 	if len(client.SignalHistory) > wc.config.MaxSignalSamples {
 		client.SignalHistory = client.SignalHistory[len(client.SignalHistory)-wc.config.MaxSignalSamples:]
 	}
-	
+
 	wc.stats.SignalSamplesCollected++
-	
+
 	// Update AP client info
 	wc.updateAPClientInfo(apDeviceID, macAddress, clientData, timestamp)
-	
+
 	return nil
 }
 
@@ -476,20 +476,20 @@ func (wc *WiFiClientCollector) updateAPClientInfo(
 	clientData map[string]interface{},
 	timestamp int64,
 ) {
-	
+
 	wc.apMu.Lock()
 	defer wc.apMu.Unlock()
-	
+
 	ap, exists := wc.accessPoints[apDeviceID]
 	if !exists {
 		return
 	}
-	
+
 	clientInfo := &WiFiClientInfo{
 		MacAddress: macAddress,
 		LastSeen:   time.UnixMilli(timestamp),
 	}
-	
+
 	// Extract client information
 	if ipAddress, ok := clientData["ip_address"].(string); ok {
 		clientInfo.IPAddress = ipAddress
@@ -537,7 +537,7 @@ func (wc *WiFiClientCollector) updateAPClientInfo(
 			}
 		}
 	}
-	
+
 	ap.ConnectedClients[macAddress] = clientInfo
 }
 
@@ -547,45 +547,45 @@ func (wc *WiFiClientCollector) detectRoaming(
 	toAP string,
 	timestamp int64,
 ) {
-	
+
 	event := RoamingEvent{
 		Timestamp: time.UnixMilli(timestamp),
 		FromAP:    fromAP,
 		ToAP:      toAP,
 		Reason:    "automatic",
 	}
-	
+
 	// Calculate roaming duration
 	if !client.ConnectionTime.IsZero() {
 		event.Duration = time.UnixMilli(timestamp).Sub(client.ConnectionTime)
 	}
-	
+
 	// Get signal strength before and after
 	if len(client.SignalHistory) > 0 {
 		lastMeasurement := client.SignalHistory[len(client.SignalHistory)-1]
 		event.SignalBefore = lastMeasurement.RSSI
 	}
-	
+
 	// Add to roaming history
 	client.RoamingHistory = append(client.RoamingHistory, event)
 	client.IsRoaming = true
-	
+
 	// Limit roaming history size
 	maxEvents := 100
 	if len(client.RoamingHistory) > maxEvents {
 		client.RoamingHistory = client.RoamingHistory[len(client.RoamingHistory)-maxEvents:]
 	}
-	
+
 	wc.stats.RoamingEventsDetected++
-	
-	log.Printf("Roaming detected: client %s moved from AP %s to AP %s", 
+
+	log.Printf("Roaming detected: client %s moved from AP %s to AP %s",
 		client.MacAddress, fromAP, toAP)
 }
 
 func (wc *WiFiClientCollector) clientTrackingLoop(ctx context.Context) {
 	ticker := time.NewTicker(wc.config.ClientUpdateInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -599,7 +599,7 @@ func (wc *WiFiClientCollector) clientTrackingLoop(ctx context.Context) {
 func (wc *WiFiClientCollector) signalAnalysisLoop(ctx context.Context) {
 	ticker := time.NewTicker(wc.config.SignalSampleInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -613,7 +613,7 @@ func (wc *WiFiClientCollector) signalAnalysisLoop(ctx context.Context) {
 func (wc *WiFiClientCollector) qualityMonitoringLoop(ctx context.Context) {
 	ticker := time.NewTicker(wc.config.QualityCheckInterval)
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -627,7 +627,7 @@ func (wc *WiFiClientCollector) qualityMonitoringLoop(ctx context.Context) {
 func (wc *WiFiClientCollector) cleanupLoop(ctx context.Context) {
 	ticker := time.NewTicker(time.Hour) // Run cleanup every hour
 	defer ticker.Stop()
-	
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -641,16 +641,16 @@ func (wc *WiFiClientCollector) cleanupLoop(ctx context.Context) {
 func (wc *WiFiClientCollector) updateClientStates() {
 	// Update client connection status and detect disconnections
 	now := time.Now()
-	
+
 	wc.clientsMu.Lock()
 	defer wc.clientsMu.Unlock()
-	
+
 	for mac, client := range wc.clients {
 		// Mark as not roaming if enough time has passed
 		if client.IsRoaming && now.Sub(client.LastSeen) > wc.config.RoamingTimeThreshold {
 			client.IsRoaming = false
 		}
-		
+
 		// Remove from AP client lists if offline
 		if now.Sub(client.LastSeen) > wc.config.ClientOfflineTimeout {
 			wc.removeClientFromAPs(mac)
@@ -662,12 +662,12 @@ func (wc *WiFiClientCollector) analyzeSignalQuality() {
 	// Analyze signal quality trends and detect issues
 	wc.clientsMu.RLock()
 	defer wc.clientsMu.RUnlock()
-	
+
 	for _, client := range wc.clients {
 		if len(client.SignalHistory) < 3 {
 			continue
 		}
-		
+
 		// Check for weak signal
 		recentMeasurements := client.SignalHistory[len(client.SignalHistory)-3:]
 		totalRSSI := 0
@@ -675,9 +675,9 @@ func (wc *WiFiClientCollector) analyzeSignalQuality() {
 			totalRSSI += measurement.RSSI
 		}
 		avgRSSI := totalRSSI / len(recentMeasurements)
-		
+
 		if avgRSSI < wc.config.WeakSignalThreshold {
-			log.Printf("Weak signal detected for client %s: avg RSSI %d", 
+			log.Printf("Weak signal detected for client %s: avg RSSI %d",
 				client.MacAddress, avgRSSI)
 		}
 	}
@@ -687,10 +687,10 @@ func (wc *WiFiClientCollector) updateAccessPointQuality() {
 	// Update access point quality metrics
 	wc.apMu.Lock()
 	defer wc.apMu.Unlock()
-	
+
 	for _, ap := range wc.accessPoints {
 		quality := &ap.SignalQuality
-		
+
 		// Calculate average RSSI for connected clients
 		if len(ap.ConnectedClients) > 0 {
 			totalRSSI := 0
@@ -699,12 +699,12 @@ func (wc *WiFiClientCollector) updateAccessPointQuality() {
 			}
 			quality.AverageRSSI = totalRSSI / len(ap.ConnectedClients)
 		}
-		
+
 		quality.ClientCount = len(ap.ConnectedClients)
-		
+
 		// Calculate quality score
 		quality.QualityScore = wc.calculateQualityScore(quality)
-		
+
 		log.Printf("AP %s quality: clients=%d, avg_rssi=%d, score=%.2f",
 			ap.DeviceID, quality.ClientCount, quality.AverageRSSI, quality.QualityScore)
 	}
@@ -712,71 +712,71 @@ func (wc *WiFiClientCollector) updateAccessPointQuality() {
 
 func (wc *WiFiClientCollector) calculateQualityScore(quality *AccessPointQuality) float64 {
 	score := 1.0
-	
+
 	// Penalty for weak signal
 	if quality.AverageRSSI < -70 {
 		score -= 0.3
 	} else if quality.AverageRSSI < -60 {
 		score -= 0.1
 	}
-	
+
 	// Penalty for high client count (congestion)
 	if quality.ClientCount > 20 {
 		score -= 0.2
 	} else if quality.ClientCount > 10 {
 		score -= 0.1
 	}
-	
+
 	// Penalty for channel utilization
 	if quality.ChannelUtilization > 0.8 {
 		score -= 0.2
 	} else if quality.ChannelUtilization > 0.6 {
 		score -= 0.1
 	}
-	
+
 	if score < 0 {
 		score = 0
 	}
-	
+
 	return score
 }
 
 func (wc *WiFiClientCollector) cleanupOldData() {
 	now := time.Now()
-	
+
 	// Clean up old signal history
 	wc.clientsMu.Lock()
 	for _, client := range wc.clients {
 		cutoff := now.Add(-wc.config.SignalHistoryRetention)
 		var filteredHistory []SignalMeasurement
-		
+
 		for _, measurement := range client.SignalHistory {
 			if measurement.Timestamp.After(cutoff) {
 				filteredHistory = append(filteredHistory, measurement)
 			}
 		}
-		
+
 		client.SignalHistory = filteredHistory
-		
+
 		// Clean up old roaming history
 		cutoff = now.Add(-wc.config.RoamingHistoryRetention)
 		var filteredRoaming []RoamingEvent
-		
+
 		for _, event := range client.RoamingHistory {
 			if event.Timestamp.After(cutoff) {
 				filteredRoaming = append(filteredRoaming, event)
 			}
 		}
-		
+
 		client.RoamingHistory = filteredRoaming
 	}
 	wc.clientsMu.Unlock()
-	
+
 	// Clean up offline clients from AP lists
 	wc.apMu.Lock()
 	for _, ap := range wc.accessPoints {
 		cutoff := now.Add(-wc.config.ClientOfflineTimeout)
-		
+
 		for mac, client := range ap.ConnectedClients {
 			if client.LastSeen.Before(cutoff) {
 				delete(ap.ConnectedClients, mac)
@@ -784,14 +784,14 @@ func (wc *WiFiClientCollector) cleanupOldData() {
 		}
 	}
 	wc.apMu.Unlock()
-	
+
 	log.Printf("Completed WiFi data cleanup")
 }
 
 func (wc *WiFiClientCollector) removeClientFromAPs(macAddress string) {
 	wc.apMu.Lock()
 	defer wc.apMu.Unlock()
-	
+
 	for _, ap := range wc.accessPoints {
 		delete(ap.ConnectedClients, macAddress)
 	}
@@ -800,11 +800,11 @@ func (wc *WiFiClientCollector) removeClientFromAPs(macAddress string) {
 func (wc *WiFiClientCollector) loadExistingData() error {
 	// Load existing WiFi client and AP data from storage
 	// This would typically involve reading from the database
-	
+
 	log.Printf("Loading existing WiFi data from storage")
-	
+
 	// TODO: Implement loading from storage
 	// For now, start with empty state
-	
+
 	return nil
 }

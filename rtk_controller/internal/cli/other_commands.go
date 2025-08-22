@@ -19,9 +19,9 @@ func (c *CLI) eventsList(cmd *cobra.Command, args []string) error {
 	limit, _ := cmd.Flags().GetInt("limit")
 	device, _ := cmd.Flags().GetString("device")
 
-	fmt.Printf("Listing events (type=%s, severity=%s, device=%s, limit=%d)\n", 
+	fmt.Printf("Listing events (type=%s, severity=%s, device=%s, limit=%d)\n",
 		eventType, severity, device, limit)
-	
+
 	// This would integrate with the event system
 	fmt.Println("Event listing functionality requires integration with event storage")
 	return nil
@@ -60,7 +60,7 @@ func (c *CLI) diagnoseDevice(cmd *cobra.Command, args []string) error {
 	detailLevel, _ := cmd.Flags().GetString("detail-level")
 
 	fmt.Printf("Running diagnosis on device: %s\n", deviceID)
-	fmt.Printf("Type: %s, Include History: %t, Detail Level: %s\n", 
+	fmt.Printf("Type: %s, Include History: %t, Detail Level: %s\n",
 		diagType, includeHistory, detailLevel)
 
 	fmt.Println("Diagnosis functionality requires integration with diagnosis system")
@@ -70,7 +70,7 @@ func (c *CLI) diagnoseDevice(cmd *cobra.Command, args []string) error {
 func (c *CLI) analyzerList(cmd *cobra.Command, args []string) error {
 	fmt.Println("Available Analyzers:")
 	fmt.Println("===================")
-	
+
 	analyzers := []struct {
 		Name    string
 		Type    string
@@ -85,12 +85,12 @@ func (c *CLI) analyzerList(cmd *cobra.Command, args []string) error {
 
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
 	fmt.Fprintln(w, "NAME\tTYPE\tSTATUS\tVERSION")
-	
+
 	for _, analyzer := range analyzers {
-		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n", 
+		fmt.Fprintf(w, "%s\t%s\t%s\t%s\n",
 			analyzer.Name, analyzer.Type, analyzer.Status, analyzer.Version)
 	}
-	
+
 	return w.Flush()
 }
 
@@ -98,7 +98,7 @@ func (c *CLI) analyzerInfo(cmd *cobra.Command, args []string) error {
 	analyzerName := args[0]
 	fmt.Printf("Analyzer Information: %s\n", analyzerName)
 	fmt.Printf("=======================\n\n")
-	
+
 	// Mock analyzer info
 	fmt.Printf("Name:        %s\n", analyzerName)
 	fmt.Printf("Type:        builtin\n")
@@ -109,7 +109,7 @@ func (c *CLI) analyzerInfo(cmd *cobra.Command, args []string) error {
 	fmt.Printf("  - Roaming analysis\n")
 	fmt.Printf("  - Connection failure diagnosis\n")
 	fmt.Printf("  - ARP loss detection\n")
-	
+
 	return nil
 }
 
@@ -138,7 +138,7 @@ func (c *CLI) analyzerDisable(cmd *cobra.Command, args []string) error {
 
 func (c *CLI) testMQTT(cmd *cobra.Command, args []string) error {
 	topic, _ := cmd.Flags().GetString("topic")
-	
+
 	if topic == "" {
 		topic = "rtk/v1/test/test/test-device/state"
 	}

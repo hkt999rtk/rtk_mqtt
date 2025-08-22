@@ -74,7 +74,6 @@ func (m *MockStorage) Close() error {
 	return args.Error(0)
 }
 
-
 func setupTestManager(t *testing.T) (*SimpleManager, *MockStorage) {
 	mockStorage := NewMockStorage()
 

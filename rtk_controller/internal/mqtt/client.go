@@ -26,7 +26,7 @@ type EventProcessor interface {
 	ProcessEvent(topic string, payload []byte) error
 }
 
-// SchemaValidator interface for schema validation  
+// SchemaValidator interface for schema validation
 type SchemaValidator interface {
 	ValidateMessage(topic string, payload []byte) (*ValidationResult, error)
 }
@@ -49,7 +49,7 @@ type Client struct {
 	mu         sync.RWMutex
 	connected  bool
 	handlers   map[string]MessageHandler
-	
+
 	// Device management (injected after creation)
 	deviceManager   DeviceManager
 	eventProcessor  EventProcessor
@@ -84,17 +84,17 @@ func NewClient(cfg config.MQTTConfig, storage storage.Storage) (*Client, error) 
 
 	// Create MQTT client options
 	opts := mqtt.NewClientOptions()
-	
+
 	// Broker URL
 	brokerURL := fmt.Sprintf("tcp://%s:%d", cfg.Broker, cfg.Port)
 	if cfg.TLS.Enabled {
 		brokerURL = fmt.Sprintf("ssl://%s:%d", cfg.Broker, cfg.Port)
-		
+
 		// Configure TLS
 		tlsConfig := &tls.Config{
 			InsecureSkipVerify: cfg.TLS.SkipVerify,
 		}
-		
+
 		if cfg.TLS.CertFile != "" && cfg.TLS.KeyFile != "" {
 			cert, err := tls.LoadX509KeyPair(cfg.TLS.CertFile, cfg.TLS.KeyFile)
 			if err != nil {
@@ -102,46 +102,46 @@ func NewClient(cfg config.MQTTConfig, storage storage.Storage) (*Client, error) 
 			}
 			tlsConfig.Certificates = []tls.Certificate{cert}
 		}
-		
+
 		opts.SetTLSConfig(tlsConfig)
 	}
-	
+
 	opts.AddBroker(brokerURL)
 	opts.SetClientID(cfg.ClientID)
-	
+
 	if cfg.Username != "" {
 		opts.SetUsername(cfg.Username)
 		opts.SetPassword(cfg.Password)
 	}
-	
+
 	// Set handlers
 	opts.SetDefaultPublishHandler(client.defaultMessageHandler)
 	opts.SetOnConnectHandler(client.onConnect)
 	opts.SetConnectionLostHandler(client.onConnectionLost)
-	
+
 	// Connection settings
 	opts.SetKeepAlive(60 * time.Second)
 	opts.SetPingTimeout(1 * time.Second)
 	opts.SetConnectTimeout(5 * time.Second)
 	opts.SetAutoReconnect(true)
 	opts.SetMaxReconnectInterval(1 * time.Minute)
-	
+
 	// Set LWT (Last Will Testament)
 	lwtTopic := fmt.Sprintf("rtk/controller/%s/lwt", cfg.ClientID)
 	lwtPayload := fmt.Sprintf(`{"status":"offline","ts":%d}`, time.Now().UnixMilli())
 	opts.SetWill(lwtTopic, lwtPayload, 1, true)
-	
+
 	client.client = mqtt.NewClient(opts)
-	
+
 	return client, nil
 }
 
 // Connect establishes connection to MQTT broker
 func (c *Client) Connect(ctx context.Context) error {
 	log.WithField("broker", fmt.Sprintf("%s:%d", c.config.Broker, c.config.Port)).Info("Connecting to MQTT broker")
-	
+
 	token := c.client.Connect()
-	
+
 	// Wait for connection with context timeout
 	select {
 	case <-ctx.Done():
@@ -153,22 +153,22 @@ func (c *Client) Connect(ctx context.Context) error {
 	default:
 		token.Wait()
 	}
-	
+
 	if token.Error() != nil {
 		return fmt.Errorf("failed to connect to MQTT broker: %w", token.Error())
 	}
-	
+
 	c.mu.Lock()
 	c.connected = true
 	c.mu.Unlock()
-	
+
 	// Start message logger if enabled
 	if c.logger != nil {
 		if err := c.logger.Start(ctx); err != nil {
 			log.WithError(err).Warn("Failed to start message logger")
 		}
 	}
-	
+
 	log.Info("Connected to MQTT broker successfully")
 	return nil
 }
@@ -176,23 +176,23 @@ func (c *Client) Connect(ctx context.Context) error {
 // Disconnect closes the connection to MQTT broker
 func (c *Client) Disconnect() {
 	log.Info("Disconnecting from MQTT broker")
-	
+
 	// Stop message logger
 	if c.logger != nil {
 		c.logger.Stop()
 	}
-	
+
 	// Publish online status before disconnecting
 	lwtTopic := fmt.Sprintf("rtk/controller/%s/lwt", c.config.ClientID)
 	lwtPayload := fmt.Sprintf(`{"status":"offline","ts":%d,"reason":"normal_shutdown"}`, time.Now().UnixMilli())
 	c.client.Publish(lwtTopic, 1, true, lwtPayload)
-	
+
 	c.client.Disconnect(250)
-	
+
 	c.mu.Lock()
 	c.connected = false
 	c.mu.Unlock()
-	
+
 	log.Info("Disconnected from MQTT broker")
 }
 
@@ -257,18 +257,18 @@ func (c *Client) SetSchemaValidator(sv SchemaValidator) {
 func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 	topic := msg.Topic()
 	payload := msg.Payload()
-	
+
 	log.WithFields(log.Fields{
 		"topic": topic,
 		"qos":   msg.Qos(),
 		"size":  len(payload),
 	}).Debug("Received MQTT message")
-	
+
 	// Validate message using schema validator if enabled
 	c.mu.RLock()
 	schemaValidator := c.schemaValidator
 	c.mu.RUnlock()
-	
+
 	if schemaValidator != nil {
 		validationResult, err := schemaValidator.ValidateMessage(topic, payload)
 		if err != nil {
@@ -282,7 +282,7 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 				"schema": validationResult.Schema,
 				"errors": validationResult.Errors,
 			}).Warn("Message failed schema validation")
-			
+
 			// For strict validation, we could skip processing invalid messages
 			// For now, we log the validation failure and continue processing
 		} else {
@@ -292,27 +292,27 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 			}).Debug("Message passed schema validation")
 		}
 	}
-	
+
 	// Log message if logger is enabled
 	if c.logger != nil {
 		if err := c.logger.LogMessage(topic, payload, msg.Qos(), msg.Retained()); err != nil {
 			log.WithError(err).Warn("Failed to log MQTT message")
 		}
 	}
-	
+
 	// Process device state updates and events
 	c.mu.RLock()
 	deviceManager := c.deviceManager
 	eventProcessor := c.eventProcessor
 	c.mu.RUnlock()
-	
+
 	// Check if this is a device-related message (rtk/v1/...)
 	if len(topic) > 6 && topic[:6] == "rtk/v1" {
 		// Extract message type from topic
 		parts := strings.Split(topic, "/")
 		if len(parts) >= 6 {
 			messageType := parts[5]
-			
+
 			switch {
 			case messageType == "state" || messageType == "attr" || messageType == "lwt":
 				// Handle device state update
@@ -324,7 +324,7 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 						}).Error("Failed to update device state")
 					}
 				}
-				
+
 			case messageType == "evt" || strings.HasPrefix(messageType, "evt/"):
 				// Handle device event
 				if eventProcessor != nil {
@@ -335,7 +335,7 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 						}).Error("Failed to process device event")
 					}
 				}
-				
+
 			case strings.HasPrefix(messageType, "telemetry"):
 				// Handle telemetry data (also updates device state)
 				if deviceManager != nil {
@@ -349,7 +349,7 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 			}
 		}
 	}
-	
+
 	// Find and execute matching handlers
 	c.mu.RLock()
 	handlers := make(map[string]MessageHandler)
@@ -357,7 +357,7 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 		handlers[pattern] = handler
 	}
 	c.mu.RUnlock()
-	
+
 	for pattern, handler := range handlers {
 		if c.topicMatches(pattern, topic) {
 			if err := handler.HandleMessage(topic, payload); err != nil {
@@ -374,16 +374,16 @@ func (c *Client) defaultMessageHandler(client mqtt.Client, msg mqtt.Message) {
 // onConnect is called when connection is established
 func (c *Client) onConnect(client mqtt.Client) {
 	log.Info("MQTT connection established")
-	
+
 	c.mu.Lock()
 	c.connected = true
 	c.mu.Unlock()
-	
+
 	// Publish online status
 	lwtTopic := fmt.Sprintf("rtk/controller/%s/lwt", c.config.ClientID)
 	lwtPayload := fmt.Sprintf(`{"status":"online","ts":%d}`, time.Now().UnixMilli())
 	client.Publish(lwtTopic, 1, true, lwtPayload)
-	
+
 	// Subscribe to configured topics
 	if err := c.Subscribe(c.config.Topics.Subscribe); err != nil {
 		log.WithError(err).Error("Failed to subscribe to topics after reconnection")
@@ -393,7 +393,7 @@ func (c *Client) onConnect(client mqtt.Client) {
 // onConnectionLost is called when connection is lost
 func (c *Client) onConnectionLost(client mqtt.Client, err error) {
 	log.WithError(err).Warn("MQTT connection lost")
-	
+
 	c.mu.Lock()
 	c.connected = false
 	c.mu.Unlock()

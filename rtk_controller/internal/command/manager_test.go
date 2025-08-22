@@ -109,9 +109,9 @@ func (m *MockStorage) Update(fn func(storage.Transaction) error) error {
 func TestNewManager(t *testing.T) {
 	mockMQTT := &MockMQTTClient{}
 	mockStorage := NewMockStorage()
-	
+
 	manager := NewManager(mockMQTT, mockStorage)
-	
+
 	assert.NotNil(t, manager)
 	assert.Equal(t, mockMQTT, manager.mqttClient)
 	assert.Equal(t, mockStorage, manager.storage)
@@ -129,7 +129,7 @@ func TestManager_Start(t *testing.T) {
 
 	ctx := context.Background()
 	err := manager.Start(ctx)
-	
+
 	assert.NoError(t, err)
 	mockStorage.AssertExpectations(t)
 }
@@ -156,22 +156,22 @@ func TestManager_SendCommand(t *testing.T) {
 	// Mock MQTT publish
 	expectedTopic := "rtk/v1/test-tenant/test-site/test-device/cmd/req"
 	mockMQTT.On("Publish", expectedTopic, mock.AnythingOfType("map[string]interface {}"), 1, false).Return(nil)
-	
+
 	// Mock storage operations
 	mockStorage.On("Set", mock.AnythingOfType("string"), mock.AnythingOfType("types.Command")).Return(nil)
 
 	commandID, err := manager.SendCommand(deviceInfo, commandData)
-	
+
 	assert.NoError(t, err)
 	assert.NotEmpty(t, commandID)
-	
+
 	// Verify command was stored
 	assert.Contains(t, manager.commands, commandID)
 	command := manager.commands[commandID]
 	assert.Equal(t, deviceInfo, command.DeviceInfo)
 	assert.Equal(t, commandData, command.Data)
 	assert.Equal(t, types.CommandStatusPending, command.Status)
-	
+
 	mockMQTT.AssertExpectations(t)
 	mockStorage.AssertExpectations(t)
 }
@@ -209,14 +209,14 @@ func TestManager_HandleCommandAck(t *testing.T) {
 	}
 
 	err := manager.HandleCommandAck(deviceInfo, ackData)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify command status was updated
 	updatedCommand := manager.commands[commandID]
 	assert.Equal(t, types.CommandStatusAcknowledged, updatedCommand.Status)
 	assert.NotNil(t, updatedCommand.AcknowledgedAt)
-	
+
 	mockStorage.AssertExpectations(t)
 }
 
@@ -280,9 +280,9 @@ func TestManager_HandleCommandResponse(t *testing.T) {
 			manager.commands[commandID] = command
 
 			err := manager.HandleCommandResponse(deviceInfo, tt.responseData)
-			
+
 			assert.NoError(t, err)
-			
+
 			// Verify command status was updated
 			updatedCommand := manager.commands[commandID]
 			assert.Equal(t, tt.expectedStatus, updatedCommand.Status)
@@ -415,13 +415,13 @@ func TestManager_CancelCommand(t *testing.T) {
 	mockStorage.On("Set", mock.AnythingOfType("string"), mock.AnythingOfType("types.Command")).Return(nil)
 
 	err := manager.CancelCommand(commandID)
-	
+
 	assert.NoError(t, err)
-	
+
 	// Verify command status was updated
 	updatedCommand := manager.commands[commandID]
 	assert.Equal(t, types.CommandStatusCancelled, updatedCommand.Status)
-	
+
 	mockStorage.AssertExpectations(t)
 }
 
@@ -545,7 +545,7 @@ func TestManager_ConcurrentCommandOperations(t *testing.T) {
 
 	// Test concurrent command sending
 	done := make(chan string, numGoroutines*numCommands)
-	
+
 	for i := 0; i < numGoroutines; i++ {
 		go func(id int) {
 			for j := 0; j < numCommands; j++ {
@@ -555,12 +555,12 @@ func TestManager_ConcurrentCommandOperations(t *testing.T) {
 					DeviceID: "device1",
 					Type:     "wifi_router",
 				}
-				
+
 				commandData := map[string]interface{}{
 					"action": "test",
 					"id":     id*numCommands + j,
 				}
-				
+
 				commandID, err := manager.SendCommand(deviceInfo, commandData)
 				assert.NoError(t, err)
 				done <- commandID
@@ -576,7 +576,7 @@ func TestManager_ConcurrentCommandOperations(t *testing.T) {
 
 	// Verify all commands were created
 	assert.Len(t, commandIDs, numGoroutines*numCommands)
-	
+
 	// Verify stats
 	stats := manager.GetStats()
 	assert.Equal(t, int64(numGoroutines*numCommands), stats.TotalCommands)
@@ -627,7 +627,7 @@ func TestManager_InvalidCommandData(t *testing.T) {
 			}
 
 			_, err := manager.SendCommand(deviceInfo, tt.commandData)
-			
+
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {

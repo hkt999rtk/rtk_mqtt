@@ -16,7 +16,7 @@ func (tv *TopologyVisualizer) renderASCII(graph *TopologyGraph, writer io.Writer
 
 	// Header information
 	fmt.Fprintf(writer, "Generated: %s\n", graph.Metadata.GeneratedAt.Format(time.RFC3339))
-	fmt.Fprintf(writer, "Devices: %d online, %d offline, %d total\n", 
+	fmt.Fprintf(writer, "Devices: %d online, %d offline, %d total\n",
 		graph.Metadata.OnlineDevices, graph.Metadata.OfflineDevices, graph.Metadata.TotalDevices)
 	fmt.Fprintf(writer, "Connections: %d\n\n", graph.Metadata.TotalConnections)
 
@@ -33,34 +33,34 @@ func (tv *TopologyVisualizer) renderASCII(graph *TopologyGraph, writer io.Writer
 	// Render each device type
 	for deviceType, nodes := range devicesByType {
 		fmt.Fprintf(writer, "[%s Devices]\n", strings.ToUpper(deviceType))
-		
+
 		for _, node := range nodes {
 			status := "●"
 			if node.Properties.Status != "online" {
 				status = "○"
 			}
-			
+
 			// Use importance as a proxy for quality
 			qualityBar := tv.renderQualityBar(node.Properties.Importance)
-			
+
 			fmt.Fprintf(writer, "  %s %s", status, node.Properties.Label)
-			
+
 			if tv.config.ShowConnectionQuality {
 				fmt.Fprintf(writer, " %s", qualityBar)
 			}
-			
+
 			// TODO: Add SSID field to node properties or device
 			// if node.SSID != "" && tv.config.ShowSSIDs {
 			//	fmt.Fprintf(writer, " [%s]", node.SSID)
 			// }
-			
+
 			// TODO: Add SignalStrength field to node properties or device
 			// if node.SignalStrength != 0 {
 			//	fmt.Fprintf(writer, " (%ddBm)", node.SignalStrength)
 			// }
-			
+
 			fmt.Fprintf(writer, "\n")
-			
+
 			// Show connections for this node
 			connections := tv.getNodeConnections(node.ID, graph)
 			for _, conn := range connections {
@@ -68,10 +68,10 @@ func (tv *TopologyVisualizer) renderASCII(graph *TopologyGraph, writer io.Writer
 				if targetNode == nil || targetNode.ID == node.ID {
 					targetNode = conn.From
 				}
-				
+
 				if targetNode != nil && targetNode.ID != node.ID {
 					fmt.Fprintf(writer, "    ├─ %s", targetNode.Properties.Label)
-					
+
 					if tv.config.ShowConnectionQuality {
 						// Convert quality string to float
 						qualityVal := 0.5 // default
@@ -88,12 +88,12 @@ func (tv *TopologyVisualizer) renderASCII(graph *TopologyGraph, writer io.Writer
 						connQualityBar := tv.renderQualityBar(qualityVal)
 						fmt.Fprintf(writer, " %s", connQualityBar)
 					}
-					
+
 					// TODO: Add latency field to edge properties
 					// if conn.Latency > 0 {
 					//	fmt.Fprintf(writer, " (%.1fms)", conn.Latency)
 					// }
-					
+
 					fmt.Fprintf(writer, "\n")
 				}
 			}
@@ -120,7 +120,7 @@ func (tv *TopologyVisualizer) renderTree(graph *TopologyGraph, writer io.Writer)
 
 	// Find root nodes (nodes with no incoming connections)
 	rootNodes := tv.findRootNodes(graph)
-	
+
 	for _, root := range rootNodes {
 		tv.renderNodeTree(root, graph, writer, 0, make(map[string]bool))
 	}
@@ -143,13 +143,13 @@ func (tv *TopologyVisualizer) renderDOT(graph *TopologyGraph, writer io.Writer) 
 			deviceType = node.Device.DeviceType
 		}
 		shape := tv.getNodeShape(deviceType)
-		
+
 		label := fmt.Sprintf("%s\\n%s", node.Properties.Label, deviceType)
 		// TODO: Add SSID field to node
 		// if node.SSID != "" && tv.config.ShowSSIDs {
 		//	label = fmt.Sprintf("%s\\n[%s]", label, node.SSID)
 		// }
-		
+
 		fmt.Fprintf(writer, "  \"%s\" [label=\"%s\", color=\"%s\", shape=%s];\n",
 			node.ID, label, color, shape)
 	}
@@ -188,11 +188,11 @@ func (tv *TopologyVisualizer) renderDOT(graph *TopologyGraph, writer io.Writer) 
 		fmt.Fprintf(writer, "\n  subgraph cluster_%d {\n", i)
 		fmt.Fprintf(writer, "    label=\"%s\";\n", group.Label)
 		fmt.Fprintf(writer, "    color=\"%s\";\n", group.Color)
-		
+
 		for _, nodeID := range group.NodeIDs {
 			fmt.Fprintf(writer, "    \"%s\";\n", nodeID)
 		}
-		
+
 		fmt.Fprintf(writer, "  }\n")
 	}
 
@@ -227,7 +227,7 @@ func (tv *TopologyVisualizer) renderTable(graph *TopologyGraph, writer io.Writer
 
 	for _, node := range sortedNodes {
 		qualityStr := fmt.Sprintf("%.2f", node.Properties.Importance)
-		
+
 		deviceType := "unknown"
 		ipAddress := "-"
 		if node.Device != nil {
@@ -240,7 +240,7 @@ func (tv *TopologyVisualizer) renderTable(graph *TopologyGraph, writer io.Writer
 				}
 			}
 		}
-		
+
 		fmt.Fprintf(writer, "%-20s %-15s %-10s %-15s %-10s %-20s\n",
 			tv.truncateString(node.Properties.Label, 20),
 			deviceType,
@@ -265,16 +265,24 @@ func (tv *TopologyVisualizer) renderTable(graph *TopologyGraph, writer io.Writer
 		// Convert quality strings to values for comparison
 		qI, qJ := 0.5, 0.5
 		switch sortedEdges[i].Properties.Quality {
-		case "excellent": qI = 1.0
-		case "good": qI = 0.75
-		case "fair": qI = 0.5
-		case "poor": qI = 0.25
+		case "excellent":
+			qI = 1.0
+		case "good":
+			qI = 0.75
+		case "fair":
+			qI = 0.5
+		case "poor":
+			qI = 0.25
 		}
 		switch sortedEdges[j].Properties.Quality {
-		case "excellent": qJ = 1.0
-		case "good": qJ = 0.75
-		case "fair": qJ = 0.5
-		case "poor": qJ = 0.25
+		case "excellent":
+			qJ = 1.0
+		case "good":
+			qJ = 0.75
+		case "fair":
+			qJ = 0.5
+		case "poor":
+			qJ = 0.25
 		}
 		return qI > qJ
 	})
@@ -282,10 +290,10 @@ func (tv *TopologyVisualizer) renderTable(graph *TopologyGraph, writer io.Writer
 	for _, edge := range sortedEdges {
 		sourceNode := edge.From
 		targetNode := edge.To
-		
+
 		sourceLabel := edge.From.ID
 		targetLabel := edge.To.ID
-		
+
 		if sourceNode != nil {
 			sourceLabel = sourceNode.Properties.Label
 		}
@@ -296,7 +304,7 @@ func (tv *TopologyVisualizer) renderTable(graph *TopologyGraph, writer io.Writer
 		qualityStr := edge.Properties.Quality
 		latencyStr := "-"
 		// TODO: Add latency to edge properties
-		
+
 		interfaceStr := edge.Connection.FromInterface
 		if interfaceStr == "" {
 			interfaceStr = "-"
@@ -356,7 +364,7 @@ func (tv *TopologyVisualizer) renderSummary(graph *TopologyGraph, writer io.Writ
 	if len(graph.Anomalies) > 0 {
 		fmt.Fprintf(writer, "Detected Anomalies:\n")
 		for _, anomaly := range graph.Anomalies {
-			fmt.Fprintf(writer, "  [%s] %s: %s\n", 
+			fmt.Fprintf(writer, "  [%s] %s: %s\n",
 				strings.ToUpper(anomaly.Severity), anomaly.Type, anomaly.Description)
 		}
 		fmt.Fprintf(writer, "\n")
@@ -385,16 +393,16 @@ func (tv *TopologyVisualizer) renderGraphViz(graph *TopologyGraph, writer io.Wri
 	// Add nodes with rich styling
 	for _, node := range graph.Nodes {
 		color := tv.getNodeColor(node)
-		
+
 		deviceType := "unknown"
 		if node.Device != nil {
 			deviceType = node.Device.DeviceType
 		}
 		shape := tv.getNodeShape(deviceType)
-		
+
 		label := node.Properties.Label
 		// TODO: Add SSID field to node
-		
+
 		if tv.config.ShowConnectionQuality {
 			label = fmt.Sprintf("%s\\nQ: %.2f", label, node.Properties.Importance)
 		}
@@ -406,11 +414,11 @@ func (tv *TopologyVisualizer) renderGraphViz(graph *TopologyGraph, writer io.Wri
 
 		fmt.Fprintf(writer, "  \"%s\" [label=\"%s\", color=\"%s\", shape=%s, fontsize=%s",
 			node.ID, label, color, shape, fontSize)
-		
+
 		if node.Properties.Status != "online" {
 			fmt.Fprintf(writer, ", style=dashed")
 		}
-		
+
 		fmt.Fprintf(writer, "];\n")
 	}
 
@@ -421,23 +429,27 @@ func (tv *TopologyVisualizer) renderGraphViz(graph *TopologyGraph, writer io.Wri
 		// Convert quality string to float
 		qualityVal := 0.5
 		switch edge.Properties.Quality {
-		case "excellent": qualityVal = 1.0
-		case "good": qualityVal = 0.75
-		case "fair": qualityVal = 0.5
-		case "poor": qualityVal = 0.25
+		case "excellent":
+			qualityVal = 1.0
+		case "good":
+			qualityVal = 0.75
+		case "fair":
+			qualityVal = 0.5
+		case "poor":
+			qualityVal = 0.25
 		}
-		
+
 		weight := fmt.Sprintf("%.2f", qualityVal)
 		color := tv.getEdgeColor(qualityVal)
 		thickness := tv.getEdgeThickness(qualityVal)
 
 		fmt.Fprintf(writer, "  \"%s\" -- \"%s\" [weight=%s, color=\"%s\", penwidth=%s",
 			edge.From.ID, edge.To.ID, weight, color, thickness)
-		
+
 		if edge.Connection.ConnectionType == "wireless" {
 			fmt.Fprintf(writer, ", style=dashed")
 		}
-		
+
 		fmt.Fprintf(writer, "];\n")
 	}
 
@@ -452,21 +464,21 @@ func (tv *TopologyVisualizer) renderPlantUML(graph *TopologyGraph, writer io.Wri
 	fmt.Fprintf(writer, "!define WIFI_CONNECTION(node1, node2) node1 ..> node2\n")
 	fmt.Fprintf(writer, "!define WIRED_CONNECTION(node1, node2) node1 --> node2\n\n")
 
-	fmt.Fprintf(writer, "title Network Topology\\n%s\n\n", 
+	fmt.Fprintf(writer, "title Network Topology\\n%s\n\n",
 		graph.Metadata.GeneratedAt.Format("2006-01-02 15:04:05"))
 
 	// Define nodes
 	for _, node := range graph.Nodes {
 		alias := strings.ReplaceAll(node.ID, "-", "_")
 		label := node.Properties.Label
-		
+
 		// TODO: Add SSID field to node
 
 		deviceType := "unknown"
 		if node.Device != nil {
 			deviceType = node.Device.DeviceType
 		}
-		
+
 		nodeType := "node"
 		switch deviceType {
 		case "router", "gateway":
@@ -486,7 +498,7 @@ func (tv *TopologyVisualizer) renderPlantUML(graph *TopologyGraph, writer io.Wri
 	for _, edge := range graph.Edges {
 		sourceAlias := strings.ReplaceAll(edge.From.ID, "-", "_")
 		targetAlias := strings.ReplaceAll(edge.To.ID, "-", "_")
-		
+
 		connector := "-->"
 		if edge.Connection.ConnectionType == "wireless" {
 			connector = "..>"
@@ -507,7 +519,7 @@ func (tv *TopologyVisualizer) renderPlantUML(graph *TopologyGraph, writer io.Wri
 		for _, anomaly := range graph.Anomalies {
 			if anomaly.NodeID != "" {
 				nodeAlias := strings.ReplaceAll(anomaly.NodeID, "-", "_")
-				fmt.Fprintf(writer, "note right of %s : %s\\n%s\n", 
+				fmt.Fprintf(writer, "note right of %s : %s\\n%s\n",
 					nodeAlias, anomaly.Type, anomaly.Description)
 			}
 		}
@@ -526,7 +538,7 @@ func (tv *TopologyVisualizer) renderQualityBar(quality float64) string {
 
 	length := 10
 	filled := int(quality * float64(length))
-	
+
 	bar := "["
 	for i := 0; i < length; i++ {
 		if i < filled {
@@ -536,7 +548,7 @@ func (tv *TopologyVisualizer) renderQualityBar(quality float64) string {
 		}
 	}
 	bar += "]"
-	
+
 	return fmt.Sprintf("%s %.2f", bar, quality)
 }
 
@@ -561,7 +573,7 @@ func (tv *TopologyVisualizer) findNode(nodeID string, graph *TopologyGraph) *Top
 
 func (tv *TopologyVisualizer) findRootNodes(graph *TopologyGraph) []TopologyNode {
 	hasIncoming := make(map[string]bool)
-	
+
 	// Mark nodes with incoming connections
 	for _, edge := range graph.Edges {
 		hasIncoming[edge.To.ID] = true
@@ -582,7 +594,7 @@ func (tv *TopologyVisualizer) findRootNodes(graph *TopologyGraph) []TopologyNode
 		sort.Slice(sortedNodes, func(i, j int) bool {
 			return sortedNodes[i].Properties.Importance > sortedNodes[j].Properties.Importance
 		})
-		
+
 		if len(sortedNodes) > 0 {
 			roots = append(roots, sortedNodes[0])
 		}
@@ -604,16 +616,16 @@ func (tv *TopologyVisualizer) renderNodeTree(node TopologyNode, graph *TopologyG
 	}
 
 	fmt.Fprintf(writer, "%s%s %s", indent, status, node.Properties.Label)
-	
+
 	if tv.config.ShowConnectionQuality {
 		fmt.Fprintf(writer, " (Q: %.2f)", node.Properties.Importance)
 	}
-	
+
 	// TODO: Add SSID field to node
 	// if node.SSID != "" && tv.config.ShowSSIDs {
 	//	fmt.Fprintf(writer, " [%s]", node.SSID)
 	// }
-	
+
 	fmt.Fprintf(writer, "\n")
 
 	// Find and render children
