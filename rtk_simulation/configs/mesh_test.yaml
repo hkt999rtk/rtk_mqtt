@@ -1,0 +1,96 @@
+simulation:
+  name: "mesh_network_test"
+  duration: 300  # 5 minutes
+  real_time: true
+
+mqtt:
+  broker: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+
+network:
+  topology: "mesh_network"
+  subnet: "192.168.1.0/24"
+  gateway: "192.168.1.1"
+
+scenarios:
+  - type: "mesh_network"
+    name: "Mesh Network Test"
+    enabled: true
+
+devices:
+  network_devices:
+    - id: "mesh_master_01"
+      type: "mesh_node"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.10"
+      connection_type: "ethernet"
+      firmware: "v2.0.0"
+      protocols: ["mqtt", "http"]
+      
+    - id: "mesh_slave_01"
+      type: "mesh_node"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.11"
+      connection_type: "wifi"
+      firmware: "v2.0.0"
+      protocols: ["mqtt", "http"]
+      
+    - id: "mesh_slave_02"
+      type: "mesh_node"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.12"
+      connection_type: "wifi"
+      firmware: "v2.0.0"
+      protocols: ["mqtt", "http"]
+      
+    - id: "mesh_repeater_01"
+      type: "mesh_node"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.13"
+      connection_type: "wifi"
+      firmware: "v2.0.0"
+      protocols: ["mqtt", "http"]
+      
+    - id: "main_router"
+      type: "router"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.1"
+      connection_type: "ethernet"
+      firmware: "v1.5.0"
+      protocols: ["mqtt", "http", "snmp"]
+
+  client_devices:
+    - id: "laptop_01"
+      type: "laptop"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.101"
+      connection_type: "wifi"
+      firmware: "v1.0.0"
+      protocols: ["mqtt", "http"]
+      
+    - id: "smartphone_01"
+      type: "smartphone"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.102"
+      connection_type: "wifi"
+      firmware: "v1.0.0"
+      protocols: ["mqtt", "http"]
+
+  iot_devices:
+    - id: "smart_bulb_01"
+      type: "smart_bulb"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.201"
+      connection_type: "wifi"
+      firmware: "v1.2.0"
+      protocols: ["mqtt"]

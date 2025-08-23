@@ -1,0 +1,83 @@
+# Test configuration demonstrating custom device configurations
+simulation:
+  name: "custom_config_test"
+  duration: 5m
+  real_time_factor: 1.0
+  max_devices: 10
+
+mqtt:
+  broker: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+  client_prefix: "rtk_custom"
+  keep_alive: 60s
+  clean_session: true
+  qos: 0
+  retained: true
+
+network:
+  topology: "mesh_network"
+  subnet: "192.168.1.0/24"
+  internet_bandwidth: 1000
+
+devices:
+  network_devices:
+    - id: "custom_router_01"
+      type: "router"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.1"
+      connection_type: "ethernet"
+      
+    - id: "custom_switch_01"
+      type: "switch"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.2"
+      connection_type: "ethernet"
+      extra:
+        port_count: 48  # Custom port count (default is 24)
+        
+    - id: "custom_ap_01"
+      type: "access_point"
+      tenant: "test"
+      site: "living_room"
+      ip_address: "192.168.1.3"
+      connection_type: "ethernet"
+      extra:
+        ssid_2g: "MyHome_2G"
+        ssid_5g: "MyHome_5G"
+        wifi_password: "SuperSecurePassword123!"
+        security_type: "WPA3"
+        channel_2g: 11
+        channel_5g: 149
+        max_clients: 50
+      
+  iot_devices:
+    - id: "custom_sensor_01"
+      type: "environmental_sensor"
+      tenant: "test"
+      site: "bedroom"
+      ip_address: "192.168.1.20"
+      connection_type: "wifi"
+      extra:
+        power_source: "ac"  # AC powered instead of battery
+        
+    - id: "custom_sensor_02"
+      type: "environmental_sensor"
+      tenant: "test"
+      site: "outdoor"
+      ip_address: "192.168.1.21"
+      connection_type: "wifi"
+      extra:
+        power_source: "solar"  # Solar powered
+        battery_level: 85.0  # Initial battery level for solar backup
+        
+  client_devices:
+    - id: "custom_laptop_01"
+      type: "laptop"
+      tenant: "test"
+      site: "office"
+      ip_address: "192.168.1.30"
+      connection_type: "wifi"

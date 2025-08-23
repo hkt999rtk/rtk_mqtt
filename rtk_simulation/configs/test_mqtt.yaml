@@ -1,0 +1,54 @@
+# Test configuration for MQTT functionality
+simulation:
+  name: "mqtt_test"
+  duration: 1m
+  real_time_factor: 1.0
+  max_devices: 5
+
+mqtt:
+  broker: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+  client_prefix: "rtk_test"
+  keep_alive: 60s
+  clean_session: true
+  qos: 0
+  retained: true
+
+network:
+  topology: "single_router"
+  subnet: "192.168.1.0/24"
+  internet_bandwidth: 100
+
+devices:
+  network_devices:
+    - id: "test_router_01"
+      type: "router"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.1"
+      connection_type: "ethernet"
+      
+  iot_devices:
+    - id: "test_bulb_01"
+      type: "smart_bulb"
+      tenant: "test"
+      site: "living_room"
+      ip_address: "192.168.1.10"
+      connection_type: "wifi"
+      
+    - id: "test_camera_01"
+      type: "security_camera"
+      tenant: "test"
+      site: "entrance"
+      ip_address: "192.168.1.11"
+      connection_type: "wifi"
+      
+  client_devices:
+    - id: "test_phone_01"
+      type: "smartphone"
+      tenant: "test"
+      site: "home"
+      ip_address: "192.168.1.20"
+      connection_type: "wifi"

@@ -1,0 +1,109 @@
+simulation:
+    name: home_basic
+    duration: 1h0m0s
+    real_time_factor: 1
+    max_devices: 100
+    update_interval: 5s
+    metrics_enabled: true
+    metrics_port: 8080
+mqtt:
+    broker: localhost
+    port: 1883
+    username: ""
+    password: ""
+    client_prefix: rtk_sim
+    keep_alive: 1m0s
+    clean_session: true
+    qos: 1
+    retained: false
+    tls_enabled: false
+network:
+    topology: single_router
+    subnet: 192.168.1.0/24
+    dhcp_pool:
+        start_ip: 192.168.1.100
+        end_ip: 192.168.1.200
+        lease_time: 24h0m0s
+        gateway: 192.168.1.1
+        dns:
+            - 8.8.8.8
+            - 8.8.4.4
+    internet_bandwidth: 100
+    vlans: []
+    interference:
+        enabled: false
+        sources: []
+        environment_type: ""
+        wall_attenuation: 0
+devices:
+    network_devices:
+        - id: main_router
+          type: router
+          tenant: home
+          site: living_room
+          ip_address: 192.168.1.1
+          connection_type: ethernet
+          firmware: 1.0.0
+          protocols:
+            - wifi
+            - ethernet
+            - mqtt
+          model: Basic Router
+          wifi_bands:
+            - 2.4GHz
+            - 5GHz
+          ethernet_ports: 4
+          poe_support: false
+          max_throughput: 100
+          wifi_config:
+            networks: []
+            channels:
+                channel_2g: 0
+                channel_5g: 0
+                auto_select: false
+                width_2g: 0
+                width_5g: 0
+            security:
+                type: ""
+                password: ""
+                encryption: ""
+          qos_config:
+            enabled: false
+            rules: []
+            bandwidth_limit:
+                upload: 0
+                download: 0
+    iot_devices:
+        - id: living_room_light
+          type: smart_bulb
+          tenant: home
+          site: living_room
+          ip_address: ""
+          connection_type: wifi
+          firmware: 1.0.0
+          protocols:
+            - wifi
+            - mqtt
+          category: lighting
+          power_source: ac
+          battery_capacity: 0
+          power_consumption: 0
+          sensor_types:
+            - brightness
+          control_types:
+            - power
+            - brightness
+            - color
+          usage_patterns: []
+          automation_rules: []
+    client_devices: []
+scenarios: []
+logging:
+    level: info
+    format: text
+    output: stdout
+    max_size: 0
+    max_age: 0
+    max_backups: 0
+    compress: false
+    device_specific: false

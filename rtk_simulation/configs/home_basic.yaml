@@ -1,0 +1,238 @@
+simulation:
+  name: "home_basic"
+  duration: 1h
+  real_time_factor: 1.0
+  max_devices: 20
+  update_interval: 5s
+  metrics_enabled: true
+  metrics_port: 8080
+
+mqtt:
+  broker: "localhost"
+  port: 1883
+  username: ""
+  password: ""
+  client_prefix: "rtk_home"
+  keep_alive: 60s
+  clean_session: true
+  qos: 1
+  retained: false
+  tls_enabled: false
+
+network:
+  topology: "single_router"
+  subnet: "192.168.1.0/24"
+  internet_bandwidth: 100
+  dhcp_pool:
+    start_ip: "192.168.1.100"
+    end_ip: "192.168.1.200"
+    lease_time: 24h
+    gateway: "192.168.1.1"
+    dns: ["8.8.8.8", "8.8.4.4"]
+  interference:
+    enabled: true
+    environment_type: "home"
+    wall_attenuation: 5.0
+    sources:
+      - type: "microwave"
+        frequency: "2.4GHz"
+        power: -10.0
+        location: {x: 5.0, y: 3.0}
+
+devices:
+  network_devices:
+    - id: "main_router"
+      type: "router"
+      tenant: "home"
+      site: "living_room"
+      ip_address: "192.168.1.1"
+      connection_type: "ethernet"
+      firmware: "1.0.0"
+      protocols: ["wifi", "ethernet", "mqtt"]
+      model: "Home WiFi Router"
+      wifi_bands: ["2.4GHz", "5GHz"]
+      ethernet_ports: 4
+      max_throughput: 100
+      wifi_config:
+        networks:
+          - ssid: "HomeNetwork"
+            band: "2.4GHz"
+            hidden: false
+            max_clients: 15
+            tx_power: 20
+          - ssid: "HomeNetwork_5G"
+            band: "5GHz"
+            hidden: false
+            max_clients: 10
+            tx_power: 23
+        channels:
+          channel_2g: 6
+          channel_5g: 36
+          auto_select: true
+          width_2g: 20
+          width_5g: 80
+        security:
+          type: "WPA3"
+          password: "homepassword123"
+          encryption: "AES"
+
+  iot_devices:
+    - id: "living_room_light"
+      type: "smart_bulb"
+      tenant: "home"
+      site: "living_room"
+      connection_type: "wifi"
+      firmware: "2.1.0"
+      protocols: ["wifi", "mqtt"]
+      category: "lighting"
+      power_source: "ac"
+      power_consumption: 9.0
+      sensor_types: ["brightness"]
+      control_types: ["power", "brightness", "color"]
+      usage_patterns:
+        - name: "evening_mode"
+          time_range:
+            start_time: "18:00"
+            end_time: "23:00"
+            days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+          probability: 0.8
+          behavior:
+            power_state: "on"
+            brightness: 70
+        - name: "night_mode"
+          time_range:
+            start_time: "23:00"
+            end_time: "06:00"
+            days: ["saturday", "sunday"]
+          probability: 0.3
+          behavior:
+            power_state: "on"
+            brightness: 10
+
+    - id: "bedroom_ac"
+      type: "air_conditioner"
+      tenant: "home"
+      site: "bedroom"
+      connection_type: "wifi"
+      firmware: "3.0.1"
+      protocols: ["wifi", "mqtt"]
+      category: "climate"
+      power_source: "ac"
+      power_consumption: 1200.0
+      sensor_types: ["temperature", "humidity"]
+      control_types: ["power", "temperature", "fan_speed", "mode"]
+      usage_patterns:
+        - name: "sleep_mode"
+          time_range:
+            start_time: "22:00"
+            end_time: "07:00"
+            days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+          probability: 0.9
+          behavior:
+            power_state: "on"
+            temperature: 26.0
+            mode: "cool"
+
+    # Temporarily disabled unsupported devices:
+    # - id: "kitchen_sensor"
+    #   type: "environmental_sensor"
+    # - id: "front_door_camera"
+    #   type: "security_camera"
+
+  client_devices:
+    - id: "smartphone_john"
+      type: "smartphone"
+      tenant: "home"
+      site: "mobile"
+      connection_type: "wifi"
+      firmware: "Android 13"
+      protocols: ["wifi", "bluetooth"]
+      device_class: "smartphone"
+      operating_system: "Android"
+      usage_profile:
+        profile: "moderate"
+        daily_hours: 6.0
+        peak_hours:
+          - start_time: "07:00"
+            end_time: "09:00"
+            days: ["monday", "tuesday", "wednesday", "thursday", "friday"]
+          - start_time: "18:00"
+            end_time: "22:00"
+            days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+        idle_timeout: 300s
+      network_behavior:
+        preferred_band: "5GHz"
+        roaming_enabled: true
+        power_save_mode: true
+        connect_timeout: 30s
+        retry_attempts: 3
+        bandwidth_usage:
+          typical_upload: 100
+          typical_download: 1000
+          peak_upload: 500
+          peak_download: 5000
+          burst_duration: 30
+
+    # Temporarily disabled laptop device
+
+scenarios:
+  - name: "daily_routine"
+    description: "Normal daily usage pattern"
+    duration: 24h
+    events:
+      - time: 7h
+        type: "device_activity_increase"
+        target: "all_clients"
+        parameters:
+          activity_level: 0.8
+        probability: 0.9
+      - time: 9h
+        type: "work_hours_start"
+        target: "laptop_mary"
+        parameters:
+          bandwidth_increase: 2.0
+        probability: 0.8
+      - time: 18h
+        type: "evening_mode"
+        target: "iot_devices"
+        parameters:
+          lighting_activity: 0.9
+          climate_activity: 0.7
+        probability: 0.9
+      - time: 23h
+        type: "night_mode"
+        target: "all_devices"
+        parameters:
+          activity_level: 0.2
+        probability: 0.9
+
+  - name: "weekend_pattern"
+    description: "Weekend usage pattern with different timing"
+    duration: 48h
+    conditions:
+      - type: "day_of_week"
+        parameters:
+          days: ["saturday", "sunday"]
+    events:
+      - time: 10h
+        type: "lazy_morning"
+        target: "all_clients"
+        parameters:
+          delayed_start: true
+        probability: 0.7
+      - time: 20h
+        type: "entertainment_mode"
+        target: "all_devices"
+        parameters:
+          streaming_activity: 0.9
+        probability: 0.8
+
+logging:
+  level: "info"
+  format: "text"
+  output: "stdout"
+  device_specific: false
+  max_size: 100
+  max_age: 7
+  max_backups: 3
+  compress: true
